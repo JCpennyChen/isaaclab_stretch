@@ -1,0 +1,463 @@
+robot_cfg:
+  kinematics:
+    usd_path: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot/stretch_fake_joint.usd"
+    usd_robot_root: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot"
+    isaac_usd_path: ""
+    usd_flip_joints: {}
+    usd_flip_joint_limits: []
+
+    urdf_path: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot_raw/stretch_description_RE2V0_fake_joint.urdf"
+    asset_root_path: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot_raw"
+
+    base_link: "base_ground"
+    ee_link: "link_grasp_center"
+    link_names: null
+    lock_joints:
+      { "joint_gripper_finger_left": 0.00, "joint_gripper_finger_right": 0.0 }
+    extra_links: null
+
+    collision_link_names: [
+        "link_lift",
+        "link_mast",
+        "link_head",
+        "link_head_pan",
+        "link_head_tilt",
+        "link_arm_l4",
+        "link_arm_l3",
+        "link_arm_l2",
+        "link_arm_l1",
+        "link_arm_l0",
+        "link_wrist_yaw",
+        "link_wrist_yaw_bottom",
+        "link_wrist_pitch",
+        "link_straight_gripper",
+        "link_gripper_finger_left",
+        "link_gripper_finger_right",
+        "link_gripper_fingertip_left",
+        "link_gripper_fingertip_right",
+        "base_link",
+      ] # List[str]
+
+    collision_spheres:
+      link_lift:
+        - "center": [-0.077, 0.087, 0.006]
+          "radius": 0.07
+        - "center": [0.0, -0.026, 0.013]
+          "radius": 0.07
+        - "center": [-0.006, 0.097, 0.029]
+          "radius": 0.07
+        - "center": [-0.003, 0.036, 0.021]
+          "radius": 0.07
+      link_mast:
+        - "center": [0.001, 1.352, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.086, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 1.281, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 1.211, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 1.141, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 1.07, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 1.0, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.93, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.86, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.789, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.719, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.649, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.578, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.508, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.438, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.367, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.297, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.227, 0.001]
+          "radius": 0.03
+        - "center": [0.001, 0.157, 0.001]
+          "radius": 0.03
+      link_head:
+        - "center": [-0.016, 0.069, 0.026]
+          "radius": 0.03
+        - "center": [0.134, 0.071, 0.026]
+          "radius": 0.03
+        - "center": [-0.012, -0.016, 0.026]
+          "radius": 0.03
+        - "center": [-0.014, 0.041, 0.026]
+          "radius": 0.03
+        - "center": [-0.013, 0.013, 0.026]
+          "radius": 0.03
+        - "center": [0.034, 0.073, 0.026]
+          "radius": 0.03
+        - "center": [0.084, 0.074, 0.026]
+          "radius": 0.03
+        - "center": [0.025, -0.009, 0.026]
+          "radius": 0.03
+        - "center": [0.061, 0.028, 0.026]
+          "radius": 0.03
+        - "center": [0.097, 0.05, 0.026]
+          "radius": 0.03
+        - "center": [0.029, 0.032, 0.026]
+          "radius": 0.03
+      link_head_pan:
+        - "center": [0.0, 0.002, 0.011]
+          "radius": 0.03
+        - "center": [0.0, 0.026, -0.033]
+          "radius": 0.03
+      link_head_tilt:
+        - "center": [0.008, -0.051, 0.033]
+          "radius": 0.04
+        - "center": [0.014, 0.009, 0.031]
+          "radius": 0.04
+      link_arm_l4:
+        - "center": [-0.0, -0.0, -0.192]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.014]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.132]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.073]
+          "radius": 0.04
+      link_arm_l3:
+        - "center": [-0.0, -0.0, -0.113]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.024]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.068]
+          "radius": 0.04
+      link_arm_l2:
+        - "center": [-0.0, -0.0, -0.104]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.03]
+          "radius": 0.04
+      link_arm_l1:
+        - "center": [-0.0, -0.0, -0.107]
+          "radius": 0.04
+        - "center": [-0.0, -0.0, -0.039]
+          "radius": 0.04
+      link_arm_l0:
+        - "center": [-0.0, -0.0, -0.089]
+          "radius": 0.04
+        - "center": [-0.0, 0.002, -0.001]
+          "radius": 0.04
+        - "center": [0.055, 0.0, -0.0]
+          "radius": 0.04
+        - "center": [-0.0, 0.001, -0.045]
+          "radius": 0.04
+      link_wrist_yaw:
+        - "center": [-0.0, -0.0, -0.021]
+          "radius": 0.02
+      link_wrist_yaw_bottom:
+        - "center": [-0.004, -0.043, -0.019]
+          "radius": 0.03
+        - "center": [-0.038, -0.044, -0.023]
+          "radius": 0.03
+        - "center": [-0.0, 0.008, -0.015]
+          "radius": 0.03
+      link_wrist_pitch:
+        - "center": [-0.0, -0.012, 0.019]
+          "radius": 0.04
+      link_straight_gripper:
+        - "center": [0.0, -0.016, 0.029]
+          "radius": 0.03
+        - "center": [-0.001, 0.001, 0.083]
+          "radius": 0.03
+      link_gripper_finger_left:
+        - "center": [0.164, -0.014, 0.001]
+          "radius": 0.02
+        - "center": [0.017, -0.006, 0.002]
+          "radius": 0.02
+        - "center": [0.134, -0.012, 0.002]
+          "radius": 0.02
+        - "center": [0.106, -0.014, 0.002]
+          "radius": 0.02
+        - "center": [0.077, -0.013, 0.002]
+          "radius": 0.02
+        - "center": [0.046, -0.008, 0.002]
+          "radius": 0.02
+      link_gripper_fingertip_left:
+        - "center": [0.002, -0.0, 0.004]
+          "radius": 0.02
+      link_gripper_finger_right:
+        - "center": [-0.167, -0.016, -0.0]
+          "radius": 0.02
+        - "center": [-0.014, -0.013, -0.0]
+          "radius": 0.02
+        - "center": [-0.137, -0.016, -0.0]
+          "radius": 0.02
+        - "center": [-0.106, -0.015, -0.0]
+          "radius": 0.02
+        - "center": [-0.075, -0.014, -0.0]
+          "radius": 0.02
+        - "center": [-0.045, -0.013, -0.0]
+          "radius": 0.02
+      link_gripper_fingertip_right:
+        - "center": [0.003, -0.003, 0.009]
+          "radius": 0.02
+      base_link:
+        - "center": [0.018, -0.104, 0.108]
+          "radius": 0.1
+        - "center": [0.018, 0.104, 0.108]
+          "radius": 0.1
+        - "center": [-0.184, 0.104, 0.108]
+          "radius": 0.1
+        - "center": [-0.184, -0.104, 0.108]
+          "radius": 0.1
+        - "center": [0.018, -0.0, 0.108]
+          "radius": 0.1
+        - "center": [-0.184, 0.0, 0.108]
+          "radius": 0.1
+        - "center": [-0.083, 0.104, 0.109]
+          "radius": 0.1
+        - "center": [-0.083, -0.104, 0.108]
+          "radius": 0.1
+        - "center": [-0.083, -0.0, 0.108]
+          "radius": 0.1
+
+    collision_sphere_buffer: 0.002 # float or Dict[str, float]
+    extra_collision_spheres: {}
+    self_collision_ignore: {
+        "link_lift":
+          [
+            "link_mast",
+            "link_arm_l4",
+            "link_arm_l3",
+            "link_arm_l2",
+            "link_arm_l1",
+            "link_arm_l0",
+            "link_straight_gripper",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_mast":
+          ["base_link", "link_head", "link_grasp_center", "link_arm_l4"],
+        "link_head":
+          ["link_head_pan", "link_head_tilt", "base_link", "link_grasp_center"],
+        "link_head_pan": ["link_head_tilt", "base_link", "link_grasp_center"],
+        "link_head_tilt": ["base_link", "link_grasp_center"],
+        "link_arm_l4":
+          [
+            "link_arm_l3",
+            "link_arm_l2",
+            "link_arm_l1",
+            "link_arm_l0",
+            "link_wrist_yaw",
+            "link_wrist_yaw_bottom",
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_arm_l3":
+          [
+            "link_arm_l2",
+            "link_arm_l1",
+            "link_arm_l0",
+            "link_wrist_yaw",
+            "link_wrist_yaw_bottom",
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_arm_l2":
+          [
+            "link_arm_l1",
+            "link_arm_l0",
+            "link_wrist_yaw",
+            "link_wrist_yaw_bottom",
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_arm_l1":
+          [
+            "link_arm_l0",
+            "link_wrist_yaw",
+            "link_wrist_yaw_bottom",
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_arm_l0":
+          [
+            "link_wrist_yaw",
+            "link_wrist_yaw_bottom",
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_wrist_yaw":
+          [
+            "link_wrist_yaw_bottom",
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "link_gripper_finger_left",
+            "link_gripper_fingertip_left",
+            "link_gripper_finger_right",
+            "link_gripper_fingertip_right",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_wrist_yaw_bottom":
+          [
+            "link_wrist_pitch",
+            "link_straight_gripper",
+            "link_gripper_finger_left",
+            "link_gripper_fingertip_left",
+            "link_gripper_finger_right",
+            "link_gripper_fingertip_right",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_wrist_pitch":
+          [
+            "link_straight_gripper",
+            "link_gripper_finger_left",
+            "link_gripper_fingertip_left",
+            "link_gripper_finger_right",
+            "link_gripper_fingertip_right",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_straight_gripper":
+          [
+            "link_gripper_finger_left",
+            "link_gripper_fingertip_left",
+            "link_gripper_finger_right",
+            "link_gripper_fingertip_right",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_gripper_finger_left":
+          [
+            "link_gripper_fingertip_left",
+            "link_gripper_finger_right",
+            "link_gripper_fingertip_right",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_gripper_fingertip_left":
+          [
+            "link_gripper_finger_right",
+            "link_gripper_fingertip_right",
+            "base_link",
+            "link_grasp_center",
+          ],
+        "link_gripper_finger_right":
+          ["link_gripper_fingertip_right", "base_link", "link_grasp_center"],
+        "link_gripper_fingertip_right": ["base_link", "link_grasp_center"],
+        "base_link": ["link_grasp_center"],
+      } # Dict[str, List[str]]
+    self_collision_buffer: {
+        "link_lift": 0.0,
+        "link_mast": 0.0,
+        "link_head": 0.0,
+        "link_head_pan": 0.0,
+        "link_head_tilt": 0.0,
+        "link_arm_l4": 0.0,
+        "link_arm_l3": 0.0,
+        "link_arm_l2": 0.0,
+        "link_arm_l1": 0.0,
+        "link_arm_l0": 0.0,
+        "link_wrist_yaw": 0.0,
+        "link_wrist_yaw_bottom": 0.0,
+        "link_wrist_pitch": 0.0,
+        "link_straight_gripper": 0.0,
+        "link_gripper_finger_left": 0.0,
+        "link_gripper_fingertip_left": 0.0,
+        "link_gripper_finger_right": 0.0,
+        "link_gripper_fingertip_right": 0.0,
+        "base_link": 0.0,
+      } # Dict[str, float]
+
+    use_global_cumul: True
+    mesh_link_names: null # List[str]
+    external_asset_path: null # Use this to add path for externally located assets/robot folder.
+
+    cspace:
+      joint_names: [
+          # "joint_right_wheel",
+          # "joint_left_wheel",
+          "joint_lift",
+          "joint_arm_l3",
+          "joint_arm_l2",
+          "joint_arm_l1",
+          "joint_arm_l0",
+          "joint_wrist_yaw",
+          "joint_head_pan",
+          "joint_head_tilt",
+          "joint_wrist_pitch",
+          "joint_wrist_roll",
+          "joint_gripper_finger_right",
+          "joint_gripper_finger_left",
+          "rotate_z",
+          "base_forward",
+          # "dex_gripper_1",
+          # "dex_gripper_2"
+        ] # List[str], removed the fixed joints
+
+      retract_config: [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+        ] # List[float]
+      null_space_weight: [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+        ] # List[float]
+      cspace_distance_weight: [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+        ] # List[float]
+      max_jerk: 500.0
+      max_acceleration: 15.0

@@ -1,0 +1,45 @@
+# Robomimic Behavior Cloning (BC) Configuration
+
+experiment:
+  validate: true
+  logging:
+    terminal_output_to_txt: true
+    log_tb: true
+
+train:
+  data: null # Overwritten by command line arg
+  output_dir: null # Overwritten by command line arg
+  num_data_workers: 0
+  hdf5_cache_mode: "low_dim"
+  hdf5_use_swmr: true
+  hdf5_normalize_obs: false
+  seq_length: 1
+  dataset_keys:
+    # These match the keys saved by your recorder
+    actions: "actions"
+    rewards: "rewards"
+    dones: "dones"
+  goal_mode: null
+  cuda: true
+  batch_size: 256
+  num_epochs: 200 # Train for 200 epochs
+  seed: 1
+
+algo:
+  optim_params:
+    policy:
+      learning_rate: 1.0e-4
+      decay_factor: 0.1
+      epoch_schedule: []
+
+  loss:
+    l2_weight: 0.0
+    l1_weight: 1.0
+    cos_weight: 0.0
+
+  actor_layer_dims: [1024, 1024]
+  gmm:
+    enabled: false
+    num_modes: 5
+    min_std: 0.0001
+    low_noise_eval: true

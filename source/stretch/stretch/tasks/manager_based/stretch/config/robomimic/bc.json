@@ -1,0 +1,84 @@
+{
+    "algo_name": "bc",
+    "experiment": {
+        "validate": false,
+        "logging": {
+            "terminal_output_to_txt": true,
+            "log_tb": true
+        }
+    },
+    "train": {
+        "data": null,
+        "output_dir": null,
+        "num_data_workers": 0,
+        "hdf5_cache_mode": "low_dim",
+        "hdf5_use_swmr": true,
+        "hdf5_normalize_obs": false,
+        "seq_length": 1,
+        "dataset_keys": {
+            "actions": "actions",
+            "rewards": "rewards",
+            "dones": "dones"
+        },
+        "goal_mode": null,
+        "cuda": true,
+        "batch_size": 256,
+        "num_epochs": 200,
+        "seed": 1
+    },
+    "algo": {
+        "optim_params": {
+            "policy": {
+                "learning_rate": {
+                    "initial": 1.0e-4,
+                    "decay_factor": 0.1,
+                    "epoch_schedule": []
+                }
+            }
+        },
+        "loss": {
+            "l2_weight": 0.0,
+            "l1_weight": 1.0,
+            "cos_weight": 0.0
+        },
+        "actor_layer_dims": [
+            1024,
+            1024
+        ],
+        "gmm": {
+            "enabled": false,
+            "num_modes": 5,
+            "min_std": 0.0001,
+            "low_noise_eval": true
+        }
+    },
+    "observation": {
+        "modalities": {
+            "obs": {
+                "low_dim": [
+                    "policy/joint_pos",
+                    "policy/joint_vel",
+                    "policy/eef_pose",
+                    "policy/cabinet_joint_pos"
+                ],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            },
+            "goal": {
+                "low_dim": [],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            }
+        },
+        "encoder": {
+            "low_dim": {
+                "core_class": "LinearEncoder",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            }
+        }
+    }
+}

@@ -1,0 +1,1559 @@
+.
+├── ./assets
+│   ├── ./assets/configs
+│   │   └── ./assets/configs/robot_configs
+│   │       └── ./assets/configs/robot_configs/stretch_joint.yml
+│   ├── ./assets/ground_plane
+│   │   └── ./assets/ground_plane/default_environment.usd
+│   ├── ./assets/object
+│   │   └── ./assets/object/sektion_cabinet.usd
+│   ├── ./assets/robot
+│   │   └── ./assets/robot/stretch_fake_joint.usd
+│   ├── ./assets/robot_raw
+│   │   ├── ./assets/robot_raw/meshes
+│   │   │   ├── ./assets/robot_raw/meshes/base_imu_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/base_imu.STL
+│   │   │   ├── ./assets/robot_raw/meshes/base_link_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/base_link.STL
+│   │   │   ├── ./assets/robot_raw/meshes/d405.stl
+│   │   │   ├── ./assets/robot_raw/meshes/d435.dae
+│   │   │   ├── ./assets/robot_raw/meshes/laser_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/laser.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l0_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l0.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l1_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l1.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l2_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l2.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l3_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l3.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l4_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_arm_l4.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_inner_wrist_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_inner_wrist.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_left_base_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_left_base.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_right_base_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_right_base.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_shoulder_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_shoulder.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_top_wrist_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_aruco_top_wrist.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_camera_construction.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_camera.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_dry_erase_holder.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_dry_erase_marker.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_tablet_12in_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_tablet_12in.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_pitch_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_pitch.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_quick_connect.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_roll_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_roll.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_yaw_bottom_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_DW3_wrist_yaw_bottom.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_finger_left_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_finger_left.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_finger_right_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_finger_right.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_fingertip_left_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_fingertip_left.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_fingertip_right_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper_fingertip_right.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_gripper.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_ground_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_head_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_head_pan_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_head_pan.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_head.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_head_tilt_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_head_tilt.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_left_wheel_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_left_wheel.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_lift_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_lift.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_mast_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_mast.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_puller.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_respeaker.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_right_wheel_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_right_wheel.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SE3_head_nav_cam_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SE3_head_nav_cam.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_aruco_d405.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_aruco_fingertip_left.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_aruco_fingertip_right.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_body_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_body_old.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_body.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_finger_left_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_finger_left.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_finger_right_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_finger_right.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_fingertip_left_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_fingertip_left.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_fingertip_right_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_SG3_gripper_fingertip_right.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_straight_gripper_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_straight_gripper.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_pitch_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_pitch.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_roll_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_roll.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_yaw_bottom_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_yaw_bottom.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_yaw_collision.STL
+│   │   │   ├── ./assets/robot_raw/meshes/link_wrist_yaw.STL
+│   │   │   ├── ./assets/robot_raw/meshes/omni_wheel_m.STL
+│   │   │   ├── ./assets/robot_raw/meshes/plug_collision.stl
+│   │   │   ├── ./assets/robot_raw/meshes/plug.stl
+│   │   │   ├── ./assets/robot_raw/meshes/respeaker_base_collision.STL
+│   │   │   └── ./assets/robot_raw/meshes/respeaker_base.STL
+│   │   └── ./assets/robot_raw/stretch_description_RE2V0_fake_joint.urdf
+│   └── ./assets/utils
+│       ├── ./assets/utils/convert_urdf_to_usd.py
+│       ├── ./assets/utils/file_util.py
+│       └── ./assets/utils/__init__.py
+├── ./curobo
+│   ├── ./curobo/benchmark
+│   │   ├── ./curobo/benchmark/curobo_benchmark.py
+│   │   ├── ./curobo/benchmark/curobo_nvblox_benchmark.py
+│   │   ├── ./curobo/benchmark/curobo_nvblox_profile.py
+│   │   ├── ./curobo/benchmark/curobo_profile.py
+│   │   ├── ./curobo/benchmark/curobo_python_profile.py
+│   │   ├── ./curobo/benchmark/curobo_voxel_benchmark.py
+│   │   ├── ./curobo/benchmark/curobo_voxel_profile.py
+│   │   ├── ./curobo/benchmark/generate_nvblox_images.py
+│   │   ├── ./curobo/benchmark/ik_benchmark.py
+│   │   ├── ./curobo/benchmark/kinematics_benchmark.py
+│   │   ├── ./curobo/benchmark/metrics.py
+│   │   ├── ./curobo/benchmark/README.md
+│   │   └── ./curobo/benchmark/robometrics_benchmark.py
+│   ├── ./curobo/CHANGELOG.md
+│   ├── ./curobo/.clangd
+│   ├── ./curobo/clean_compilers
+│   │   ├── ./curobo/clean_compilers/g++ -> /usr/bin/g++
+│   │   └── ./curobo/clean_compilers/gcc -> /usr/bin/gcc
+│   ├── ./curobo/CODEOWNERS
+│   ├── ./curobo/docker
+│   │   ├── ./curobo/docker/aarch64.dockerfile
+│   │   ├── ./curobo/docker/base.dockerfile
+│   │   ├── ./curobo/docker/build_dev_docker.sh
+│   │   ├── ./curobo/docker/build_docker.sh
+│   │   ├── ./curobo/docker/.dockerignore
+│   │   ├── ./curobo/docker/isaac_sim.dockerfile
+│   │   ├── ./curobo/docker/README.md
+│   │   ├── ./curobo/docker/start_dev_docker.sh
+│   │   ├── ./curobo/docker/start_docker_aarch64.sh
+│   │   ├── ./curobo/docker/start_docker_isaac_sim_headless.sh
+│   │   ├── ./curobo/docker/start_docker_isaac_sim.sh
+│   │   ├── ./curobo/docker/start_docker.sh
+│   │   ├── ./curobo/docker/start_docker_x86.sh
+│   │   ├── ./curobo/docker/start_user_docker.sh
+│   │   ├── ./curobo/docker/user.dockerfile
+│   │   ├── ./curobo/docker/user_isaac_sim.dockerfile
+│   │   └── ./curobo/docker/x86.dockerfile
+│   ├── ./curobo/examples
+│   │   ├── ./curobo/examples/collision_check_example.py
+│   │   ├── ./curobo/examples/ik_example.py
+│   │   ├── ./curobo/examples/isaac_sim
+│   │   │   ├── ./curobo/examples/isaac_sim/batch_collision_checker.py
+│   │   │   ├── ./curobo/examples/isaac_sim/batch_motion_gen_reacher.py
+│   │   │   ├── ./curobo/examples/isaac_sim/collision_checker.py
+│   │   │   ├── ./curobo/examples/isaac_sim/constrained_reacher.py
+│   │   │   ├── ./curobo/examples/isaac_sim/helper.py
+│   │   │   ├── ./curobo/examples/isaac_sim/ik_reachability.py
+│   │   │   ├── ./curobo/examples/isaac_sim/load_all_robots.py
+│   │   │   ├── ./curobo/examples/isaac_sim/motion_gen_reacher_nvblox.py
+│   │   │   ├── ./curobo/examples/isaac_sim/motion_gen_reacher.py
+│   │   │   ├── ./curobo/examples/isaac_sim/mpc_example.py
+│   │   │   ├── ./curobo/examples/isaac_sim/mpc_nvblox_example.py
+│   │   │   ├── ./curobo/examples/isaac_sim/multi_arm_reacher.py
+│   │   │   ├── ./curobo/examples/isaac_sim/realsense_collision.py
+│   │   │   ├── ./curobo/examples/isaac_sim/realsense_mpc.py
+│   │   │   ├── ./curobo/examples/isaac_sim/realsense_reacher.py
+│   │   │   ├── ./curobo/examples/isaac_sim/realsense_viewer.py
+│   │   │   ├── ./curobo/examples/isaac_sim/simple_stacking.py
+│   │   │   └── ./curobo/examples/isaac_sim/util
+│   │   │       ├── ./curobo/examples/isaac_sim/util/convert_urdf_to_usd.py
+│   │   │       └── ./curobo/examples/isaac_sim/util/dowload_assets.py
+│   │   ├── ./curobo/examples/kinematics_example.py
+│   │   ├── ./curobo/examples/mesh_dataset.py
+│   │   ├── ./curobo/examples/motion_gen_api_example.py
+│   │   ├── ./curobo/examples/motion_gen_example.py
+│   │   ├── ./curobo/examples/motion_gen_profile.py
+│   │   ├── ./curobo/examples/mpc_example.py
+│   │   ├── ./curobo/examples/nvblox_example.py
+│   │   ├── ./curobo/examples/pose_sequence_example.py
+│   │   ├── ./curobo/examples/robot_image_segmentation_example.py
+│   │   ├── ./curobo/examples/torch_layers_example.py
+│   │   ├── ./curobo/examples/trajopt_example.py
+│   │   ├── ./curobo/examples/usd_example.py
+│   │   └── ./curobo/examples/world_representation_example.py
+│   ├── ./curobo/.git
+│   │   ├── ./curobo/.git/branches
+│   │   ├── ./curobo/.git/config
+│   │   ├── ./curobo/.git/description
+│   │   ├── ./curobo/.git/HEAD
+│   │   ├── ./curobo/.git/hooks
+│   │   │   ├── ./curobo/.git/hooks/applypatch-msg.sample
+│   │   │   ├── ./curobo/.git/hooks/commit-msg.sample
+│   │   │   ├── ./curobo/.git/hooks/fsmonitor-watchman.sample
+│   │   │   ├── ./curobo/.git/hooks/post-update.sample
+│   │   │   ├── ./curobo/.git/hooks/pre-applypatch.sample
+│   │   │   ├── ./curobo/.git/hooks/pre-commit.sample
+│   │   │   ├── ./curobo/.git/hooks/pre-merge-commit.sample
+│   │   │   ├── ./curobo/.git/hooks/prepare-commit-msg.sample
+│   │   │   ├── ./curobo/.git/hooks/pre-push.sample
+│   │   │   ├── ./curobo/.git/hooks/pre-rebase.sample
+│   │   │   ├── ./curobo/.git/hooks/pre-receive.sample
+│   │   │   ├── ./curobo/.git/hooks/push-to-checkout.sample
+│   │   │   └── ./curobo/.git/hooks/update.sample
+│   │   ├── ./curobo/.git/index
+│   │   ├── ./curobo/.git/info
+│   │   │   └── ./curobo/.git/info/exclude
+│   │   ├── ./curobo/.git/logs
+│   │   │   ├── ./curobo/.git/logs/HEAD
+│   │   │   └── ./curobo/.git/logs/refs
+│   │   │       ├── ./curobo/.git/logs/refs/heads
+│   │   │       │   └── ./curobo/.git/logs/refs/heads/main
+│   │   │       └── ./curobo/.git/logs/refs/remotes
+│   │   │           └── ./curobo/.git/logs/refs/remotes/origin
+│   │   │               └── ./curobo/.git/logs/refs/remotes/origin/HEAD
+│   │   ├── ./curobo/.git/objects
+│   │   │   ├── ./curobo/.git/objects/info
+│   │   │   └── ./curobo/.git/objects/pack
+│   │   │       ├── ./curobo/.git/objects/pack/pack-56c4d330e40cb2fd852dfc1a3c3d2fadd1ebe7ad.idx
+│   │   │       └── ./curobo/.git/objects/pack/pack-56c4d330e40cb2fd852dfc1a3c3d2fadd1ebe7ad.pack
+│   │   ├── ./curobo/.git/packed-refs
+│   │   └── ./curobo/.git/refs
+│   │       ├── ./curobo/.git/refs/heads
+│   │       │   └── ./curobo/.git/refs/heads/main
+│   │       ├── ./curobo/.git/refs/remotes
+│   │       │   └── ./curobo/.git/refs/remotes/origin
+│   │       │       └── ./curobo/.git/refs/remotes/origin/HEAD
+│   │       └── ./curobo/.git/refs/tags
+│   ├── ./curobo/.gitattributes
+│   ├── ./curobo/.github
+│   │   └── ./curobo/.github/ISSUE_TEMPLATE
+│   │       └── ./curobo/.github/ISSUE_TEMPLATE/standard-template.md
+│   ├── ./curobo/.gitignore
+│   ├── ./curobo/images
+│   │   ├── ./curobo/images/robot_demo.gif
+│   │   └── ./curobo/images/rrt_compare.gif
+│   ├── ./curobo/LICENSE
+│   ├── ./curobo/LICENSE_ASSETS
+│   ├── ./curobo/MANIFEST.in
+│   ├── ./curobo/pyproject.toml
+│   ├── ./curobo/README.md
+│   ├── ./curobo/setup.cfg
+│   ├── ./curobo/setup.py
+│   ├── ./curobo/src
+│   │   └── ./curobo/src/curobo
+│   │       ├── ./curobo/src/curobo/content
+│   │       │   ├── ./curobo/src/curobo/content/assets
+│   │       │   │   ├── ./curobo/src/curobo/content/assets/robot
+│   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda_mobile_base.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda_mobile.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda_mobile_x.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda_mobile_xy_tz.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda_mobile_xy.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda_no_gripper.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_panda.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/franka_test.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes
+│   │       │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/finger.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/finger.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/hand_flipped.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/hand_gripper_flipped.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/hand_gripper.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/hand_gripper.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/hand.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/hand.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link0.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link0.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link1.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link1.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link2.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link2.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link3.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link3.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link4.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link4.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link5.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link5.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link6.obj
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link6.stl
+│   │       │   │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link7.obj
+│   │       │   │   │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/collision/link7.stl
+│   │       │   │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/finger.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/finger.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/finger.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/graspnet_panda_mesh.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/hand.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/hand_ee_link.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/hand_gripper.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/hand_gripper.stl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/hand.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/hand.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link0.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link0.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link0.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link0.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link1.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link1.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link1.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link1.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link2.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link2.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link2.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link2.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link3.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link3.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link3.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link3.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link4.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link4.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link4.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link4.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link5.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link5.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link5.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link5.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link6.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link6.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link6.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link6.obj.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link7.dae
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link7.mtl
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link7.obj
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/link7.obj.mtl
+│   │       │   │   │   │   │       └── ./curobo/src/curobo/content/assets/robot/franka_description/meshes/visual/train_gripper.obj
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/moving_gripper.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/panda_grasp_gripper.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/franka_description/panda_gripper.urdf
+│   │       │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/franka_description/panda.urdf
+│   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/allegro.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/iiwa_allegro.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/iiwa.urdf
+│   │       │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/base_link.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/base_link.STL
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/primary_base.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/primary_base.stl
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/primary_medial.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/primary_medial.stl
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/primary_proximal.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/primary_proximal.stl
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/thumb_base.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/thumb_base.stl
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/thumb_medial.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/thumb_medial.stl
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/thumb_proximal.obj
+│   │       │   │   │   │       │   └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/allegro/thumb_proximal.stl
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/biotac
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/biotac/biotac_sensor.obj
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/biotac/biotac_sensor.stl
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/biotac/biotac_sensor_thumb.obj
+│   │       │   │   │   │       │   └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/biotac/biotac_sensor_thumb.stl
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_0.obj
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_1.obj
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_2.obj
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_3.obj
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_4.obj
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_5.obj
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_6.obj
+│   │       │   │   │   │       │   │   └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/collision/link_7.obj
+│   │       │   │   │   │       │   └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_0.obj
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_1.obj
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_2.obj
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_3.obj
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_4.obj
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_5.obj
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_6.obj
+│   │       │   │   │   │       │       └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/iiwa7/visual/link_7.obj
+│   │       │   │   │   │       └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/mounts
+│   │       │   │   │   │           ├── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/mounts/allegro_mount.obj
+│   │       │   │   │   │           └── ./curobo/src/curobo/content/assets/robot/iiwa_allegro_description/meshes/mounts/allegro_mount.stl
+│   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/jaco
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/jaco/jaco_7n.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/jaco/jaco_7s.urdf
+│   │       │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/jaco/meshes
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/arm.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/arm_half_1.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/arm_half_2.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/arm_mico.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/base.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/finger_distal.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/finger_proximal.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/forearm.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/forearm_mico.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/hand_2finger.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/hand_3finger.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/ring_big.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/ring_small.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/shoulder.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/wrist.dae
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/jaco/meshes/wrist_spherical_1.dae
+│   │       │   │   │   │       └── ./curobo/src/curobo/content/assets/robot/jaco/meshes/wrist_spherical_2.dae
+│   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kinova_gen3_7dof.urdf
+│   │       │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description
+│   │       │   │   │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms
+│   │       │   │   │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3
+│   │       │   │   │   │   │   │       └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof
+│   │       │   │   │   │   │   │           └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/base_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/bracelet_no_vision_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/bracelet_with_vision_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/end_effector_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/forearm_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/half_arm_1_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/half_arm_2_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/shoulder_link.STL
+│   │       │   │   │   │   │   │               ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/spherical_wrist_1_link.STL
+│   │       │   │   │   │   │   │               └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/arms/gen3/7dof/meshes/spherical_wrist_2_link.STL
+│   │       │   │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers
+│   │       │   │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140
+│   │       │   │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/LICENSE
+│   │       │   │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes
+│   │       │   │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision
+│   │       │   │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision/robotiq_arg2f_140_inner_finger.stl
+│   │       │   │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision/robotiq_arg2f_140_inner_knuckle.stl
+│   │       │   │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision/robotiq_arg2f_140_outer_finger.stl
+│   │       │   │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision/robotiq_arg2f_140_outer_knuckle.stl
+│   │       │   │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision/robotiq_arg2f_base_link.stl
+│   │       │   │   │   │   │       │   │   │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/collision/robotiq_arg2f_coupling.stl
+│   │       │   │   │   │   │       │   │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual
+│   │       │   │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual/robotiq_arg2f_140_inner_finger.stl
+│   │       │   │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual/robotiq_arg2f_140_inner_knuckle.stl
+│   │       │   │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual/robotiq_arg2f_140_outer_finger.stl
+│   │       │   │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual/robotiq_arg2f_140_outer_knuckle.stl
+│   │       │   │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual/robotiq_arg2f_base_link.stl
+│   │       │   │   │   │   │       │   │       └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/meshes/visual/robotiq_arg2f_coupling.stl
+│   │       │   │   │   │   │       │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_140/README.md
+│   │       │   │   │   │   │       └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85
+│   │       │   │   │   │   │           ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/LICENSE
+│   │       │   │   │   │   │           ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes
+│   │       │   │   │   │   │           │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision
+│   │       │   │   │   │   │           │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision/robotiq_arg2f_85_base_link.stl
+│   │       │   │   │   │   │           │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision/robotiq_arg2f_85_inner_finger.dae
+│   │       │   │   │   │   │           │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision/robotiq_arg2f_85_inner_knuckle.dae
+│   │       │   │   │   │   │           │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision/robotiq_arg2f_85_outer_finger.dae
+│   │       │   │   │   │   │           │   │   ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision/robotiq_arg2f_85_outer_knuckle.dae
+│   │       │   │   │   │   │           │   │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/collision/robotiq_arg2f_base_link.stl
+│   │       │   │   │   │   │           │   └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual
+│   │       │   │   │   │   │           │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_arg2f_85_base_link.dae
+│   │       │   │   │   │   │           │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_arg2f_85_inner_finger.dae
+│   │       │   │   │   │   │           │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_arg2f_85_inner_knuckle.dae
+│   │       │   │   │   │   │           │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_arg2f_85_outer_finger.dae
+│   │       │   │   │   │   │           │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_arg2f_85_outer_knuckle.dae
+│   │       │   │   │   │   │           │       ├── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_arg2f_85_pad.dae
+│   │       │   │   │   │   │           │       └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/meshes/visual/robotiq_gripper_coupling.stl
+│   │       │   │   │   │   │           └── ./curobo/src/curobo/content/assets/robot/kinova/kortex_description/grippers/robotiq_2f_85/README.md
+│   │       │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/kinova/README.md
+│   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/simple
+│   │       │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/simple/simple_mimic_robot.urdf
+│   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/techman
+│   │       │   │   │   │   └── ./curobo/src/curobo/content/assets/robot/techman/tm_description
+│   │       │   │   │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes
+│   │       │   │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12
+│   │       │   │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/collision
+│   │       │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/collision/tm12-arm1_c.stl
+│   │       │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/collision/tm12-arm2_c.stl
+│   │       │   │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/collision/tm12-base_c.stl
+│   │       │   │   │   │       │   │   │   └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/collision/tmr_750w_01_c.stl
+│   │       │   │   │   │       │   │   └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-arm1.mtl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-arm1.obj
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-arm1.stl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-arm2.mtl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-arm2.obj
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-arm2.stl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-base.mtl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-base.obj
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tm12-base.stl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tmr_750w_01.mtl
+│   │       │   │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tmr_750w_01.obj
+│   │       │   │   │   │       │   │       └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm12/visual/tmr_750w_01.stl
+│   │       │   │   │   │       │   └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900
+│   │       │   │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tm5-900_arm1_c.stl
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tm5-900_arm2_c.stl
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tm5-base_c.stl
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tmr_100w_01_c.stl
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tmr_100w_02_c.stl
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tmr_400w_01_c.stl
+│   │       │   │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tmr_ee_c.stl
+│   │       │   │   │   │       │       │   └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/collision/tmr_iox_c.stl
+│   │       │   │   │   │       │       └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-900_arm1.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-900_arm1.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-900_arm1.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-900_arm2.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-900_arm2.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-900_arm2.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-base.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-base.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tm5-base.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_100w_01.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_100w_01.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_100w_01.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_100w_02.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_100w_02.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_100w_02.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_400w_01.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_400w_01.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_400w_01.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_ee.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_ee.obj
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_ee.stl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_iox.mtl
+│   │       │   │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_iox.obj
+│   │       │   │   │   │       │           └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/meshes/tm5-900/visual/tmr_iox.stl
+│   │       │   │   │   │       └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/urdf
+│   │       │   │   │   │           ├── ./curobo/src/curobo/content/assets/robot/techman/tm_description/urdf/tm12-nominal.urdf
+│   │       │   │   │   │           └── ./curobo/src/curobo/content/assets/robot/techman/tm_description/urdf/tm12x-nominal.urdf
+│   │       │   │   │   └── ./curobo/src/curobo/content/assets/robot/ur_description
+│   │       │   │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/dual_ur10e.urdf
+│   │       │   │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes
+│   │       │   │   │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e
+│   │       │   │   │       │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision
+│   │       │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/base.stl
+│   │       │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/forearm.stl
+│   │       │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/shoulder.stl
+│   │       │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/upperarm.stl
+│   │       │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/wrist1.stl
+│   │       │   │   │       │   │   │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/wrist2.stl
+│   │       │   │   │       │   │   │   └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/collision/wrist3.stl
+│   │       │   │   │       │   │   └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual
+│   │       │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/base.dae
+│   │       │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/forearm.dae
+│   │       │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/shoulder.dae
+│   │       │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/upperarm.dae
+│   │       │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/wrist1.dae
+│   │       │   │   │       │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/wrist2.dae
+│   │       │   │   │       │   │       └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur10e/visual/wrist3.dae
+│   │       │   │   │       │   └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e
+│   │       │   │   │       │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision
+│   │       │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/base.stl
+│   │       │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/forearm.stl
+│   │       │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/shoulder.stl
+│   │       │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/upperarm.stl
+│   │       │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/wrist1.stl
+│   │       │   │   │       │       │   ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/wrist2.stl
+│   │       │   │   │       │       │   └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/collision/wrist3.stl
+│   │       │   │   │       │       └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual
+│   │       │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/base.dae
+│   │       │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/forearm.dae
+│   │       │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/shoulder.dae
+│   │       │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/upperarm.dae
+│   │       │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/wrist1.dae
+│   │       │   │   │       │           ├── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/wrist2.dae
+│   │       │   │   │       │           └── ./curobo/src/curobo/content/assets/robot/ur_description/meshes/ur5e/visual/wrist3.dae
+│   │       │   │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/quad_ur10e.urdf
+│   │       │   │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/tri_ur10e.urdf
+│   │       │   │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/ur10e.urdf
+│   │       │   │   │       ├── ./curobo/src/curobo/content/assets/robot/ur_description/ur5e_robotiq_2f_140.urdf
+│   │       │   │   │       └── ./curobo/src/curobo/content/assets/robot/ur_description/ur5e.urdf
+│   │       │   │   └── ./curobo/src/curobo/content/assets/scene
+│   │       │   │       └── ./curobo/src/curobo/content/assets/scene/nvblox
+│   │       │   │           ├── ./curobo/src/curobo/content/assets/scene/nvblox/srl_ur10_bins_color.png
+│   │       │   │           ├── ./curobo/src/curobo/content/assets/scene/nvblox/srl_ur10_bins.mtl
+│   │       │   │           ├── ./curobo/src/curobo/content/assets/scene/nvblox/srl_ur10_bins.obj
+│   │       │   │           └── ./curobo/src/curobo/content/assets/scene/nvblox/srl_ur10_bins.zip
+│   │       │   └── ./curobo/src/curobo/content/configs
+│   │       │       ├── ./curobo/src/curobo/content/configs/robot
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/dual_ur10e.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/franka_mobile.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/franka.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/iiwa_allegro.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/iiwa.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/isaac_sim_description
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/isaac_sim_description/jaco_7s.yaml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/isaac_sim_description/tm12.yaml
+│   │       │       │   │   └── ./curobo/src/curobo/content/configs/robot/isaac_sim_description/ur5e.yaml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/jaco7.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/kinova_gen3.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/quad_ur10e.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/simple_mimic_robot.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/spheres
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/dual_ur10e.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/franka_collision_mesh.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/franka_mesh_inside.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/franka_mesh_mb.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/franka_mesh.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/franka_real_robot.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/franka.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/iiwa_allegro.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/kinova_gen3.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/quad_ur10e.yml
+│   │       │       │   │   ├── ./curobo/src/curobo/content/configs/robot/spheres/single.yml
+│   │       │       │   │   └── ./curobo/src/curobo/content/configs/robot/spheres/ur10e.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/template.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/tm12.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/tri_ur10e.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/ur10e.xrdf
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/ur10e.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/robot/ur5e_robotiq_2f_140.yml
+│   │       │       │   └── ./curobo/src/curobo/content/configs/robot/ur5e.yml
+│   │       │       ├── ./curobo/src/curobo/content/configs/task
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/base_cfg.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/finetune_trajopt_slow.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/finetune_trajopt.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/gradient_ik_autotune.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/gradient_ik.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/gradient_mpc.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/gradient_trajopt.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/graph.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/particle_ik.yml
+│   │       │       │   ├── ./curobo/src/curobo/content/configs/task/particle_mpc.yml
+│   │       │       │   └── ./curobo/src/curobo/content/configs/task/particle_trajopt.yml
+│   │       │       └── ./curobo/src/curobo/content/configs/world
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_base.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_cage.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_cubby.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_floor_plan.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_handover.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_mesh_scene.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_nvblox_online.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_nvblox_ur10.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_nvblox.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_pillar_wall.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_primitives_3d.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_table.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_test.yml
+│   │       │           ├── ./curobo/src/curobo/content/configs/world/collision_thin_walls.yml
+│   │       │           └── ./curobo/src/curobo/content/configs/world/collision_wall.yml
+│   │       ├── ./curobo/src/curobo/cuda_robot_model
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/cuda_robot_generator.py
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/cuda_robot_model.py
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/__init__.py
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/kinematics_parser.py
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/cuda_robot_generator.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/cuda_robot_model.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/kinematics_parser.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/types.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/urdf_kinematics_parser.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/cuda_robot_model/__pycache__/usd_kinematics_parser.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/cuda_robot_model/__pycache__/util.cpython-311.pyc
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/types.py
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/urdf_kinematics_parser.py
+│   │       │   ├── ./curobo/src/curobo/cuda_robot_model/usd_kinematics_parser.py
+│   │       │   └── ./curobo/src/curobo/cuda_robot_model/util.py
+│   │       ├── ./curobo/src/curobo/curobolib
+│   │       │   ├── ./curobo/src/curobo/curobolib/cpp
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/check_cuda.h
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/cuda_precisions.h
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/geom_cuda.cpp
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/helper_math.h
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/kinematics_fused_cuda.cpp
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/kinematics_fused_kernel.cu
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/lbfgs_step_cuda.cpp
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/lbfgs_step_kernel.cu
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/line_search_cuda.cpp
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/line_search_kernel.cu
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/pose_distance_kernel.cu
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/self_collision_kernel.cu
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/sphere_obb_kernel.cu
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/tensor_step_cuda.cpp
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/cpp/tensor_step_kernel.cu
+│   │       │   │   └── ./curobo/src/curobo/curobolib/cpp/update_best_kernel.cu
+│   │       │   ├── ./curobo/src/curobo/curobolib/geom_cu.cpython-311-x86_64-linux-gnu.so
+│   │       │   ├── ./curobo/src/curobo/curobolib/geom.py
+│   │       │   ├── ./curobo/src/curobo/curobolib/__init__.py
+│   │       │   ├── ./curobo/src/curobo/curobolib/kinematics_fused_cu.cpython-311-x86_64-linux-gnu.so
+│   │       │   ├── ./curobo/src/curobo/curobolib/kinematics.py
+│   │       │   ├── ./curobo/src/curobo/curobolib/lbfgs_step_cu.cpython-311-x86_64-linux-gnu.so
+│   │       │   ├── ./curobo/src/curobo/curobolib/line_search_cu.cpython-311-x86_64-linux-gnu.so
+│   │       │   ├── ./curobo/src/curobo/curobolib/ls.py
+│   │       │   ├── ./curobo/src/curobo/curobolib/opt.py
+│   │       │   ├── ./curobo/src/curobo/curobolib/__pycache__
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/__pycache__/geom.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/__pycache__/kinematics.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/__pycache__/ls.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/curobolib/__pycache__/opt.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/curobolib/__pycache__/tensor_step.cpython-311.pyc
+│   │       │   ├── ./curobo/src/curobo/curobolib/tensor_step_cu.cpython-311-x86_64-linux-gnu.so
+│   │       │   ├── ./curobo/src/curobo/curobolib/tensor_step.py
+│   │       │   └── ./curobo/src/curobo/curobolib/util_file.py
+│   │       ├── ./curobo/src/curobo/geom
+│   │       │   ├── ./curobo/src/curobo/geom/cv.py
+│   │       │   ├── ./curobo/src/curobo/geom/__init__.py
+│   │       │   ├── ./curobo/src/curobo/geom/__pycache__
+│   │       │   │   ├── ./curobo/src/curobo/geom/__pycache__/cv.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/geom/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/geom/__pycache__/sphere_fit.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/geom/__pycache__/transform.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/geom/__pycache__/types.cpython-311.pyc
+│   │       │   ├── ./curobo/src/curobo/geom/sdf
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/__init__.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/__pycache__
+│   │       │   │   │   ├── ./curobo/src/curobo/geom/sdf/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/geom/sdf/__pycache__/utils.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/geom/sdf/__pycache__/warp_primitives.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/geom/sdf/__pycache__/warp_sdf_fns.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/geom/sdf/__pycache__/world.cpython-311.pyc
+│   │       │   │   │   └── ./curobo/src/curobo/geom/sdf/__pycache__/world_mesh.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/sdf_grid.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/utils.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/warp_primitives.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/warp_sdf_fns_deprecated.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/warp_sdf_fns.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/world_blox.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/world_mesh.py
+│   │       │   │   ├── ./curobo/src/curobo/geom/sdf/world.py
+│   │       │   │   └── ./curobo/src/curobo/geom/sdf/world_voxel.py
+│   │       │   ├── ./curobo/src/curobo/geom/sphere_fit.py
+│   │       │   ├── ./curobo/src/curobo/geom/transform.py
+│   │       │   └── ./curobo/src/curobo/geom/types.py
+│   │       ├── ./curobo/src/curobo/graph
+│   │       │   ├── ./curobo/src/curobo/graph/graph_base.py
+│   │       │   ├── ./curobo/src/curobo/graph/graph_nx.py
+│   │       │   ├── ./curobo/src/curobo/graph/__init__.py
+│   │       │   ├── ./curobo/src/curobo/graph/prm.py
+│   │       │   └── ./curobo/src/curobo/graph/__pycache__
+│   │       │       ├── ./curobo/src/curobo/graph/__pycache__/graph_base.cpython-311.pyc
+│   │       │       ├── ./curobo/src/curobo/graph/__pycache__/graph_nx.cpython-311.pyc
+│   │       │       ├── ./curobo/src/curobo/graph/__pycache__/__init__.cpython-311.pyc
+│   │       │       └── ./curobo/src/curobo/graph/__pycache__/prm.cpython-311.pyc
+│   │       ├── ./curobo/src/curobo/__init__.py
+│   │       ├── ./curobo/src/curobo/opt
+│   │       │   ├── ./curobo/src/curobo/opt/__init__.py
+│   │       │   ├── ./curobo/src/curobo/opt/newton
+│   │       │   │   ├── ./curobo/src/curobo/opt/newton/__init__.py
+│   │       │   │   ├── ./curobo/src/curobo/opt/newton/lbfgs.py
+│   │       │   │   ├── ./curobo/src/curobo/opt/newton/newton_base.py
+│   │       │   │   └── ./curobo/src/curobo/opt/newton/__pycache__
+│   │       │   │       ├── ./curobo/src/curobo/opt/newton/__pycache__/__init__.cpython-311.pyc
+│   │       │   │       ├── ./curobo/src/curobo/opt/newton/__pycache__/lbfgs.cpython-311.pyc
+│   │       │   │       └── ./curobo/src/curobo/opt/newton/__pycache__/newton_base.cpython-311.pyc
+│   │       │   ├── ./curobo/src/curobo/opt/opt_base.py
+│   │       │   ├── ./curobo/src/curobo/opt/particle
+│   │       │   │   ├── ./curobo/src/curobo/opt/particle/__init__.py
+│   │       │   │   ├── ./curobo/src/curobo/opt/particle/parallel_es.py
+│   │       │   │   ├── ./curobo/src/curobo/opt/particle/parallel_mppi.py
+│   │       │   │   ├── ./curobo/src/curobo/opt/particle/particle_opt_base.py
+│   │       │   │   ├── ./curobo/src/curobo/opt/particle/particle_opt_utils.py
+│   │       │   │   └── ./curobo/src/curobo/opt/particle/__pycache__
+│   │       │   │       ├── ./curobo/src/curobo/opt/particle/__pycache__/__init__.cpython-311.pyc
+│   │       │   │       ├── ./curobo/src/curobo/opt/particle/__pycache__/parallel_es.cpython-311.pyc
+│   │       │   │       ├── ./curobo/src/curobo/opt/particle/__pycache__/parallel_mppi.cpython-311.pyc
+│   │       │   │       ├── ./curobo/src/curobo/opt/particle/__pycache__/particle_opt_base.cpython-311.pyc
+│   │       │   │       └── ./curobo/src/curobo/opt/particle/__pycache__/particle_opt_utils.cpython-311.pyc
+│   │       │   └── ./curobo/src/curobo/opt/__pycache__
+│   │       │       ├── ./curobo/src/curobo/opt/__pycache__/__init__.cpython-311.pyc
+│   │       │       └── ./curobo/src/curobo/opt/__pycache__/opt_base.cpython-311.pyc
+│   │       ├── ./curobo/src/curobo/__pycache__
+│   │       │   ├── ./curobo/src/curobo/__pycache__/__init__.cpython-311.pyc
+│   │       │   └── ./curobo/src/curobo/__pycache__/util_file.cpython-311.pyc
+│   │       ├── ./curobo/src/curobo/py.typed
+│   │       ├── ./curobo/src/curobo/rollout
+│   │       │   ├── ./curobo/src/curobo/rollout/arm_base.py
+│   │       │   ├── ./curobo/src/curobo/rollout/arm_reacher.py
+│   │       │   ├── ./curobo/src/curobo/rollout/cost
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/bound_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/cost_base.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/dist_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/__init__.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/manipulability_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/pose_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/primitive_collision_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/projected_dist_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/bound_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/cost_base.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/dist_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/manipulability_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/pose_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/primitive_collision_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/self_collision_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/stop_cost.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/cost/__pycache__/straight_line_cost.cpython-311.pyc
+│   │       │   │   │   └── ./curobo/src/curobo/rollout/cost/__pycache__/zero_cost.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/self_collision_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/stop_cost.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/cost/straight_line_cost.py
+│   │       │   │   └── ./curobo/src/curobo/rollout/cost/zero_cost.py
+│   │       │   ├── ./curobo/src/curobo/rollout/dynamics_model
+│   │       │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/__init__.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/integration_utils.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/kinematic_model.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/model_base.py
+│   │       │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/__pycache__
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/__pycache__/integration_utils.cpython-311.pyc
+│   │       │   │   │   ├── ./curobo/src/curobo/rollout/dynamics_model/__pycache__/kinematic_model.cpython-311.pyc
+│   │       │   │   │   └── ./curobo/src/curobo/rollout/dynamics_model/__pycache__/tensor_step.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/rollout/dynamics_model/tensor_step.py
+│   │       │   ├── ./curobo/src/curobo/rollout/__init__.py
+│   │       │   ├── ./curobo/src/curobo/rollout/__pycache__
+│   │       │   │   ├── ./curobo/src/curobo/rollout/__pycache__/arm_base.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/rollout/__pycache__/arm_reacher.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/rollout/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/rollout/__pycache__/rollout_base.cpython-311.pyc
+│   │       │   └── ./curobo/src/curobo/rollout/rollout_base.py
+│   │       ├── ./curobo/src/curobo/types
+│   │       │   ├── ./curobo/src/curobo/types/base.py
+│   │       │   ├── ./curobo/src/curobo/types/camera.py
+│   │       │   ├── ./curobo/src/curobo/types/enum.py
+│   │       │   ├── ./curobo/src/curobo/types/file_path.py
+│   │       │   ├── ./curobo/src/curobo/types/__init__.py
+│   │       │   ├── ./curobo/src/curobo/types/math.py
+│   │       │   ├── ./curobo/src/curobo/types/__pycache__
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/base.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/camera.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/enum.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/file_path.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/math.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/robot.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/types/__pycache__/state.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/types/__pycache__/tensor.cpython-311.pyc
+│   │       │   ├── ./curobo/src/curobo/types/robot.py
+│   │       │   ├── ./curobo/src/curobo/types/state.py
+│   │       │   └── ./curobo/src/curobo/types/tensor.py
+│   │       ├── ./curobo/src/curobo/util
+│   │       │   ├── ./curobo/src/curobo/util/error_metrics.py
+│   │       │   ├── ./curobo/src/curobo/util/helpers.py
+│   │       │   ├── ./curobo/src/curobo/util/__init__.py
+│   │       │   ├── ./curobo/src/curobo/util/logger.py
+│   │       │   ├── ./curobo/src/curobo/util/metrics.py
+│   │       │   ├── ./curobo/src/curobo/util/__pycache__
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/helpers.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/__init__.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/logger.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/sample_lib.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/state_filter.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/tensor_util.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/torch_utils.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/trajectory.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/usd_helper.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/warp.cpython-311.pyc
+│   │       │   │   ├── ./curobo/src/curobo/util/__pycache__/warp_interpolation.cpython-311.pyc
+│   │       │   │   └── ./curobo/src/curobo/util/__pycache__/xrdf_utils.cpython-311.pyc
+│   │       │   ├── ./curobo/src/curobo/util/sample_lib.py
+│   │       │   ├── ./curobo/src/curobo/util/state_filter.py
+│   │       │   ├── ./curobo/src/curobo/util/tensor_util.py
+│   │       │   ├── ./curobo/src/curobo/util/torch_utils.py
+│   │       │   ├── ./curobo/src/curobo/util/trajectory.py
+│   │       │   ├── ./curobo/src/curobo/util/usd_helper.py
+│   │       │   ├── ./curobo/src/curobo/util/warp_interpolation.py
+│   │       │   ├── ./curobo/src/curobo/util/warp.py
+│   │       │   └── ./curobo/src/curobo/util/xrdf_utils.py
+│   │       ├── ./curobo/src/curobo/util_file.py
+│   │       └── ./curobo/src/curobo/wrap
+│   │           ├── ./curobo/src/curobo/wrap/__init__.py
+│   │           ├── ./curobo/src/curobo/wrap/model
+│   │           │   ├── ./curobo/src/curobo/wrap/model/curobo_robot_world.py
+│   │           │   ├── ./curobo/src/curobo/wrap/model/__init__.py
+│   │           │   ├── ./curobo/src/curobo/wrap/model/robot_segmenter.py
+│   │           │   └── ./curobo/src/curobo/wrap/model/robot_world.py
+│   │           ├── ./curobo/src/curobo/wrap/__pycache__
+│   │           │   ├── ./curobo/src/curobo/wrap/__pycache__/__init__.cpython-311.pyc
+│   │           │   └── ./curobo/src/curobo/wrap/__pycache__/wrap_base.cpython-311.pyc
+│   │           ├── ./curobo/src/curobo/wrap/reacher
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/evaluator.py
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/ik_solver.py
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/__init__.py
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/motion_gen.py
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/mpc.py
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/__pycache__
+│   │           │   │   ├── ./curobo/src/curobo/wrap/reacher/__pycache__/evaluator.cpython-311.pyc
+│   │           │   │   ├── ./curobo/src/curobo/wrap/reacher/__pycache__/ik_solver.cpython-311.pyc
+│   │           │   │   ├── ./curobo/src/curobo/wrap/reacher/__pycache__/__init__.cpython-311.pyc
+│   │           │   │   ├── ./curobo/src/curobo/wrap/reacher/__pycache__/motion_gen.cpython-311.pyc
+│   │           │   │   ├── ./curobo/src/curobo/wrap/reacher/__pycache__/trajopt.cpython-311.pyc
+│   │           │   │   └── ./curobo/src/curobo/wrap/reacher/__pycache__/types.cpython-311.pyc
+│   │           │   ├── ./curobo/src/curobo/wrap/reacher/trajopt.py
+│   │           │   └── ./curobo/src/curobo/wrap/reacher/types.py
+│   │           ├── ./curobo/src/curobo/wrap/wrap_base.py
+│   │           └── ./curobo/src/curobo/wrap/wrap_mpc.py
+│   └── ./curobo/tests
+│       ├── ./curobo/tests/conftest.py
+│       ├── ./curobo/tests/cost_test.py
+│       ├── ./curobo/tests/cuda_graph_test.py
+│       ├── ./curobo/tests/cuda_robot_generator_test.py
+│       ├── ./curobo/tests/curobo_robot_world_model_test.py
+│       ├── ./curobo/tests/curobo_version_test.py
+│       ├── ./curobo/tests/geom_test.py
+│       ├── ./curobo/tests/geom_types_test.py
+│       ├── ./curobo/tests/goal_test.py
+│       ├── ./curobo/tests/ik_config_test.py
+│       ├── ./curobo/tests/ik_module_test.py
+│       ├── ./curobo/tests/ik_test.py
+│       ├── ./curobo/tests/__init__.py
+│       ├── ./curobo/tests/interpolation_test.py
+│       ├── ./curobo/tests/kinematics_parser_test.py
+│       ├── ./curobo/tests/kinematics_test.py
+│       ├── ./curobo/tests/mimic_joint_test.py
+│       ├── ./curobo/tests/motion_gen_api_test.py
+│       ├── ./curobo/tests/motion_gen_constrained_test.py
+│       ├── ./curobo/tests/motion_gen_cuda_graph_test.py
+│       ├── ./curobo/tests/motion_gen_eval_test.py
+│       ├── ./curobo/tests/motion_gen_goalset_test.py
+│       ├── ./curobo/tests/motion_gen_js_test.py
+│       ├── ./curobo/tests/motion_gen_module_test.py
+│       ├── ./curobo/tests/motion_gen_speed_test.py
+│       ├── ./curobo/tests/motion_gen_test.py
+│       ├── ./curobo/tests/mpc_test.py
+│       ├── ./curobo/tests/multi_pose_test.py
+│       ├── ./curobo/tests/nvblox_test.py
+│       ├── ./curobo/tests/pose_reaching_test.py
+│       ├── ./curobo/tests/pose_test.py
+│       ├── ./curobo/tests/robot_assets_test.py
+│       ├── ./curobo/tests/robot_config_test.py
+│       ├── ./curobo/tests/robot_segmentation_test.py
+│       ├── ./curobo/tests/robot_world_model_test.py
+│       ├── ./curobo/tests/self_collision_test.py
+│       ├── ./curobo/tests/trajopt_config_test.py
+│       ├── ./curobo/tests/trajopt_test.py
+│       ├── ./curobo/tests/usd_export_test.py
+│       ├── ./curobo/tests/voxel_collision_test.py
+│       ├── ./curobo/tests/voxelization_test.py
+│       ├── ./curobo/tests/warp_mesh_test.py
+│       ├── ./curobo/tests/world_config_test.py
+│       └── ./curobo/tests/xrdf_test.py
+├── ./data
+│   └── ./data/stretch_urdf
+│       ├── ./data/stretch_urdf/CHANGELOG.md
+│       ├── ./data/stretch_urdf/deploy.sh
+│       ├── ./data/stretch_urdf/docs
+│       │   ├── ./data/stretch_urdf/docs/README.md
+│       │   └── ./data/stretch_urdf/docs/urdf_utils.md
+│       ├── ./data/stretch_urdf/.git
+│       │   ├── ./data/stretch_urdf/.git/branches
+│       │   ├── ./data/stretch_urdf/.git/config
+│       │   ├── ./data/stretch_urdf/.git/description
+│       │   ├── ./data/stretch_urdf/.git/HEAD
+│       │   ├── ./data/stretch_urdf/.git/hooks
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/applypatch-msg.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/commit-msg.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/fsmonitor-watchman.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/post-update.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/pre-applypatch.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/pre-commit.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/pre-merge-commit.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/prepare-commit-msg.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/pre-push.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/pre-rebase.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/pre-receive.sample
+│       │   │   ├── ./data/stretch_urdf/.git/hooks/push-to-checkout.sample
+│       │   │   └── ./data/stretch_urdf/.git/hooks/update.sample
+│       │   ├── ./data/stretch_urdf/.git/index
+│       │   ├── ./data/stretch_urdf/.git/info
+│       │   │   └── ./data/stretch_urdf/.git/info/exclude
+│       │   ├── ./data/stretch_urdf/.git/logs
+│       │   │   ├── ./data/stretch_urdf/.git/logs/HEAD
+│       │   │   └── ./data/stretch_urdf/.git/logs/refs
+│       │   │       ├── ./data/stretch_urdf/.git/logs/refs/heads
+│       │   │       │   └── ./data/stretch_urdf/.git/logs/refs/heads/main
+│       │   │       └── ./data/stretch_urdf/.git/logs/refs/remotes
+│       │   │           └── ./data/stretch_urdf/.git/logs/refs/remotes/origin
+│       │   │               └── ./data/stretch_urdf/.git/logs/refs/remotes/origin/HEAD
+│       │   ├── ./data/stretch_urdf/.git/objects
+│       │   │   ├── ./data/stretch_urdf/.git/objects/info
+│       │   │   └── ./data/stretch_urdf/.git/objects/pack
+│       │   │       ├── ./data/stretch_urdf/.git/objects/pack/pack-2441efa8a4a852a000cf62fdfa5acebcd1629bc4.idx
+│       │   │       └── ./data/stretch_urdf/.git/objects/pack/pack-2441efa8a4a852a000cf62fdfa5acebcd1629bc4.pack
+│       │   ├── ./data/stretch_urdf/.git/packed-refs
+│       │   └── ./data/stretch_urdf/.git/refs
+│       │       ├── ./data/stretch_urdf/.git/refs/heads
+│       │       │   └── ./data/stretch_urdf/.git/refs/heads/main
+│       │       ├── ./data/stretch_urdf/.git/refs/remotes
+│       │       │   └── ./data/stretch_urdf/.git/refs/remotes/origin
+│       │       │       └── ./data/stretch_urdf/.git/refs/remotes/origin/HEAD
+│       │       └── ./data/stretch_urdf/.git/refs/tags
+│       ├── ./data/stretch_urdf/.gitignore
+│       ├── ./data/stretch_urdf/LICENSE.md
+│       ├── ./data/stretch_urdf/README.md
+│       ├── ./data/stretch_urdf/setup.py
+│       ├── ./data/stretch_urdf/stretch_urdf
+│       │   ├── ./data/stretch_urdf/stretch_urdf/helpers.py
+│       │   ├── ./data/stretch_urdf/stretch_urdf/__init__.py
+│       │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/base_imu_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/base_imu.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/base_link_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/base_link.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/d435.dae
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/laser_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/laser.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l0_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l0.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l1_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l1.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l2_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l2.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l3_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l3.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l4_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_arm_l4.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_inner_wrist_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_inner_wrist.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_left_base_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_left_base.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_right_base_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_right_base.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_shoulder_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_shoulder.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_top_wrist_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_aruco_top_wrist.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_dry_erase_holder.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_dry_erase_marker.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_finger_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_finger_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_finger_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_finger_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_fingertip_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_fingertip_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_fingertip_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper_fingertip_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_gripper.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_ground_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_head_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_head_pan_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_head_pan.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_head.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_head_tilt_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_head_tilt.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_left_wheel_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_left_wheel.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_lift_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_lift.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_mast_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_mast.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_puller.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_respeaker.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_right_wheel_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_right_wheel.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_straight_gripper_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_straight_gripper.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_pitch_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_pitch.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_roll_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_roll.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_yaw_bottom_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_yaw_bottom.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_yaw_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/link_wrist_yaw.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/omni_wheel_m.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/plug_collision.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/plug.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/respeaker_base_collision.STL
+│       │   │   │   └── ./data/stretch_urdf/stretch_urdf/RE1V0/meshes/respeaker_base.STL
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/stretch_description_RE1V0_tool_none.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/stretch_description_RE1V0_tool_stretch_dex_wrist.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/stretch_description_RE1V0_tool_stretch_gripper.urdf
+│       │   │   └── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/d435i
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/d435i/_d435i_imu_modules.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/d435i/_d435i.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/d435i/_d435.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/d435i/_materials.urdf.xacro
+│       │   │       │   └── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/d435i/_usb_plug.urdf.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_aruco.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_base_imu.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_d435i.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_description_RE1V0_tool_none.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_description_RE1V0_tool_stretch_dex_wrist.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_description_RE1V0_tool_stretch_gripper.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_dex_wrist.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_gripper_with_puller.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_gripper.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_laser_range_finder.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_main.xacro
+│       │   │       └── ./data/stretch_urdf/stretch_urdf/RE1V0/xacro/stretch_respeaker.xacro
+│       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/base_imu_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/base_imu.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/base_link_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/base_link.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/d405.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/d435.dae
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/laser_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/laser.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l0_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l0.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l1_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l1.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l2_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l2.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l3_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l3.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l4_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_arm_l4.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_inner_wrist_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_inner_wrist.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_left_base_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_left_base.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_right_base_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_right_base.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_shoulder_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_shoulder.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_top_wrist_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_aruco_top_wrist.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_camera_construction.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_camera.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_dry_erase_holder.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_dry_erase_marker.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_tablet_12in_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_tablet_12in.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_pitch_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_pitch.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_quick_connect.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_roll_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_roll.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_yaw_bottom_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_DW3_wrist_yaw_bottom.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_finger_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_finger_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_finger_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_finger_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_fingertip_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_fingertip_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_fingertip_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper_fingertip_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_gripper.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_ground_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_head_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_head_pan_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_head_pan.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_head.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_head_tilt_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_head_tilt.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_left_wheel_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_left_wheel.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_lift_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_lift.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_mast_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_mast.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_puller.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_respeaker.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_right_wheel_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_right_wheel.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SE3_head_nav_cam_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SE3_head_nav_cam.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_aruco_d405.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_aruco_fingertip_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_aruco_fingertip_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_body_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_body_old.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_body.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_finger_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_finger_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_finger_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_finger_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_fingertip_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_fingertip_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_fingertip_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_SG3_gripper_fingertip_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_straight_gripper_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_straight_gripper.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_pitch_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_pitch.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_roll_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_roll.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_yaw_bottom_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_yaw_bottom.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_yaw_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/link_wrist_yaw.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/omni_wheel_m.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/plug_collision.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/plug.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/respeaker_base_collision.STL
+│       │   │   │   └── ./data/stretch_urdf/stretch_urdf/RE2V0/meshes/respeaker_base.STL
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_eoa_wrist_dw3_tool_nil.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_eoa_wrist_dw3_tool_sg3.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_eoa_wrist_dw3_tool_tablet_12in.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_fake_joint.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_tool_none.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_tool_stretch_dex_wrist.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/stretch_description_RE2V0_tool_stretch_gripper.urdf
+│       │   │   └── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d405
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d405/_d405.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d405/_materials_d405.urdf.xacro
+│       │   │       │   └── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d405/_usb_plug_d405.urdf.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d435i
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d435i/_d435i_imu_modules.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d435i/_d435i.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d435i/_d435.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d435i/_materials.urdf.xacro
+│       │   │       │   └── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/d435i/_usb_plug.urdf.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_aruco.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_base_imu.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_d405_sg3.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_d435i.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_description_RE2V0_eoa_wrist_dw3_tool_nil.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_description_RE2V0_eoa_wrist_dw3_tool_sg3.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_description_RE2V0_eoa_wrist_dw3_tool_tablet_12in.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_description_RE2V0_tool_none.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_description_RE2V0_tool_stretch_dex_wrist.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_description_RE2V0_tool_stretch_gripper.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_dex_wrist.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_gripper_with_puller.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_gripper.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_head_nav_cam.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_laser_range_finder.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_main.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_respeaker.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_tool_sg3.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_tool_tablet_12in.xacro
+│       │   │       └── ./data/stretch_urdf/stretch_urdf/RE2V0/xacro/stretch_wrist_dw3.xacro
+│       │   ├── ./data/stretch_urdf/stretch_urdf/SE3
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/base_imu_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/base_imu.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/base_link_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/base_link.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/d405.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/d435.dae
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/laser_collision_old.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/laser_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/laser.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l0_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l0.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l1_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l1.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l2_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l2.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l3_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l3.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l4_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_arm_l4.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_inner_wrist_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_inner_wrist.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_left_base_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_left_base.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_right_base_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_right_base.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_shoulder_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_shoulder.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_top_wrist_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_aruco_top_wrist.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_camera_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_camera.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_tablet_12in_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_tablet_12in.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_pitch_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_pitch.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_quick_connect.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_roll_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_roll.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_yaw_bottom_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_DW3_wrist_yaw_bottom.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_ground_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_head_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_head_pan_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_head_pan.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_head.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_head_tilt_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_head_tilt.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_left_wheel_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_left_wheel.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_lift_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_lift.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_mast_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_mast.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_puller.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_respeaker.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_right_wheel_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_right_wheel.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SE3_head_nav_cam_collision_old.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SE3_head_nav_cam_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SE3_head_nav_cam.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_aruco_d405.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_aruco_fingertip_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_aruco_fingertip_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_body_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_body_new.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_body_old.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_body.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_finger_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_finger_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_finger_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_finger_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_fingertip_left_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_fingertip_left.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_fingertip_right_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_SG3_gripper_fingertip_right.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_wrist_yaw_bottom_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_wrist_yaw_bottom.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_wrist_yaw_collision.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/link_wrist_yaw.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/omni_wheel_m.STL
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/plug_collision.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/plug.stl
+│       │   │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/meshes/respeaker_base_collision.STL
+│       │   │   │   └── ./data/stretch_urdf/stretch_urdf/SE3/meshes/respeaker_base.STL
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/stretch_description_SE3_eoa_wrist_dw3_tool_nil.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/stretch_description_SE3_eoa_wrist_dw3_tool_sg3_pro.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/stretch_description_SE3_eoa_wrist_dw3_tool_sg3.urdf
+│       │   │   ├── ./data/stretch_urdf/stretch_urdf/SE3/stretch_description_SE3_eoa_wrist_dw3_tool_tablet_12in.urdf
+│       │   │   └── ./data/stretch_urdf/stretch_urdf/SE3/xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d405
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d405/_d405.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d405/_materials_d405.urdf.xacro
+│       │   │       │   └── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d405/_usb_plug_d405.urdf.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d435i
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d435i/_d435i_imu_modules.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d435i/_d435i.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d435i/_d435.urdf.xacro
+│       │   │       │   ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d435i/_materials.urdf.xacro
+│       │   │       │   └── ./data/stretch_urdf/stretch_urdf/SE3/xacro/d435i/_usb_plug.urdf.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_aruco.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_base_imu.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_d405_sg3.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_d435i.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_description_SE3_eoa_wrist_dw3_tool_nil.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_description_SE3_eoa_wrist_dw3_tool_sg3_pro.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_description_SE3_eoa_wrist_dw3_tool_sg3.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_description_SE3_eoa_wrist_dw3_tool_tablet_12in.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_head_nav_cam.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_laser_range_finder.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_main.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_respeaker.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_tool_sg3.xacro
+│       │   │       ├── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_tool_tablet_12in.xacro
+│       │   │       └── ./data/stretch_urdf/stretch_urdf/SE3/xacro/stretch_wrist_dw3.xacro
+│       │   └── ./data/stretch_urdf/stretch_urdf/urdf_utils.py
+│       ├── ./data/stretch_urdf/tools
+│       │   ├── ./data/stretch_urdf/tools/stretch_urdf_example.py
+│       │   ├── ./data/stretch_urdf/tools/stretch_urdf_ros_update.py
+│       │   └── ./data/stretch_urdf/tools/stretch_urdf_viz.py
+│       └── ./data/stretch_urdf/urdf_generate.py
+├── ./datasets
+│   └── ./datasets/stretch_cabinet_demo.hdf5
+├── ./.dockerignore
+├── ./.flake8
+├── ./full_project_log.txt
+├── ./.git
+│   ├── ./.git/branches
+│   ├── ./.git/config
+│   ├── ./.git/description
+│   ├── ./.git/HEAD
+│   ├── ./.git/hooks
+│   │   ├── ./.git/hooks/applypatch-msg.sample
+│   │   ├── ./.git/hooks/commit-msg.sample
+│   │   ├── ./.git/hooks/fsmonitor-watchman.sample
+│   │   ├── ./.git/hooks/post-update.sample
+│   │   ├── ./.git/hooks/pre-applypatch.sample
+│   │   ├── ./.git/hooks/pre-commit.sample
+│   │   ├── ./.git/hooks/pre-merge-commit.sample
+│   │   ├── ./.git/hooks/prepare-commit-msg.sample
+│   │   ├── ./.git/hooks/pre-push.sample
+│   │   ├── ./.git/hooks/pre-rebase.sample
+│   │   ├── ./.git/hooks/pre-receive.sample
+│   │   ├── ./.git/hooks/push-to-checkout.sample
+│   │   └── ./.git/hooks/update.sample
+│   ├── ./.git/index
+│   ├── ./.git/info
+│   │   └── ./.git/info/exclude
+│   ├── ./.git/objects
+│   │   ├── ./.git/objects/04
+│   │   │   └── ./.git/objects/04/8aadeaecbbb0e8eeec91bc5894013cbfc4f29e
+│   │   ├── ./.git/objects/08
+│   │   │   └── ./.git/objects/08/d2e8dee5a92c4754fc748923433f152f173b96
+│   │   ├── ./.git/objects/10
+│   │   │   └── ./.git/objects/10/b0af342ce38ac614e378cac00d334c5106edd0
+│   │   ├── ./.git/objects/13
+│   │   │   └── ./.git/objects/13/df3c3210fa12afbd1b6dbdbaee492b80915175
+│   │   ├── ./.git/objects/1c
+│   │   │   └── ./.git/objects/1c/3239908265bafb770602710c69fb0ba547ec76
+│   │   ├── ./.git/objects/28
+│   │   │   ├── ./.git/objects/28/8b3988540add6aafc604c048c134e9cf496b07
+│   │   │   └── ./.git/objects/28/ba5174de19af317b8924289e7b31e92d192db9
+│   │   ├── ./.git/objects/2a
+│   │   │   └── ./.git/objects/2a/b2cef6f9eb8482a2fbb9a013a058b548f6b531
+│   │   ├── ./.git/objects/2f
+│   │   │   └── ./.git/objects/2f/6dfbc63617280fb999d6cc04bb093b801ec386
+│   │   ├── ./.git/objects/3a
+│   │   │   └── ./.git/objects/3a/96361dffda48a089ebf9afbe2d847bd0df5c51
+│   │   ├── ./.git/objects/3b
+│   │   │   └── ./.git/objects/3b/2fc184999c0463499ddbc7335b3b2bc147a70b
+│   │   ├── ./.git/objects/3d
+│   │   │   └── ./.git/objects/3d/cb505b93614dfa26060cf1abfdea8e95a02434
+│   │   ├── ./.git/objects/45
+│   │   │   └── ./.git/objects/45/56af6f670a8f83da52c336766256f9dda8f472
+│   │   ├── ./.git/objects/49
+│   │   │   ├── ./.git/objects/49/37f4f80a57fcba706b36b85dc8fb2baf635b4c
+│   │   │   └── ./.git/objects/49/44cd456c1febdded0e6e4447cd2a00f0b078b0
+│   │   ├── ./.git/objects/5b
+│   │   │   └── ./.git/objects/5b/97ac267e51170d6963ddc5d33f52504a43820b
+│   │   ├── ./.git/objects/5f
+│   │   │   └── ./.git/objects/5f/72ac6a38bd87884d39c85ed16b80f7dd1bed4b
+│   │   ├── ./.git/objects/61
+│   │   │   └── ./.git/objects/61/a3a75036e07711430f727b336c1662480f9111
+│   │   ├── ./.git/objects/63
+│   │   │   └── ./.git/objects/63/06e43497082f89fa3eac81377aed8f0ac6c30e
+│   │   ├── ./.git/objects/65
+│   │   │   └── ./.git/objects/65/d6e5a24441a1dd26e3826dca71107d0a559813
+│   │   ├── ./.git/objects/66
+│   │   │   └── ./.git/objects/66/a603e05f4ca9ff23ce183ecaa065e9b02eb44f
+│   │   ├── ./.git/objects/67
+│   │   │   └── ./.git/objects/67/05ede8b0a493668fd41c9bbb4dddc1e5e2be6e
+│   │   ├── ./.git/objects/6b
+│   │   │   └── ./.git/objects/6b/43c271164effb5015d055d925ff1a255009e99
+│   │   ├── ./.git/objects/74
+│   │   │   └── ./.git/objects/74/b386928f7eafa7d07604a6379978f47db5b9f9
+│   │   ├── ./.git/objects/76
+│   │   │   └── ./.git/objects/76/7eb4b350b23cc2ff83687f54fc3d9f5ffed9fb
+│   │   ├── ./.git/objects/78
+│   │   │   └── ./.git/objects/78/e33102611424aa2de2c02da15031200aa3953f
+│   │   ├── ./.git/objects/7c
+│   │   │   └── ./.git/objects/7c/e87839dd42ede1bf9a674f7e29faa350e14ce7
+│   │   ├── ./.git/objects/7f
+│   │   │   └── ./.git/objects/7f/c45b32c80a48b71731c2226ed48a3bb8bf1f28
+│   │   ├── ./.git/objects/85
+│   │   │   └── ./.git/objects/85/eb3ef364fd9dc2f8d353c9e57d12e5df462a7e
+│   │   ├── ./.git/objects/86
+│   │   │   └── ./.git/objects/86/e513bc0a25eef79126f5c6f0b3fbb918bfa2c3
+│   │   ├── ./.git/objects/93
+│   │   │   └── ./.git/objects/93/5a7f642541c44abce9615d1a3164f2f7185f6f
+│   │   ├── ./.git/objects/96
+│   │   │   └── ./.git/objects/96/821f6539d5839db00622201e514957eb1470a8
+│   │   ├── ./.git/objects/9b
+│   │   │   └── ./.git/objects/9b/4a023d685b224ad7da40a748a1588222a3b27b
+│   │   ├── ./.git/objects/a3
+│   │   │   └── ./.git/objects/a3/12efaa4846657b71af166dd47922a2ddd3c19a
+│   │   ├── ./.git/objects/a5
+│   │   │   └── ./.git/objects/a5/97dfa11a169a39c7a40a79d204334c99c7729a
+│   │   ├── ./.git/objects/a9
+│   │   │   └── ./.git/objects/a9/dee2fd5cabcd730821c1e8fa08dc253b252ce3
+│   │   ├── ./.git/objects/b1
+│   │   │   └── ./.git/objects/b1/c4413dc919429bd245f38c3ad15106420bedf4
+│   │   ├── ./.git/objects/b6
+│   │   │   ├── ./.git/objects/b6/3f435063811589707eeaee890b189283166eb6
+│   │   │   ├── ./.git/objects/b6/687c95fa7a8f6524b98561fd19a47cd9e7e763
+│   │   │   └── ./.git/objects/b6/e82e1d2249cd8f8ca102a602eae3c2222f9025
+│   │   ├── ./.git/objects/c1
+│   │   │   └── ./.git/objects/c1/76f774515ceb49d4284cde723ebc5ef8be97ed
+│   │   ├── ./.git/objects/c8
+│   │   │   └── ./.git/objects/c8/037e141f600e4f54d79e09c0bf22b49d66ea42
+│   │   ├── ./.git/objects/cc
+│   │   │   └── ./.git/objects/cc/bae0b7ed5f21cd1d22bbf599f26f2c4909265e
+│   │   ├── ./.git/objects/ce
+│   │   │   ├── ./.git/objects/ce/3fcd1f1018a31bdcca51b15dbba700e4d3820e
+│   │   │   └── ./.git/objects/ce/b3956996cf1104eff5bfa81099cde7d0066957
+│   │   ├── ./.git/objects/d9
+│   │   │   └── ./.git/objects/d9/0ac3536f168228bdb8bb40c178ffa22f08bed2
+│   │   ├── ./.git/objects/e3
+│   │   │   └── ./.git/objects/e3/c0ead689d1af7c04badf147a1bb3caa27da7da
+│   │   ├── ./.git/objects/info
+│   │   └── ./.git/objects/pack
+│   └── ./.git/refs
+│       ├── ./.git/refs/heads
+│       └── ./.git/refs/tags
+├── ./.gitattributes
+├── ./.gitignore
+├── ./logs
+│   ├── ./logs/demos
+│   └── ./logs/robomimic
+│       └── ./logs/robomimic/Template-Stretch-v0
+│           └── ./logs/robomimic/Template-Stretch-v0/test
+│               └── ./logs/robomimic/Template-Stretch-v0/test/20260127191943
+│                   ├── ./logs/robomimic/Template-Stretch-v0/test/20260127191943/logs
+│                   │   └── ./logs/robomimic/Template-Stretch-v0/test/20260127191943/logs/log.txt
+│                   ├── ./logs/robomimic/Template-Stretch-v0/test/20260127191943/models
+│                   └── ./logs/robomimic/Template-Stretch-v0/test/20260127191943/videos
+├── ./output.log
+├── ./.pre-commit-config.yaml
+├── ./README.md
+├── ./scripts
+│   ├── ./scripts/curobo_record.py
+│   ├── ./scripts/curobo_stretch.py
+│   ├── ./scripts/list_envs.py
+│   ├── ./scripts/play_imitation.py
+│   ├── ./scripts/__pycache__
+│   │   └── ./scripts/__pycache__/curobo_wrapper.cpython-311.pyc
+│   ├── ./scripts/random_agent.py
+│   ├── ./scripts/rsl_rl
+│   │   ├── ./scripts/rsl_rl/cli_args.py
+│   │   ├── ./scripts/rsl_rl/play.py
+│   │   └── ./scripts/rsl_rl/train.py
+│   ├── ./scripts/teleop_record.py
+│   ├── ./scripts/teleop_stretch.py
+│   └── ./scripts/train_imitation.py
+├── ./source
+│   └── ./source/stretch
+│       ├── ./source/stretch/config
+│       │   └── ./source/stretch/config/extension.toml
+│       ├── ./source/stretch/docs
+│       │   └── ./source/stretch/docs/CHANGELOG.rst
+│       ├── ./source/stretch/pyproject.toml
+│       ├── ./source/stretch/setup.py
+│       ├── ./source/stretch/stretch
+│       │   ├── ./source/stretch/stretch/__init__.py
+│       │   ├── ./source/stretch/stretch/__pycache__
+│       │   │   ├── ./source/stretch/stretch/__pycache__/__init__.cpython-311.pyc
+│       │   │   └── ./source/stretch/stretch/__pycache__/ui_extension_example.cpython-311.pyc
+│       │   ├── ./source/stretch/stretch/tasks
+│       │   │   ├── ./source/stretch/stretch/tasks/__init__.py
+│       │   │   ├── ./source/stretch/stretch/tasks/manager_based
+│       │   │   │   ├── ./source/stretch/stretch/tasks/manager_based/__init__.py
+│       │   │   │   ├── ./source/stretch/stretch/tasks/manager_based/__pycache__
+│       │   │   │   │   └── ./source/stretch/stretch/tasks/manager_based/__pycache__/__init__.cpython-311.pyc
+│       │   │   │   └── ./source/stretch/stretch/tasks/manager_based/stretch
+│       │   │   │       ├── ./source/stretch/stretch/tasks/manager_based/stretch/agents
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/agents/__init__.py
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/agents/__pycache__
+│       │   │   │       │   │   └── ./source/stretch/stretch/tasks/manager_based/stretch/agents/__pycache__/__init__.cpython-311.pyc
+│       │   │   │       │   └── ./source/stretch/stretch/tasks/manager_based/stretch/agents/rsl_rl_ppo_cfg.py
+│       │   │   │       ├── ./source/stretch/stretch/tasks/manager_based/stretch/config
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/config/__pycache__
+│       │   │   │       │   │   └── ./source/stretch/stretch/tasks/manager_based/stretch/config/__pycache__/stretch_cfg.cpython-311.pyc
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/config/robomimic
+│       │   │   │       │   │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.json
+│       │   │   │       │   │   └── ./source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.yaml
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/config/stretch_cfg.py
+│       │   │   │       │   └── ./source/stretch/stretch/tasks/manager_based/stretch/config/stretch_curobo.yml
+│       │   │   │       ├── ./source/stretch/stretch/tasks/manager_based/stretch/__init__.py
+│       │   │   │       ├── ./source/stretch/stretch/tasks/manager_based/stretch/mdp
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/mdp/__init__.py
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/mdp/__pycache__
+│       │   │   │       │   │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/mdp/__pycache__/__init__.cpython-311.pyc
+│       │   │   │       │   │   └── ./source/stretch/stretch/tasks/manager_based/stretch/mdp/__pycache__/rewards.cpython-311.pyc
+│       │   │   │       │   └── ./source/stretch/stretch/tasks/manager_based/stretch/mdp/rewards.py
+│       │   │   │       ├── ./source/stretch/stretch/tasks/manager_based/stretch/__pycache__
+│       │   │   │       │   ├── ./source/stretch/stretch/tasks/manager_based/stretch/__pycache__/__init__.cpython-311.pyc
+│       │   │   │       │   └── ./source/stretch/stretch/tasks/manager_based/stretch/__pycache__/stretch_env_cfg.cpython-311.pyc
+│       │   │   │       └── ./source/stretch/stretch/tasks/manager_based/stretch/stretch_env_cfg.py
+│       │   │   └── ./source/stretch/stretch/tasks/__pycache__
+│       │   │       └── ./source/stretch/stretch/tasks/__pycache__/__init__.cpython-311.pyc
+│       │   └── ./source/stretch/stretch/ui_extension_example.py
+│       └── ./source/stretch/stretch.egg-info
+│           ├── ./source/stretch/stretch.egg-info/dependency_links.txt
+│           ├── ./source/stretch/stretch.egg-info/not-zip-safe
+│           ├── ./source/stretch/stretch.egg-info/PKG-INFO
+│           ├── ./source/stretch/stretch.egg-info/requires.txt
+│           ├── ./source/stretch/stretch.egg-info/SOURCES.txt
+│           └── ./source/stretch/stretch.egg-info/top_level.txt
+└── ./.vscode
+    ├── ./.vscode/extensions.json
+    ├── ./.vscode/.gitignore
+    ├── ./.vscode/settings.json
+    ├── ./.vscode/tasks.json
+    └── ./.vscode/tools
+        ├── ./.vscode/tools/launch.template.json
+        ├── ./.vscode/tools/settings.template.json
+        └── ./.vscode/tools/setup_vscode.py
+
+254 directories, 1302 files
