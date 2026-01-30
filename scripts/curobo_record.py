@@ -63,8 +63,9 @@ from curobo.geom.sdf.world import CollisionCheckerType
 class RobomimicDataCollector:
     """Saves data to HDF5 in Robomimic structure, handling nested Isaac Lab obs."""
 
-    def __init__(self, env_name, directory_path, filename, num_demos):
+    def __init__(self, env_name, directory_path, filename, num_demos, val_ratio=0.1):
         self.num_demos = num_demos
+        self.val_ratio = val_ratio
 
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
@@ -73,10 +74,18 @@ class RobomimicDataCollector:
         self.f = h5py.File(self.file_path, "w")
         self.data_group = self.f.create_group("data")
 
+        # Add 'env_kwargs' to prevent KeyError in Robomimic
+        env_args = {
+            "env_name": env_name,
+            "type": 1,
+            "env_kwargs": {},
+        }
         self.data_group.attrs["total"] = 0
-        self.data_group.attrs["env_args"] = json.dumps(
-            {"env_name": env_name, "type": 1}
-        )
+        self.data_group.attrs["env_args"] = json.dumps(env_args)
+
+        # Track keys for creating splits later
+        self.train_demos = []
+        self.valid_demos = []
 
         self.reset_buffer()
         print(f"[INFO] Data Collector initialized. Saving to: {self.file_path}")
@@ -125,25 +134,50 @@ class RobomimicDataCollector:
         demo_group_name = f"demo_{demo_idx}"
         ep_grp = self.data_group.create_group(demo_group_name)
 
+        # [Fix 2] Handle Observation Nesting
         if len(self.current_episode["obs"]) > 0:
             obs_grp = ep_grp.create_group("obs")
             first_obs = self.current_episode["obs"][0]
-            for key in first_obs.keys():
-                column = [x[key] for x in self.current_episode["obs"]]
-                self._save_dict_group(obs_grp, column, key)
+
+            # Note: Isaac Lab often returns obs as {'policy': tensor(...)}
+            # This logic preserves that structure as obs/policy
+            if isinstance(first_obs, dict):
+                for key in first_obs.keys():
+                    column = [x[key] for x in self.current_episode["obs"]]
+                    self._save_dict_group(obs_grp, column, key)
+            else:
+                # Fallback if obs is not a dict (rare in Isaac Lab)
+                print("[Warning] Obs is not a dict, saving as raw 'obs'")
+                ep_grp.create_dataset("obs", data=np.array(self.current_episode["obs"]))
+
             if len(self.current_episode["next_obs"]) > 0:
                 next_obs_grp = ep_grp.create_group("next_obs")
-                for key in first_obs.keys():
-                    column = [x[key] for x in self.current_episode["next_obs"]]
-                    self._save_dict_group(next_obs_grp, column, key)
+                if isinstance(first_obs, dict):
+                    for key in first_obs.keys():
+                        column = [x[key] for x in self.current_episode["next_obs"]]
+                        self._save_dict_group(next_obs_grp, column, key)
+
         for key in ["actions", "rewards", "dones"]:
             if self.current_episode[key]:
                 data_stack = np.array(self.current_episode[key]).squeeze(axis=1)
                 ep_grp.create_dataset(key, data=data_stack)
+
         ep_grp.attrs["num_samples"] = len(self.current_episode["actions"])
         ep_grp.attrs["model_file"] = "xml"
+
+        # We use a simple random check based on the ratio
+        if np.random.rand() < self.val_ratio:
+            self.valid_demos.append(demo_group_name)
+            split_name = "VALID"
+        else:
+            self.train_demos.append(demo_group_name)
+            split_name = "TRAIN"
+
         self.data_group.attrs["total"] += 1
-        print(f"[INFO] Saved {demo_group_name} ({ep_grp.attrs['num_samples']} steps)")
+        print(
+            f"[INFO] Saved {demo_group_name} to {split_name} ({ep_grp.attrs['num_samples']} steps)"
+        )
+
         self.f.flush()
         self.reset_buffer()
 
@@ -151,6 +185,17 @@ class RobomimicDataCollector:
         return self.data_group.attrs["total"] >= self.num_demos
 
     def close(self):
+        if "mask" in self.f:
+            del self.f["mask"]
+        mask_grp = self.f.create_group("mask")
+
+        # Robomimic requires these to be encoded as bytes ('S')
+        mask_grp.create_dataset("train", data=np.array(self.train_demos, dtype="S"))
+        mask_grp.create_dataset("valid", data=np.array(self.valid_demos, dtype="S"))
+
+        print(
+            f"[INFO] Closing file. Final Split -> Train: {len(self.train_demos)}, Valid: {len(self.valid_demos)}"
+        )
         self.f.close()
 
 
@@ -261,7 +306,6 @@ def main():
     default_cabinet_pos = default_cabinet_pos[0].clone()
 
     def randomize_cabinet():
-        """Randomizes the cabinet position and updates both USD (Visual) and PhysX (Physics)."""
         noise_range = 0.5
 
         rand_x = (torch.rand(1, device=env.device) * 2 - 1) * noise_range
@@ -275,19 +319,13 @@ def main():
             positions=new_pos.unsqueeze(0), orientations=default_cabinet_rot
         )
 
-        # 3. Update PhysX (Physics + Robot Interaction) [THE MISSING STEP]
-        # We access the articulation directly from the environment scene
         cabinet_articulation = env.scene["cabinet"]
-
-        # Create a root state tensor: [pos(3), rot(4), lin_vel(3), ang_vel(3)]
         root_state = cabinet_articulation.data.default_root_state.clone()
-        root_state[:, :3] = new_pos  # Overwrite position (broadcasts to all envs)
+        root_state[:, :3] = new_pos
 
-        # Force write to simulation
         cabinet_articulation.write_root_pose_to_sim(root_state[:, :7])
         cabinet_articulation.write_root_velocity_to_sim(root_state[:, 7:])
 
-        # 4. Update CuRobo World
         base_env_path = "/World/envs/env_0"
         obstacles = usd_help.get_obstacles_from_stage(
             only_paths=[f"{base_env_path}/Cabinet", f"{base_env_path}/ObstacleCube"],

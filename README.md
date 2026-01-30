@@ -21,7 +21,7 @@ tasks specific to the Stretch platform.
 2. **Clone the Project**:
 
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/JCpennyChen/isaaclab_stretch.git
    cd stretch
    ```
 
