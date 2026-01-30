@@ -1,5 +1,7 @@
 # Isaac Lab Stretch Project
 
+![Stretch Robot Demo](Example.gif)
+
 ## Overview
 
 This repository contains the Isaac Lab extension for the Hello Robot Stretch.
