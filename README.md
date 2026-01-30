@@ -23,22 +23,5 @@ tasks specific to the Stretch platform.
 2. **Clone the Project**:
 
    ```bash
-   git clone https://github.com/JCpennyChen/isaaclab_stretch.git
+   git clone [https://github.com/JCpennyChen/isaaclab_stretch.git](https://github.com/JCpennyChen/isaaclab_stretch.git)
    cd stretch
-   ```
-
-3. **Install the Extension**:
-   Using the python interpreter from your Isaac Lab environment:
-   ```bash
-   python -m pip install -e source/stretch
-   ```
-
-## Usage
-
-### Verify Installation
-
-List the available Stretch environments to ensure the task is registered correctly:
-
-```bash
-python scripts/list_envs.py
-```
