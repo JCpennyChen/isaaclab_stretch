@@ -4,11 +4,8 @@ from isaaclab.app import AppLauncher
 app_launcher = AppLauncher(headless=True)
 simulation_app = app_launcher.app
 
-"""Rest everything follows."""
-
 # Standard library imports
 import argparse
-
 import sys
 import os
 
@@ -16,9 +13,8 @@ task_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/str
 if task_config_path not in sys.path:
     sys.path.append(task_config_path)
 
-# Third-party imports
-import gym  # The "Old" Gym (used by Robomimic)
-import gymnasium  # The "New" Gym (used by Isaac Lab)
+import gym
+import gymnasium
 from stretch_env_cfg import StretchEnvCfg
 
 bc_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.json"
@@ -30,46 +26,33 @@ gymnasium.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": StretchEnvCfg,
-        # [FIX] Point 'bc' to your specific json file
         "robomimic_bc_cfg_entry_point": bc_config_path,
     },
 )
 
-# --- START REGISTRATION BRIDGE (UPDATED) ---
 task_id = "Template-Stretch-v0"
 
-# Check if it's missing from the old Gym registry
 if task_id not in gym.envs.registry.env_specs:
     print(f"[Bridge] Registering {task_id} into legacy gym...")
-
-    # 1. Get the details from the new Gymnasium registry
     spec = gymnasium.spec(task_id)
-
-    # 2. Create a copy of the kwargs
     new_kwargs = spec.kwargs.copy()
 
-    # 3. FIX: Instantiate the Configuration Object
-    # Isaac Lab expects 'cfg' to be passed, but Robomimic won't do it.
-    # We extract the config class, create an instance, and save it as 'cfg'.
     if "env_cfg_entry_point" in new_kwargs:
         cfg_class = new_kwargs.pop("env_cfg_entry_point")
         print(f"[Bridge] Instantiating config: {cfg_class.__name__}")
-        new_kwargs["cfg"] = cfg_class()  # Create the config instance
+        new_kwargs["cfg"] = cfg_class()
 
-    # 4. Register with the 'cfg' baked in
     gym.register(
         id=task_id,
         entry_point=spec.entry_point,
         kwargs=new_kwargs,
     )
-# --- END REGISTRATION BRIDGE ---
 
 
 import h5py
 import importlib
 import json
 import numpy as np
-import os
 import shutil
 import sys
 import time
@@ -80,7 +63,6 @@ from torch.utils.data import DataLoader
 
 import psutil
 
-# Robomimic imports
 import robomimic.utils.env_utils as EnvUtils
 import robomimic.utils.file_utils as FileUtils
 import robomimic.utils.obs_utils as ObsUtils
@@ -90,10 +72,10 @@ from robomimic.algo import algo_factory
 from robomimic.config import Config, config_factory
 from robomimic.utils.log_utils import DataLogger, PrintLogger
 
-# Isaac Lab imports (needed so that environment is registered)
-import isaaclab_tasks  # noqa: F401
-import isaaclab_tasks.manager_based.locomanipulation.pick_place  # noqa: F401
-import isaaclab_tasks.manager_based.manipulation.pick_place  # noqa: F401
+# Isaac Lab imports
+import isaaclab_tasks
+import isaaclab_tasks.manager_based.locomanipulation.pick_place
+import isaaclab_tasks.manager_based.manipulation.pick_place
 
 
 def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
@@ -109,17 +91,14 @@ def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
     base, ext = os.path.splitext(config.train.data)
     normalized_path = base + "_normalized" + ext
 
-    # Copy the original dataset
     print(f"Creating normalized dataset at {normalized_path}")
     shutil.copyfile(config.train.data, normalized_path)
 
-    # Open the new dataset and normalize the actions
     with h5py.File(normalized_path, "r+") as f:
         dataset_paths = [
             f"/data/demo_{str(i)}/actions" for i in range(len(f["data"].keys()))
         ]
 
-        # Compute the min and max of the dataset
         dataset = np.array(f[dataset_paths[0]]).flatten()
         for i, path in enumerate(dataset_paths):
             if i != 0:
@@ -129,7 +108,6 @@ def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
         max = np.max(dataset)
         min = np.min(dataset)
 
-        # Normalize the actions
         for i, path in enumerate(dataset_paths):
             data = np.array(f[path])
             normalized_data = (
@@ -138,7 +116,6 @@ def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
             del f[path]
             f[path] = normalized_data
 
-        # Save the min and max values to log directory
         with open(os.path.join(log_dir, "normalization_params.txt"), "w") as f:
             f.write(f"min: {min}\n")
             f.write(f"max: {max}\n")
@@ -156,7 +133,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
         ckpt_dir: Directory to save checkpoints.
         video_dir: Directory to save videos.
     """
-    # first set seeds
     np.random.seed(config.train.seed)
     torch.manual_seed(config.train.seed)
 
@@ -169,20 +145,15 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
     print(f">>> Saving videos into directory: {video_dir}")
 
     if config.experiment.logging.terminal_output_to_txt:
-        # log stdout and stderr to a text file
         logger = PrintLogger(os.path.join(log_dir, "log.txt"))
         sys.stdout = logger
         sys.stderr = logger
-
-    # read config to set up metadata for observation modalities (e.g. detecting rgb observations)
     ObsUtils.initialize_obs_utils_with_config(config)
 
-    # make sure the dataset exists
     dataset_path = os.path.expanduser(config.train.data)
     if not os.path.exists(dataset_path):
         raise FileNotFoundError(f"Dataset at provided path {dataset_path} not found!")
 
-    # load basic metadata from training file
     print("\n============= Loaded Environment Metadata =============")
     env_meta = FileUtils.get_env_metadata_from_dataset(dataset_path=config.train.data)
     shape_meta = FileUtils.get_shape_metadata_from_dataset(
@@ -198,10 +169,8 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
             + "=" * 30
         )
 
-    # create environment
     envs = OrderedDict()
     if config.experiment.rollout.enabled:
-        # create environments for validation runs
         env_names = [env_meta["env_name"]]
 
         if config.experiment.additional_envs is not None:
@@ -221,7 +190,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
 
     print("")
 
-    # setup for a new training run
     data_logger = DataLogger(
         log_dir, config=config, log_tb=config.experiment.logging.log_tb
     )
@@ -233,7 +201,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
         device=device,
     )
 
-    # save the config as a json file
     with open(os.path.join(log_dir, "..", "config.json"), "w") as outfile:
         json.dump(config, outfile, indent=4)
 
@@ -241,7 +208,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
     print(model)
     print("")
 
-    # load training data
     trainset, validset = TrainUtils.load_data_for_training(
         config, obs_keys=shape_meta["all_obs_keys"]
     )
@@ -250,12 +216,10 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
     print(trainset)
     print("")
 
-    # maybe retrieve statistics for normalizing observations
     obs_normalization_stats = None
     if config.train.hdf5_normalize_obs:
         obs_normalization_stats = trainset.get_obs_normalization_stats()
 
-    # initialize data loaders
     train_loader = DataLoader(
         dataset=trainset,
         sampler=train_sampler,
@@ -266,7 +230,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
     )
 
     if config.experiment.validate:
-        # cap num workers for validation dataset at 1
         num_workers = min(config.train.num_data_workers, 1)
         valid_sampler = validset.get_dataset_sampler()
         valid_loader = DataLoader(
@@ -280,15 +243,13 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
     else:
         valid_loader = None
 
-    # main training loop
     best_valid_loss = None
     last_ckpt_time = time.time()
 
-    # number of learning steps per epoch (defaults to a full dataset pass)
     train_num_steps = config.experiment.epoch_every_n_steps
     valid_num_steps = config.experiment.validation_epoch_every_n_steps
 
-    for epoch in range(1, config.train.num_epochs + 1):  # epoch numbers start at 1
+    for epoch in range(1, config.train.num_epochs + 1):
         step_log = TrainUtils.run_epoch(
             model=model,
             data_loader=train_loader,
@@ -297,10 +258,8 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
         )
         model.on_epoch_end(epoch)
 
-        # setup checkpoint path
         epoch_ckpt_name = f"model_epoch_{epoch}"
 
-        # check for recurring checkpoint saving conditions
         should_save_ckpt = False
         if config.experiment.save.enabled:
             time_check = (config.experiment.save.every_n_seconds is not None) and (
@@ -329,7 +288,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
             else:
                 data_logger.record(f"Train/{k}", v, epoch)
 
-        # Evaluate the model on validation set
         if config.experiment.validate:
             with torch.no_grad():
                 step_log = TrainUtils.run_epoch(
@@ -348,7 +306,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
             print(f"Validation Epoch {epoch}")
             print(json.dumps(step_log, sort_keys=True, indent=4))
 
-            # save checkpoint if achieve new best validation loss
             valid_check = "Loss" in step_log
             if valid_check and (
                 best_valid_loss is None or (step_log["Loss"] <= best_valid_loss)
@@ -362,7 +319,6 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
                     should_save_ckpt = True
                     ckpt_reason = "valid" if ckpt_reason is None else ckpt_reason
 
-        # Save model checkpoints based on conditions (success rate, validation loss, etc)
         if should_save_ckpt:
             TrainUtils.save_model(
                 model=model,

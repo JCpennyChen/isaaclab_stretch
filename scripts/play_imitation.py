@@ -43,8 +43,6 @@ import stretch.tasks  # Registers Template-Stretch-v0
 import robomimic.utils.file_utils as FileUtils
 import robomimic.utils.torch_utils as TorchUtils
 from isaaclab.actuators import ImplicitActuatorCfg
-
-# [FIX] Import Isaac Lab modules to modify config
 from isaaclab.envs import mdp as isaac_mdp
 
 

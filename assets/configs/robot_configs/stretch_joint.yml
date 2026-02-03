@@ -1,13 +1,13 @@
 robot_cfg:
   kinematics:
-    usd_path: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot/stretch_fake_joint.usd"
-    usd_robot_root: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot"
+    usd_path: "../../robot/stretch_fake_joint.usd"
+    usd_robot_root: "../../robot"
     isaac_usd_path: ""
     usd_flip_joints: {}
     usd_flip_joint_limits: []
 
-    urdf_path: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot_raw/stretch_description_RE2V0_fake_joint.urdf"
-    asset_root_path: "/home/johnchen/SharedSSD/JohnChen/stretch/assets/robot_raw"
+    urdf_path: "../../robot_raw/stretch_description_RE2V0_fake_joint.urdf"
+    asset_root_path: "../../robot_raw"
 
     base_link: "base_ground"
     ee_link: "link_grasp_center"
