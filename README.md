@@ -17,9 +17,8 @@ tasks specific to the Stretch platform.
 **Keywords:** extension, stretch, isaaclab, curobo, robotics
 
 ## Installation
-
-1. Create a virtual environment (optional but highly recommended). As a pre-requisite, `isaacsim` and `curobo` must be installed first. 
-2. It's very important that the `Curobo` and the `isaacsim` sync,you can refer the installation guide from `Curobo`'s website.
+Create a virtual environment (optional but highly recommended). As a pre-requisite, `isaacsim` and `curobo` must be installed first. 
+It's very important that the `Curobo` and the `isaacsim` sync,you can refer the installation guide from `Curobo`'s website.
 
 2. **Clone the Project**:
 

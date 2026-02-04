@@ -1,57 +1,70 @@
 {
   "algo_name": "bc",
   "experiment": {
+    "name": "stretch_bc_rnn",
     "validate": true,
-    "rollout": {
-      "enabled": false
-    },
     "logging": {
       "terminal_output_to_txt": true,
       "log_tb": true
-    }
+    },
+    "save": {
+      "enabled": true,
+      "every_n_epochs": 50,
+      "on_best_validation": true,
+      "on_best_rollout_success_rate": false
+    },
+    "rollout": {
+      "enabled": false
+    },
+    "render": false
   },
   "train": {
-    "data": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/stretch_cabinet_demo.hdf5",
-    "output_dir": null,
+    "data": null,
+    "output_dir": "../bc_rnn_trained_models",
     "num_data_workers": 0,
-    "hdf5_cache_mode": "all",
+    "hdf5_cache_mode": "low_dim",
     "hdf5_use_swmr": true,
     "hdf5_normalize_obs": false,
     "hdf5_filter_key": "train",
     "hdf5_validation_filter_key": "valid",
-    "seq_length": 1,
-    "dataset_keys": {
-      "actions": "actions",
-      "rewards": "rewards",
-      "dones": "dones"
-    },
-    "goal_mode": null,
+    "seq_length": 10,
+    "dataset_keys": ["actions", "rewards", "dones"],
+    "action_keys": ["actions"],
     "cuda": true,
-    "batch_size": 256,
+    "batch_size": 128,
     "num_epochs": 200,
     "seed": 1
   },
   "algo": {
     "optim_params": {
       "policy": {
+        "optimizer_type": "adam",
         "learning_rate": {
-          "initial": 1.0e-4,
+          "initial": 1e-4,
           "decay_factor": 0.1,
           "epoch_schedule": []
+        },
+        "regularization": {
+          "L2": 0.0
         }
       }
     },
     "loss": {
-      "l2_weight": 1.0,
-      "l1_weight": 0.0,
+      "l2_weight": 0.0,
+      "l1_weight": 1.0,
       "cos_weight": 0.0
     },
     "actor_layer_dims": [1024, 1024],
-    "gmm": {
-      "enabled": false,
-      "num_modes": 5,
-      "min_std": 0.0001,
-      "low_noise_eval": true
+    "rnn": {
+      "enabled": true,
+      "horizon": 10,
+      "hidden_dim": 400,
+      "rnn_type": "LSTM",
+      "num_layers": 2,
+      "open_loop": false,
+      "kwargs": {
+        "bidirectional": false
+      }
     }
   },
   "observation": {
@@ -72,9 +85,7 @@
     "encoder": {
       "low_dim": {
         "core_class": null,
-        "core_kwargs": {},
-        "obs_randomizer_class": null,
-        "obs_randomizer_kwargs": {}
+        "core_kwargs": {}
       }
     }
   }

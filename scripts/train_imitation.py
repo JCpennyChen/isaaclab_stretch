@@ -1,3 +1,4 @@
+from logging import config
 from isaaclab.app import AppLauncher
 
 # launch omniverse app
@@ -18,6 +19,7 @@ import gymnasium
 from stretch_env_cfg import StretchEnvCfg
 
 bc_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.json"
+bc_rnn_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_rnn.json"
 
 # Register specifically with the ID that the Bridge looks for ("Template-Stretch-v0")
 gymnasium.register(
@@ -27,6 +29,7 @@ gymnasium.register(
     kwargs={
         "env_cfg_entry_point": StretchEnvCfg,
         "robomimic_bc_cfg_entry_point": bc_config_path,
+        "robomimic_bc_rnn_cfg_entry_point": bc_rnn_config_path,
     },
 )
 
@@ -150,14 +153,21 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
         sys.stderr = logger
     ObsUtils.initialize_obs_utils_with_config(config)
 
-    dataset_path = os.path.expanduser(config.train.data)
+    dataset_path = os.path.expanduser(config.train.data[0]["path"])
     if not os.path.exists(dataset_path):
         raise FileNotFoundError(f"Dataset at provided path {dataset_path} not found!")
 
     print("\n============= Loaded Environment Metadata =============")
-    env_meta = FileUtils.get_env_metadata_from_dataset(dataset_path=config.train.data)
+    # Access the first element [0] here as well
+    env_meta = FileUtils.get_env_metadata_from_dataset(
+        dataset_path=config.train.data[0]["path"]
+    )
+    # Access the first element of the list using [0]
     shape_meta = FileUtils.get_shape_metadata_from_dataset(
-        dataset_path=config.train.data, all_obs_keys=config.all_obs_keys, verbose=True
+        dataset_config=config.train.data[0],
+        action_keys=config.train.action_keys,
+        all_obs_keys=config.all_obs_keys,
+        verbose=True,
     )
 
     if config.experiment.env is not None:
@@ -383,7 +393,7 @@ def main(args: argparse.Namespace):
         raise ValueError("Please provide a task name through CLI arguments.")
 
     if args.dataset is not None:
-        config.train.data = args.dataset
+        config.train.data = [{"path": args.dataset}]
 
     if args.name is not None:
         config.experiment.name = args.name
@@ -396,7 +406,7 @@ def main(args: argparse.Namespace):
         os.path.join("./logs", args.log_dir, args.task)
     )
 
-    log_dir, ckpt_dir, video_dir = TrainUtils.get_exp_dir(config)
+    log_dir, ckpt_dir, video_dir, _ = TrainUtils.get_exp_dir(config)
 
     if args.normalize_training_actions:
         config.train.data = normalize_hdf5_actions(config, log_dir)
