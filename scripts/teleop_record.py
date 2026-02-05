@@ -89,62 +89,40 @@ class RobomimicDataCollector:
 
     def _save_dict_group(self, h5_parent, data_list, group_name):
         """Recursively saves a list of nested dictionaries into HDF5 groups."""
-        # data_list is [frame1, frame2, ...] where frame1 is {"policy": {"joint_pos": ...}}
-
-        # 1. Create the group (e.g. "obs")
         grp = h5_parent.create_group(group_name)
-
-        # 2. Inspect structure of the first frame
         first_frame = data_list[0]
 
         if isinstance(first_frame, dict):
             for key in first_frame.keys():
-                # Extract this key from all frames
                 child_data_list = [frame[key] for frame in data_list]
-                # Recurse (handles nested "policy" group)
                 self._save_dict_group(grp, child_data_list, key)
         else:
-            # It's a leaf node (array), stack and save
             data_stack = np.array(data_list).squeeze(
                 axis=1
-            )  # Remove batch dim if needed
+            )
             h5_parent.create_dataset(group_name, data=data_stack)
 
     def flush(self):
         demo_idx = self.data_group.attrs["total"]
         demo_group_name = f"demo_{demo_idx}"
         ep_grp = self.data_group.create_group(demo_group_name)
-
-        # 1. Process Observations (Recursive)
         if len(self.current_episode["obs"]) > 0:
-            # We strip the outer "obs" wrapper and just pass the list of obs dicts
-            # But the helper expects to create the group name passed to it.
-            # So we iterate keys manually for the top level.
             obs_grp = ep_grp.create_group("obs")
             first_obs = self.current_episode["obs"][0]
-
-            # If obs is {"policy": ...}, we want data/demo_0/obs/policy/...
             for key in first_obs.keys():
                 column = [x[key] for x in self.current_episode["obs"]]
                 self._save_dict_group(obs_grp, column, key)
-
-            # Do same for next_obs
             if len(self.current_episode["next_obs"]) > 0:
                 next_obs_grp = ep_grp.create_group("next_obs")
                 for key in first_obs.keys():
                     column = [x[key] for x in self.current_episode["next_obs"]]
                     self._save_dict_group(next_obs_grp, column, key)
-
-        # 2. Process Actions, Rewards, Dones (Simple Arrays)
         for key in ["actions", "rewards", "dones"]:
             if self.current_episode[key]:
                 data_stack = np.array(self.current_episode[key]).squeeze(axis=1)
                 ep_grp.create_dataset(key, data=data_stack)
-
-        # 3. Attributes
         ep_grp.attrs["num_samples"] = len(self.current_episode["actions"])
-        ep_grp.attrs["model_file"] = "xml"  # Dummy attribute often checked by Mimic
-
+        ep_grp.attrs["model_file"] = "xml"
         self.data_group.attrs["total"] += 1
         print(f"[INFO] Saved {demo_group_name} ({ep_grp.attrs['num_samples']} steps)")
         self.f.flush()
@@ -157,9 +135,6 @@ class RobomimicDataCollector:
         self.f.close()
 
 
-# =================================================================================
-#  INPUT CONTROLLER
-# =================================================================================
 class FullController:
     def __init__(self):
         self._input = carb.input.acquire_input_interface()
@@ -173,20 +148,15 @@ class FullController:
             return self._input.get_keyboard_value(self._keyboard, key_enum) > 0.5
         return False
 
-
-# =================================================================================
-#  MAIN LOOP
-# =================================================================================
 def main():
     env_cfg = StretchEnvCfg()
-    # Ensure env renders
     env_cfg.sim.render_interval = 1
     env = ManagerBasedRLEnv(cfg=env_cfg)
 
     controller = FullController()
 
     # Log path
-    log_dir = os.path.join(os.getcwd(), "datasets")  # Saving to datasets folder
+    log_dir = os.path.join(os.getcwd(), "datasets")
     collector = RobomimicDataCollector(
         env_name="Isaac-Stretch-Cabinet-v0",
         directory_path=log_dir,
@@ -205,17 +175,12 @@ def main():
     print("  RESET: O  (Retry/Discard)")
     print("-" * 40)
 
-    # Tuning
     BASE_SPEED = 1.0
     LIFT_SPEED = 0.5
     ARM_SPEED = 0.2
     WRIST_SPEED = 1.5
-
-    # Gravity Compensation (Keeps arm from drooping when keys aren't pressed)
-    # Adjust these if your arm drifts up or down!
     GRAVITY_LIFT_COMP = 0.0
     GRVITY_WRIST_PITCH_COMP = 0.0
-
     GRIPPER_CLOSE_POS = -0.1
     GRIPPER_OPEN_POS = 0.4
     gripper_goal = GRIPPER_CLOSE_POS
@@ -230,7 +195,6 @@ def main():
             break
 
         with torch.inference_mode():
-            # Check Reset
             if controller.is_pressed("O"):
                 reset_needed = True
 

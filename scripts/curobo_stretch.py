@@ -4,7 +4,7 @@ import torch
 import argparse
 
 # ==========================================
-# 1. ISAAC SIM INITIALIZATION
+# ISAAC SIM INITIALIZATION
 # ==========================================
 from isaaclab.app import AppLauncher
 
@@ -17,7 +17,7 @@ app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
 # ==========================================
-# 2. ENVIRONMENT & UTILITY IMPORTS
+# PATH SETUP & IMPORTS
 # ==========================================
 target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
 if target_config_dir not in sys.path:
@@ -26,50 +26,72 @@ if target_config_dir not in sys.path:
 from stretch_env_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
 from isaaclab.envs import mdp as isaac_mdp
-from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.utils.math import combine_frame_transforms
 from isaacsim.core.prims import XFormPrim
 
-# ==========================================
-# 3. CUROBO IMPORTS
-# ==========================================
 from curobo.geom.types import WorldConfig, Cuboid
 from curobo.types.base import TensorDeviceType
 from curobo.types.math import Pose
 from curobo.types.robot import JointState
 from curobo.util.logger import setup_curobo_logger
 from curobo.util.usd_helper import UsdHelper
+from curobo.util_file import load_yaml
+from curobo.geom.sdf.world import CollisionCheckerType
 from curobo.wrap.reacher.motion_gen import (
     MotionGen,
     MotionGenConfig,
     MotionGenPlanConfig,
 )
-from curobo.util_file import load_yaml
-from curobo.geom.sdf.world import CollisionCheckerType
+from curobo.wrap.reacher.ik_solver import IKSolver, IKSolverConfig
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
+# ==========================================
+# GLOBAL CONFIGURATION
+# ==========================================
+CUROBO_CONFIG_PATH = os.path.join(
+    PROJECT_ROOT, "assets", "robot_configs", "stretch_fake_joint.yml"
+)
+ASSET_ROOT = PROJECT_ROOT
+
+TARGET_FRAME_PATH = "/World/envs/env_0/Cabinet/drawer_handle_top/drawer_handle_frame"
+
+MOTION_GEN_PARAMS = {
+    "num_trajopt_seeds": 12,
+    "num_graph_seeds": 12,
+    "trajopt_tsteps": 40,
+    "interpolation_dt": 0.02,
+}
+
+PLANNER_CONFIG = {
+    "max_attempts": 10,
+    "time_dilation_factor": 0.5,
+    "enable_graph_attempt": 2,
+}
+
+PHASE_OFFSETS = {
+    "safe_spot": [-0.05, 0.05, 0.0],
+    "insert": [0.03, 0.05, 0.0],
+    "pull": [-0.45, 0.05, 0.0],
+}
+
+TRANSITION_WAIT_STEPS = 30
+GRIPPER_LOCK_STEPS = 60
+GRIPPER_OPEN_POS = 0.3
+GRIPPER_CLOSE_POS = -0.2
 
 
+# ==========================================
+# MAIN EXECUTION
+# ==========================================
 def main():
-    # ==========================================
-    # 4. ENVIRONMENT CONFIGURATION
-    # ==========================================
+    # Environment Configuration
     env_cfg = StretchEnvCfg()
     env_cfg.viewer.eye = (2.0, 2.0, 2.0)
     env_cfg.episode_length_s = 10000.0
 
-    # High stiffness for precise trajectory following
-    print("[Fix] forcing High Stiffness (4000.0) on all joints...")
-    strong_drive = ImplicitActuatorCfg(
-        joint_names_expr=[".*"],
-        stiffness=4000.0,
-        damping=100.0,
-        effort_limit=20000.0,
-        velocity_limit=100.0,
-    )
-    env_cfg.scene.robot.actuators = {"god_mode_drive": strong_drive}
-
-    # ==========================================
-    # 5. ACTION SETUP
-    # ==========================================
+    # Action Setup
     env_cfg.actions.base = None
     env_cfg.actions.lift_velocity = None
     env_cfg.actions.arm_velocity = None
@@ -87,19 +109,16 @@ def main():
     env = ManagerBasedRLEnv(cfg=env_cfg)
     obs, _ = env.reset()
 
-    # ==========================================
-    # 6. CUROBO MOTION GENERATOR SETUP
-    # ==========================================
+    # CuRobo Setup
     setup_curobo_logger("warn")
     tensor_args = TensorDeviceType(device=env.device)
 
-    curobo_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/assets/configs/robot_configs/stretch_joint.yml"
-    if not os.path.exists(curobo_config_path):
-        raise FileNotFoundError(f"Could not find CuRobo config at {curobo_config_path}")
+    if not os.path.exists(CUROBO_CONFIG_PATH):
+        raise FileNotFoundError(f"Could not find CuRobo config at {CUROBO_CONFIG_PATH}")
 
-    robot_cfg = load_yaml(curobo_config_path)["robot_cfg"]
+    robot_cfg = load_yaml(CUROBO_CONFIG_PATH)["robot_cfg"]
+    robot_cfg["kinematics"]["external_asset_path"] = ASSET_ROOT
 
-    # Initializing a dummy world for the solver warmup
     dummy_world = WorldConfig(
         cuboid=[
             Cuboid(
@@ -108,19 +127,27 @@ def main():
         ]
     )
 
+    # 1. SETUP MOTION GEN (For Phase 1 Planning)
     motion_gen_config = MotionGenConfig.load_from_robot_config(
         robot_cfg,
         dummy_world,
         tensor_args,
         collision_checker_type=CollisionCheckerType.MESH,
-        num_trajopt_seeds=12,
-        num_graph_seeds=12,
-        interpolation_dt=0.05,
         optimize_dt=True,
-        trajopt_tsteps=32,
+        **MOTION_GEN_PARAMS,
     )
-
     motion_gen = MotionGen(motion_gen_config)
+
+    # 2. SETUP IK SOLVER
+    ik_config = IKSolverConfig.load_from_robot_config(
+        robot_cfg,
+        dummy_world,
+        tensor_args,
+        collision_checker_type=CollisionCheckerType.MESH,
+        num_seeds=1,  # Keep 1 for smooth sequential movement
+    )
+    ik_solver = IKSolver(ik_config)
+
     print("[CuRobo] Warming up...")
     motion_gen.warmup(enable_graph=True)
 
@@ -129,24 +156,17 @@ def main():
 
     plan_config = MotionGenPlanConfig(
         enable_graph=False,
-        enable_graph_attempt=2,
-        max_attempts=10,
         enable_finetune_trajopt=True,
-        time_dilation_factor=0.5,
+        **PLANNER_CONFIG,
     )
 
-    # ==========================================
-    # 7. STATE VARIABLES & TARGETS
-    # ==========================================
+    # --- State Variables ---
     trajectory = None
     traj_idx = 0
     step_count = 0
     target_pose = None
 
-    target_frame_path = (
-        "/World/envs/env_0/Cabinet/drawer_handle_top/drawer_handle_frame"
-    )
-    target_frame_view = XFormPrim(target_frame_path, name="target_frame")
+    target_frame_view = XFormPrim(TARGET_FRAME_PATH, name="target_frame")
     phase_one_done = False
     phase_two_done = False
     phase_three_done = False
@@ -155,29 +175,27 @@ def main():
     gripper_timer = 0
     hold_joints = None
 
-    # ==========================================
-    # 8. MAIN SIMULATION LOOP
-    # ==========================================
     print(">>> Starting Simulation Loop...")
     while simulation_app.is_running():
-        # --- DETERMINE TARGET POSE ---
+        # --- Determine Target Pose ---
         if target_pose is None:
             curr_pos, curr_quat = target_frame_view.get_world_poses()
 
-            # PHASE 1: SAFE SPOT
             if not phase_one_done:
-                print("[Logic] Phase 1: Planning to Safe Spot (-0.08)...")
-                front_offset = torch.tensor([[-0.08, 0.03, 0.0]], device=env.device)
-
-            # PHASE 2: INSERT
+                print(
+                    f"[Logic] Phase 1: Planning to Safe Spot {PHASE_OFFSETS['safe_spot']}..."
+                )
+                front_offset = torch.tensor(
+                    [PHASE_OFFSETS["safe_spot"]], device=env.device
+                )
             elif not phase_two_done:
-                print("[Logic] Phase 2: Planning Insert (0.1)...")
-                front_offset = torch.tensor([[0.1, 0.03, 0.0]], device=env.device)
-
-            # PHASE 3: PULL BACK
+                print(f"[Logic] Phase 2: Planning Insert {PHASE_OFFSETS['insert']}...")
+                front_offset = torch.tensor(
+                    [PHASE_OFFSETS["insert"]], device=env.device
+                )
             else:
-                print("[Logic] Phase 3: Planning Pull (-0.45)...")
-                front_offset = torch.tensor([[-0.45, 0.03, 0.0]], device=env.device)
+                print(f"[Logic] Phase 3: Planning Pull {PHASE_OFFSETS['pull']}...")
+                front_offset = torch.tensor([PHASE_OFFSETS["pull"]], device=env.device)
 
             target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
             target_pos_w, _ = combine_frame_transforms(
@@ -185,7 +203,7 @@ def main():
             )
             target_pose = Pose(position=target_pos_w, quaternion=target_quat_w)
 
-        # --- OBSTACLE UPDATE ---
+        # --- Obstacle Update ---
         if step_count % 60 == 0 and step_count > 0:
             base_env_path = "/World/envs/env_0"
             obstacles = usd_help.get_obstacles_from_stage(
@@ -195,35 +213,136 @@ def main():
                 ],
                 ignore_substring=[f"{base_env_path}/Robot"],
             ).get_collision_check_world()
+
             motion_gen.update_world(obstacles)
 
-        # --- PLANNER ---
+            # --- FIX: Stop updating IK obstacles during pulling ---
+            # This prevents the solver from seeing the handle grasp as a collision
+            if not phase_two_done:
+                ik_solver.update_world(obstacles)
+
+        # ==========================================
+        # PLANNER TRIGGER
+        # ==========================================
         robot_entity = env.scene["robot"]
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
         is_static = robot_velocity < 0.5
 
-        if trajectory is None and step_count > 50 and is_static:
-            print(f"[CuRobo] Planning path...")
+        if trajectory is None and step_count > 5 and is_static:
+            current_phase = "1"
+            if phase_one_done:
+                current_phase = "2"
+            if phase_two_done:
+                current_phase = "3"
+
+            print(f"[CuRobo] Planning Phase {current_phase}...")
+
+            start_state = (
+                hold_joints[0]
+                if hold_joints is not None
+                else robot_entity.data.joint_pos[0]
+            )
+
             cu_js = JointState(
-                position=robot_entity.data.joint_pos[0].unsqueeze(0),
+                position=start_state.unsqueeze(0),
                 velocity=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
                 acceleration=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
                 joint_names=robot_entity.joint_names,
             ).get_ordered_joint_state(motion_gen.kinematics.joint_names)
 
-            result = motion_gen.plan_single(cu_js, target_pose, plan_config)
-
-            if result.success.item():
+            # -------------------------------------------------------
+            # PHASE 2 & 3: FORCED STRAIGHT LINE (Sequential IK)
+            # -------------------------------------------------------
+            if phase_one_done:
                 print(
-                    f"[CuRobo] Success! Steps: {result.optimized_plan.position.shape[1]}"
+                    f"[Logic] Phase {current_phase}: Generating Straight-Line Path..."
                 )
-                trajectory = result.get_interpolated_plan()
-                trajectory = motion_gen.get_full_js(trajectory)
-                traj_idx = 0
-            else:
-                print(f"[CuRobo] Fail: {result.status}")
 
-        # --- TRAJECTORY EXECUTION ---
+                # --- FIX: Increase steps for Phase 3 to ensure smooth base movement ---
+                steps = 50
+                if phase_two_done:  # Phase 3 (Pull)
+                    steps = 80  # Finer resolution for the long pull
+
+                # Get current Gripper Pose
+                curr_pose = motion_gen.kinematics.compute_kinematics(cu_js)
+                curr_pos_w = curr_pose.ee_position
+                curr_quat_w = curr_pose.ee_quaternion
+
+                local_shift = torch.zeros((1, 3), device=env.device)
+
+                if not phase_two_done:
+                    dist = PHASE_OFFSETS["insert"][0] - PHASE_OFFSETS["safe_spot"][0]
+                    local_shift[0, 0] = dist
+                else:
+                    dist = PHASE_OFFSETS["pull"][0] - PHASE_OFFSETS["insert"][0]
+                    local_shift[0, 0] = dist
+
+                goal_pos_w, _ = combine_frame_transforms(
+                    curr_pos_w, curr_quat_w, local_shift
+                )
+
+                # Linear Interpolation
+                traj_pos_w = torch.zeros((steps, 3), device=env.device)
+                for i in range(steps):
+                    alpha = float(i) / (steps - 1)
+                    traj_pos_w[i] = (1 - alpha) * curr_pos_w + alpha * goal_pos_w
+
+                traj_quat_w = curr_quat_w.repeat(steps, 1)
+
+                # --- SEQUENTIAL SOLVER LOOP ---
+                solutions = []
+                current_seed = cu_js.position.unsqueeze(0)
+                success_all = True
+
+                for i in range(steps):
+                    single_goal = Pose(
+                        position=traj_pos_w[i].unsqueeze(0),
+                        quaternion=traj_quat_w[i].unsqueeze(0),
+                    )
+
+                    ik_out = ik_solver.solve_batch(
+                        goal_pose=single_goal, seed_config=current_seed
+                    )
+
+                    if not ik_out.success.item():
+                        print(f"[CuRobo] IK Stuck at step {i}/{steps}")
+                        success_all = False
+                        break
+
+                    solutions.append(ik_out.solution)
+                    current_seed = ik_out.solution
+
+                if success_all:
+                    print(f"[CuRobo] Cartesian Path Success! Steps: {steps}")
+                    full_traj = torch.cat(solutions, dim=0).squeeze(1)
+
+                    trajectory = JointState(
+                        position=full_traj,
+                        joint_names=motion_gen.kinematics.joint_names,
+                    )
+                    trajectory.velocity = torch.zeros_like(trajectory.position)
+                    trajectory.acceleration = torch.zeros_like(trajectory.position)
+                    trajectory = motion_gen.get_full_js(trajectory)
+                    traj_idx = 0
+                else:
+                    print("[CuRobo] Cartesian Fail: IK could not trace full path.")
+
+            # -------------------------------------------------------
+            # PHASE 1: STANDARD PLANNER
+            # -------------------------------------------------------
+            else:
+                result = motion_gen.plan_single(cu_js, target_pose, plan_config)
+                if result.success.item():
+                    print(
+                        f"[CuRobo] Planner Success! Steps: {result.optimized_plan.position.shape[1]}"
+                    )
+                    trajectory = result.get_interpolated_plan()
+                    trajectory = motion_gen.get_full_js(trajectory)
+                    traj_idx = 0
+                else:
+                    print(f"[CuRobo] Fail: {result.status}")
+
+        # --- Execution Logic ---
         actions = robot_entity.data.joint_pos.clone()
 
         if hold_joints is not None:
@@ -233,25 +352,23 @@ def main():
 
         if trajectory is not None:
             if traj_idx >= len(trajectory.position):
-                # --- TRANSITION LOGIC ---
+                # --- Transition Logic ---
                 if not phase_one_done:
                     transition_timer += 1
                     target_state = trajectory[-1]
-                    if transition_timer > 30:  # Wait 0.5s
+                    if transition_timer > TRANSITION_WAIT_STEPS:
                         print("--> Phase 1 Done. Switching to Phase 2...")
+                        hold_joints = actions.clone()
                         phase_one_done = True
                         trajectory = None
                         target_pose = None
                         traj_idx = 0
                         transition_timer = 0
 
-                # END OF PHASE 2
                 elif not phase_two_done:
                     target_state = trajectory[-1]
                     gripper_timer += 1
-
-                    # Wait 60 steps (1 second) for gripper to close fully
-                    if gripper_timer > 60:
+                    if gripper_timer > GRIPPER_LOCK_STEPS:
                         print("--> Gripper Locked! Switching to Phase 3 (Pull)...")
                         phase_two_done = True
                         hold_joints = actions.clone()
@@ -260,7 +377,6 @@ def main():
                         traj_idx = 0
                         gripper_timer = 0
 
-                # END OF PHASE 3 (Pull)
                 else:
                     target_state = trajectory[-1]
                     phase_three_done = True
@@ -269,7 +385,6 @@ def main():
                 target_state = trajectory[traj_idx]
                 traj_idx += 1
 
-            # Map Joints
             if trajectory is not None:
                 flat_pos = target_state.position.view(-1)
                 target_pos_dict = {
@@ -279,34 +394,24 @@ def main():
                     if name in target_pos_dict:
                         actions[0, i] = target_pos_dict[name]
 
-        # ==========================================
-        # Gripper Logic
-        # ==========================================
+        # --- Gripper Logic ---
         gripper_idx = -1
-
-        # Priority 1: If Phase 3 is totally finished -> Release Handle
         if phase_three_done:
-            actions[0, gripper_idx] = 0.2
-
-        # Priority 2: During Phase 1 & 2 Approach & Insert
+            actions[0, gripper_idx] = GRIPPER_OPEN_POS
         elif not phase_two_done:
-            # Check if we are currently waiting for the grip (Phase 2 finished, waiting on timer)
             if (
                 phase_one_done
                 and trajectory is not None
                 and traj_idx >= len(trajectory.position)
             ):
-                actions[0, gripper_idx] = -0.5  # Close
+                actions[0, gripper_idx] = GRIPPER_CLOSE_POS
                 if gripper_timer % 30 == 0:
                     print("Clamping Gripper...")
             else:
-                actions[0, gripper_idx] = 0.2  # Open
-
-        # Priority 3: During Phase 3 Pulling
+                actions[0, gripper_idx] = GRIPPER_OPEN_POS
         else:
-            actions[0, gripper_idx] = -0.5
+            actions[0, gripper_idx] = GRIPPER_CLOSE_POS
 
-        # --- STEP SIMULATION ---
         obs, rew, terminated, truncated, extras = env.step(actions)
         step_count += 1
 

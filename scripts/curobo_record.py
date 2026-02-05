@@ -73,8 +73,6 @@ class RobomimicDataCollector:
         self.file_path = os.path.join(directory_path, f"{filename}.hdf5")
         self.f = h5py.File(self.file_path, "w")
         self.data_group = self.f.create_group("data")
-
-        # Add 'env_kwargs' to prevent KeyError in Robomimic
         env_args = {
             "env_name": env_name,
             "type": 1,
@@ -82,8 +80,6 @@ class RobomimicDataCollector:
         }
         self.data_group.attrs["total"] = 0
         self.data_group.attrs["env_args"] = json.dumps(env_args)
-
-        # Track keys for creating splits later
         self.train_demos = []
         self.valid_demos = []
 
@@ -134,19 +130,14 @@ class RobomimicDataCollector:
         demo_group_name = f"demo_{demo_idx}"
         ep_grp = self.data_group.create_group(demo_group_name)
 
-        # [Fix 2] Handle Observation Nesting
         if len(self.current_episode["obs"]) > 0:
             obs_grp = ep_grp.create_group("obs")
             first_obs = self.current_episode["obs"][0]
-
-            # Note: Isaac Lab often returns obs as {'policy': tensor(...)}
-            # This logic preserves that structure as obs/policy
             if isinstance(first_obs, dict):
                 for key in first_obs.keys():
                     column = [x[key] for x in self.current_episode["obs"]]
                     self._save_dict_group(obs_grp, column, key)
             else:
-                # Fallback if obs is not a dict (rare in Isaac Lab)
                 print("[Warning] Obs is not a dict, saving as raw 'obs'")
                 ep_grp.create_dataset("obs", data=np.array(self.current_episode["obs"]))
 
@@ -165,7 +156,6 @@ class RobomimicDataCollector:
         ep_grp.attrs["num_samples"] = len(self.current_episode["actions"])
         ep_grp.attrs["model_file"] = "xml"
 
-        # We use a simple random check based on the ratio
         if np.random.rand() < self.val_ratio:
             self.valid_demos.append(demo_group_name)
             split_name = "VALID"
@@ -189,7 +179,6 @@ class RobomimicDataCollector:
             del self.f["mask"]
         mask_grp = self.f.create_group("mask")
 
-        # Robomimic requires these to be encoded as bytes ('S')
         mask_grp.create_dataset("train", data=np.array(self.train_demos, dtype="S"))
         mask_grp.create_dataset("valid", data=np.array(self.valid_demos, dtype="S"))
 
@@ -200,14 +189,9 @@ class RobomimicDataCollector:
 
 
 def main():
-    # ==========================================
-    # ENVIRONMENT CONFIGURATION
-    # ==========================================
     env_cfg = StretchEnvCfg()
     env_cfg.viewer.eye = (2.0, 2.0, 2.0)
     env_cfg.episode_length_s = 10000.0
-
-    # High stiffness for precise trajectory following
     print("[Fix] forcing High Stiffness (4000.0) on all joints...")
     strong_drive = ImplicitActuatorCfg(
         joint_names_expr=[".*"],
@@ -217,16 +201,11 @@ def main():
         velocity_limit=100.0,
     )
     env_cfg.scene.robot.actuators = {"god_mode_drive": strong_drive}
-
-    # ==========================================
-    # ACTION SETUP
-    # ==========================================
     env_cfg.actions.base = None
     env_cfg.actions.lift_velocity = None
     env_cfg.actions.arm_velocity = None
     env_cfg.actions.wrist_velocity = None
     env_cfg.actions.gripper = None
-
     env_cfg.actions.joint_pos_direct = isaac_mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=[".*"],
@@ -242,15 +221,11 @@ def main():
         num_demos=args_cli.num_demos,
     )
 
-    # Reset it immediately
     collector.reset()
     print("[IsaacLab] Creating environment...")
     env = ManagerBasedRLEnv(cfg=env_cfg)
     obs, _ = env.reset()
 
-    # ==========================================
-    # CUROBO MOTION GENERATOR SETUP
-    # ==========================================
     setup_curobo_logger("warn")
     tensor_args = TensorDeviceType(device=env.device)
 
@@ -260,7 +235,6 @@ def main():
 
     robot_cfg = load_yaml(curobo_config_path)["robot_cfg"]
 
-    # Initializing a dummy world for the solver warmup
     dummy_world = WorldConfig(
         cuboid=[
             Cuboid(
@@ -296,9 +270,6 @@ def main():
         time_dilation_factor=0.5,
     )
 
-    # ==========================================
-    # RANDOMIZATION
-    # ==========================================
     cabinet_prim_path = "/World/envs/env_0/Cabinet"
     cabinet_view = XFormPrim(cabinet_prim_path, name="cabinet")
 
@@ -335,32 +306,11 @@ def main():
 
         print(f"[Random] Cabinet moved to: {new_pos.cpu().numpy()}")
 
-    # ==========================================
-    # FIND HANDLE BODY INDEX
-    # ==========================================
     cabinet_entity = env.scene["cabinet"]
-    try:
-        handle_body_idx = cabinet_entity.body_names.index("drawer_handle_top")
-        print(
-            f"[Info] Tracking Physics Body: 'drawer_handle_top' at index {handle_body_idx}"
-        )
-    except ValueError:
-        # Fallback: If handle isn't a separate body, track the drawer face "drawer_top"
-        print(
-            "[Warning] 'drawer_handle_top' not found in physics bodies. "
-            "Checking 'drawer_top'..."
-        )
-        try:
-            handle_body_idx = cabinet_entity.body_names.index("drawer_top")
-        except ValueError:
-            print(f"[Error] Could not find drawer body! Defaulting to index 0.")
-            handle_body_idx = 0
+    handle_body_idx = cabinet_entity.get_body_index_from_name("drawer_handle_body")
 
     randomize_cabinet()
 
-    # ==========================================
-    # STATE VARIABLES & TARGETS
-    # ==========================================
     trajectory = None
     traj_idx = 0
     step_count = 0
@@ -383,12 +333,8 @@ def main():
     initial_handle_pos = None
     ik_fail_count = 0
 
-    # ==========================================
-    # MAIN SIMULATION LOOP
-    # ==========================================
     print(">>> Starting Simulation Loop...")
     while simulation_app.is_running():
-        # --- DETERMINE TARGET POSE ---
         if collector.is_stopped():
             print(f"[SUCCESS] Collected {args_cli.num_demos} demos. Stopping.")
             break
@@ -434,13 +380,13 @@ def main():
             ).get_collision_check_world()
             motion_gen.update_world(obstacles)
 
-        # --- PLANNER ---
         robot_entity = env.scene["robot"]
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
         is_static = robot_velocity < 0.5
 
-        if trajectory is None and step_count > 50 and is_static:
-            print(f"[CuRobo] Planning path...")
+        # CHANGE THIS LINE: "step_count > 50" -> "step_count > 5"
+        if trajectory is None and step_count > 5 and is_static:
+            print("[CuRobo] Planning path...")
             cu_js = JointState(
                 position=robot_entity.data.joint_pos[0].unsqueeze(0),
                 velocity=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
@@ -480,7 +426,6 @@ def main():
                     ik_fail_count = 0
                     motion_gen.reset()
 
-        # --- TRAJECTORY EXECUTION ---
         actions = robot_entity.data.joint_pos.clone()
 
         if hold_joints is not None:
@@ -490,11 +435,10 @@ def main():
 
         if trajectory is not None:
             if traj_idx >= len(trajectory.position):
-                # --- TRANSITION LOGIC ---
                 if not phase_one_done:
                     transition_timer += 1
                     target_state = trajectory[-1]
-                    if transition_timer > 30:  # Wait 0.5s
+                    if transition_timer > 30:
                         print("--> Phase 1 Done. Switching to Phase 2...")
                         phase_one_done = True
                         trajectory = None
@@ -502,12 +446,10 @@ def main():
                         traj_idx = 0
                         transition_timer = 0
 
-                # END OF PHASE 2
                 elif not phase_two_done:
                     target_state = trajectory[-1]
                     gripper_timer += 1
 
-                    # Wait 60 steps (1 second) for gripper to close fully
                     if gripper_timer > 60:
                         print("--> Gripper Locked! Switching to Phase 3 (Pull)...")
                         phase_two_done = True
@@ -517,7 +459,6 @@ def main():
                         traj_idx = 0
                         gripper_timer = 0
 
-                # END OF PHASE 3 (Pull)
                 else:
                     target_state = trajectory[-1]
                     phase_three_done = True
@@ -526,7 +467,6 @@ def main():
                 target_state = trajectory[traj_idx]
                 traj_idx += 1
 
-            # Map Joints
             if trajectory is not None:
                 flat_pos = target_state.position.view(-1)
                 target_pos_dict = {
@@ -536,37 +476,25 @@ def main():
                     if name in target_pos_dict:
                         actions[0, i] = target_pos_dict[name]
 
-        # ==========================================
-        # Gripper Logic
-        # ==========================================
         gripper_idx = -1
-
-        # Priority 1: If Phase 3 is totally finished -> Release Handle
         if phase_three_done:
             actions[0, gripper_idx] = 0.2
-
-        # Priority 2: During Phase 1 & 2 Approach & Insert
         elif not phase_two_done:
-            # Check if we are currently waiting for the grip (Phase 2 finished, waiting on timer)
             if (
                 phase_one_done
                 and trajectory is not None
                 and traj_idx >= len(trajectory.position)
             ):
-                actions[0, gripper_idx] = -0.5  # Close
+                actions[0, gripper_idx] = -0.5
                 if gripper_timer % 30 == 0:
                     print("Clamping Gripper...")
             else:
-                actions[0, gripper_idx] = 0.2  # Open
+                actions[0, gripper_idx] = 0.2
 
-        # Priority 3: During Phase 3 Pulling
         else:
             actions[0, gripper_idx] = -0.5
 
-        # --- STEP SIMULATION ---
         next_obs, rew, terminated, truncated, extras = env.step(actions)
-
-        # RECORDING & RESET LOGIC
         collector.add("obs", obs)
         collector.add("actions", actions)
         collector.add("rewards", rew)
@@ -575,8 +503,6 @@ def main():
 
         obs = next_obs
         step_count += 1
-
-        # Check for Success (Phase 3 Done)
         if phase_three_done:
             success_hold_timer += 1
             if success_hold_timer > 30:
@@ -593,11 +519,8 @@ def main():
                     )
                     collector.reset_buffer()
 
-                # RESET EVERYTHING FOR NEXT DEMO
                 obs, _ = env.reset()
                 randomize_cabinet()
-
-                # Reset Logic Flags
                 trajectory = None
                 target_pose = None
                 traj_idx = 0
