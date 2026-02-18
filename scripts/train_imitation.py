@@ -1,15 +1,18 @@
-from logging import config
 from isaaclab.app import AppLauncher
 
-# launch omniverse app
+# ==========================================
+# ISAAC SIM APP LAUNCH
+# ==========================================
 app_launcher = AppLauncher(headless=True)
 simulation_app = app_launcher.app
 
-# Standard library imports
 import argparse
 import sys
 import os
 
+# ==========================================
+# PATH CONFIGURATION & IMPORTS
+# ==========================================
 task_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
 if task_config_path not in sys.path:
     sys.path.append(task_config_path)
@@ -20,21 +23,28 @@ from stretch_env_cfg import StretchEnvCfg
 
 bc_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.json"
 bc_rnn_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_rnn.json"
+bc_diffusion_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_diffusion.json"
 
-# Register specifically with the ID that the Bridge looks for ("Template-Stretch-v0")
+# ==========================================
+# GYMNASIUM REGISTRATION
+# ==========================================
 gymnasium.register(
-    id="Template-Stretch-v0",
+    id="Isaac-Stretch-Cabinet-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": StretchEnvCfg,
         "robomimic_bc_cfg_entry_point": bc_config_path,
         "robomimic_bc_rnn_cfg_entry_point": bc_rnn_config_path,
+        "robomimic_diffusion_policy_cfg_entry_point": bc_diffusion_config_path,
     },
 )
 
-task_id = "Template-Stretch-v0"
+task_id = "Isaac-Stretch-Cabinet-v0"
 
+# ==========================================
+# LEGACY GYM BRIDGE
+# ==========================================
 if task_id not in gym.envs.registry.env_specs:
     print(f"[Bridge] Registering {task_id} into legacy gym...")
     spec = gymnasium.spec(task_id)
@@ -51,7 +61,9 @@ if task_id not in gym.envs.registry.env_specs:
         kwargs=new_kwargs,
     )
 
-
+# ==========================================
+# THIRD-PARTY IMPORTS
+# ==========================================
 import h5py
 import importlib
 import json
@@ -63,9 +75,11 @@ import torch
 import traceback
 from collections import OrderedDict
 from torch.utils.data import DataLoader
-
 import psutil
 
+# ==========================================
+# THIRD-PARTY IMPORTS
+# ==========================================
 import robomimic.utils.env_utils as EnvUtils
 import robomimic.utils.file_utils as FileUtils
 import robomimic.utils.obs_utils as ObsUtils
@@ -75,22 +89,11 @@ from robomimic.algo import algo_factory
 from robomimic.config import Config, config_factory
 from robomimic.utils.log_utils import DataLogger, PrintLogger
 
-# Isaac Lab imports
-import isaaclab_tasks
-import isaaclab_tasks.manager_based.locomanipulation.pick_place
-import isaaclab_tasks.manager_based.manipulation.pick_place
 
-
+# ==========================================
+# THIRD-PARTY IMPORTS
+# ==========================================
 def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
-    """Normalizes actions in hdf5 dataset to [-1, 1] range.
-
-    Args:
-        config: The configuration object containing dataset path.
-        log_dir: Directory to save normalization parameters.
-
-    Returns:
-        Path to the normalized dataset.
-    """
     base, ext = os.path.splitext(config.train.data)
     normalized_path = base + "_normalized" + ext
 
@@ -113,9 +116,7 @@ def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
 
         for i, path in enumerate(dataset_paths):
             data = np.array(f[path])
-            normalized_data = (
-                2 * ((data - min) / (max - min)) - 1
-            )  # Scale to [-1, 1] range
+            normalized_data = 2 * ((data - min) / (max - min)) - 1
             del f[path]
             f[path] = normalized_data
 
@@ -127,15 +128,6 @@ def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
 
 
 def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: str):
-    """Train a model using the algorithm specified in config.
-
-    Args:
-        config: Configuration object.
-        device: PyTorch device to use for training.
-        log_dir: Directory to save logs.
-        ckpt_dir: Directory to save checkpoints.
-        video_dir: Directory to save videos.
-    """
     np.random.seed(config.train.seed)
     torch.manual_seed(config.train.seed)
 
@@ -158,11 +150,9 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
         raise FileNotFoundError(f"Dataset at provided path {dataset_path} not found!")
 
     print("\n============= Loaded Environment Metadata =============")
-    # Access the first element [0] here as well
     env_meta = FileUtils.get_env_metadata_from_dataset(
         dataset_path=config.train.data[0]["path"]
     )
-    # Access the first element of the list using [0]
     shape_meta = FileUtils.get_shape_metadata_from_dataset(
         dataset_config=config.train.data[0],
         action_keys=config.train.action_keys,
@@ -339,39 +329,28 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
                 obs_normalization_stats=obs_normalization_stats,
             )
 
-        # Finally, log memory usage in MB
         process = psutil.Process(os.getpid())
         mem_usage = int(process.memory_info().rss / 1000000)
         data_logger.record("System/RAM Usage (MB)", mem_usage, epoch)
         print(f"\nEpoch {epoch} Memory Usage: {mem_usage} MB\n")
 
-    # terminate logging
     data_logger.close()
 
 
 def main(args: argparse.Namespace):
-    """Train a model on a task using a specified algorithm.
-
-    Args:
-        args: Command line arguments.
-    """
-    # load config
     if args.task is not None:
-        # obtain the configuration entry point
         cfg_entry_point_key = f"robomimic_{args.algo}_cfg_entry_point"
         task_name = args.task.split(":")[-1]
 
         print(f"Loading configuration for task: {task_name}")
         print(" ")
         cfg_entry_point_file = gym.spec(task_name).kwargs.pop(cfg_entry_point_key)
-        # check if entry point exists
         if cfg_entry_point_file is None:
             raise ValueError(
                 f"Could not find configuration for the environment: '{task_name}'."
                 f" Please check that the gym registry has the entry point: '{cfg_entry_point_key}'."
             )
 
-        # resolve module path if needed
         if ":" in cfg_entry_point_file:
             mod_name, file_name = cfg_entry_point_file.split(":")
             mod = importlib.import_module(mod_name)
@@ -385,8 +364,6 @@ def main(args: argparse.Namespace):
         with open(config_file) as f:
             ext_cfg = json.load(f)
             config = config_factory(ext_cfg["algo_name"])
-        # update config with external json - this will throw errors if
-        # the external config has keys not present in the base algo config
         with config.values_unlocked():
             config.update(ext_cfg)
     else:
@@ -401,7 +378,6 @@ def main(args: argparse.Namespace):
     if args.epochs is not None:
         config.train.num_epochs = args.epochs
 
-    # change location of experiment directory
     config.train.output_dir = os.path.abspath(
         os.path.join("./logs", args.log_dir, args.task)
     )
@@ -411,12 +387,10 @@ def main(args: argparse.Namespace):
     if args.normalize_training_actions:
         config.train.data = normalize_hdf5_actions(config, log_dir)
 
-    # get torch device
     device = TorchUtils.get_torch_device(try_to_use_cuda=config.train.cuda)
 
     config.lock()
 
-    # catch error during training and print it
     res_str = "finished run successfully!"
     try:
         train(config, device, log_dir, ckpt_dir, video_dir)
@@ -427,8 +401,6 @@ def main(args: argparse.Namespace):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-
-    # Experiment Name (for tensorboard, saving models, etc.)
     parser.add_argument(
         "--name",
         type=str,
@@ -436,7 +408,6 @@ if __name__ == "__main__":
         help="(optional) if provided, override the experiment name defined in the config",
     )
 
-    # Dataset path, to override the one in the config
     parser.add_argument(
         "--dataset",
         type=str,
@@ -466,8 +437,5 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    # run training
     main(args)
-    # close sim app
     simulation_app.close()

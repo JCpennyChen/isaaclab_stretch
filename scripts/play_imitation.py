@@ -1,134 +1,121 @@
 import argparse
 import sys
 import os
+import imageio
 
+# ==========================================
+# SETUP & IMPORTS
+# ==========================================
 from isaaclab.app import AppLauncher
 
-parser = argparse.ArgumentParser(description="Play imitation policy")
-parser.add_argument("--task", type=str, required=True, help="Name of the task")
+parser = argparse.ArgumentParser(description="Evaluate robomimic policy.")
 parser.add_argument(
-    "--checkpoint", type=str, required=True, help="Path to the .pth model file"
+    "--task", type=str, default="Isaac-Stretch-Cabinet-v0", help="Name of the task."
 )
+parser.add_argument(
+    "--checkpoint", type=str, required=True, help="Path to the .pth checkpoint."
+)
+parser.add_argument("--horizon", type=int, default=500, help="Horizon.")
+parser.add_argument("--num_rollouts", type=int, default=1, help="Number of rollouts.")
+parser.add_argument("--seed", type=int, default=101, help="Random seed.")
+parser.add_argument("--disable_fabric", action="store_true", default=False)
+
 AppLauncher.add_app_launcher_args(parser)
-args = parser.parse_args()
-args.enable_cameras = True
-args.headless = True
-app_launcher = AppLauncher(args)
+args_cli = parser.parse_args()
+
+args_cli.enable_cameras = True
+
+app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
-
-print("[Script] App launched with cameras enabled. Importing libraries...")
-
-task_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
-if task_config_path not in sys.path:
-    sys.path.append(task_config_path)
 
 import gymnasium as gym
 import torch
 import numpy as np
-import imageio
-import stretch.tasks  # Registers Template-Stretch-v0
 import robomimic.utils.file_utils as FileUtils
 import robomimic.utils.torch_utils as TorchUtils
-from isaaclab.actuators import ImplicitActuatorCfg
-from isaaclab.envs import mdp as isaac_mdp
+from isaaclab_tasks.utils import parse_env_cfg
 
+# ==========================================
+# 2. REGISTER CUSTOM ENVIRONMENT
+# ==========================================
+task_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
+if task_config_path not in sys.path:
+    sys.path.append(task_config_path)
 
-def main():
-    print(f"[Script] Loading checkpoint: {args.checkpoint}")
-    device = TorchUtils.get_torch_device(try_to_use_cuda=True)
+from stretch_env_cfg import StretchEnvCfg
 
-    policy, _ = FileUtils.policy_from_checkpoint(
-        ckpt_path=args.checkpoint, device=device, verbose=True
+if "Isaac-Stretch-Cabinet-v0" not in gym.envs.registry:
+    gym.register(
+        id="Isaac-Stretch-Cabinet-v0",
+        entry_point="isaaclab.envs:ManagerBasedRLEnv",
+        disable_env_checker=True,
+        kwargs={"env_cfg_entry_point": StretchEnvCfg},
     )
+
+
+# ==========================================
+# 3. ROLLOUT LOGIC
+# ==========================================
+def rollout(policy, env, horizon, device, video_path):
+    """Play one episode and save video."""
+    print(f"[INFO] Recording video to: {video_path}")
+
     policy.start_episode()
-
-    spec = gym.spec(args.task)
-    if "env_cfg_entry_point" in spec.kwargs:
-        cfg_cls = spec.kwargs["env_cfg_entry_point"]
-        cfg = cfg_cls()
-
-        print("[Fix] Overriding environment actions AND ACTUATORS...")
-        cfg.actions.base = None
-        cfg.actions.lift_velocity = None
-        cfg.actions.arm_velocity = None
-        cfg.actions.wrist_velocity = None
-        cfg.actions.gripper = None
-        cfg.actions.joint_pos_direct = isaac_mdp.JointPositionActionCfg(
-            asset_name="robot",
-            joint_names=[".*"],
-            scale=1.0,
-            use_default_offset=False,
-        )
-        strong_drive = ImplicitActuatorCfg(
-            joint_names_expr=[".*"],
-            stiffness=4000.0,
-            damping=100.0,
-            effort_limit=20000.0,
-            velocity_limit=100.0,
-        )
-        cfg.scene.robot.actuators = {"god_mode_drive": strong_drive}
-
-        env = gym.make(args.task, cfg=cfg, render_mode="rgb_array")
-    video_dir = os.path.join(os.path.dirname(args.checkpoint), "play_videos")
-    os.makedirs(video_dir, exist_ok=True)
-    video_path = os.path.join(video_dir, "rollout.mp4")
-    print(f"[Script] Video will be saved to: {video_path}")
+    obs_dict, _ = env.reset()
 
     frames = []
 
-    print("[Script] Resetting environment...")
-    obs, _ = env.reset()
+    for i in range(horizon):
+        if i % 2 == 0:
+            frame = env.render()
+            if frame is not None:
+                if isinstance(frame, list):
+                    frame = frame[0]
+                if isinstance(frame, np.ndarray) and frame.shape[-1] == 4:
+                    frame = frame[..., :3]
+                frames.append(frame)
 
-    print("[Script] Starting simulation loop (Limit: 400 steps)...")
-    try:
-        for step in range(400):
-            if step % 2 == 0:
-                frame = env.render()
-                if frame is not None and isinstance(frame, np.ndarray):
-                    if frame.shape[-1] == 4:
-                        frame = frame[..., :3]
-                    frames.append(frame)
+        obs_tensor = obs_dict["policy"]
+        if obs_tensor.ndim == 2:
+            obs_tensor = obs_tensor.squeeze(0)
+        robomimic_obs = {"policy": obs_tensor}
+        actions = policy(robomimic_obs)
+        actions = torch.from_numpy(actions).to(device=device)
+        if actions.ndim == 1:
+            actions = actions.unsqueeze(0)
 
-            if isinstance(obs, dict) and "policy" in obs:
-                current_obs = obs["policy"]
-            else:
-                current_obs = obs
+        obs_dict, _, terminated, truncated, _ = env.step(actions)
 
-            if not isinstance(current_obs, torch.Tensor):
-                current_obs = torch.tensor(
-                    current_obs, device=device, dtype=torch.float32
-                )
-            else:
-                current_obs = current_obs.to(device)
+        if i % 50 == 0:
+            print(f"Step {i}/{horizon}")
 
-            if current_obs.dim() == 1:
-                current_obs = current_obs.unsqueeze(0)
+        if terminated or truncated:
+            break
 
-            action = policy({"policy": current_obs})
-
-            if isinstance(action, np.ndarray):
-                action = torch.from_numpy(action).to(device)
-
-            if action.dim() == 1:
-                action = action.unsqueeze(0)
-
-            obs, _, _, _, _ = env.step(action)
-
-            if step % 50 == 0:
-                print(f"Step {step}/400")
-
-    except Exception as e:
-        print(f"[Error] Simulation failed: {e}")
-        import traceback
-
-        traceback.print_exc()
-
-    print(f"[Script] Saving video with {len(frames)} frames...")
     if len(frames) > 0:
-        imageio.mimsave(video_path, frames, fps=30)
-        print(f"✅ Video saved: {video_path}")
+        print(f"[INFO] Saving {len(frames)} frames...")
+        imageio.mimsave(video_path, frames, fps=60)
+        print("✅ Video saved successfully!")
     else:
-        print("❌ No frames captured.")
+        print("❌ No frames captured (Check if cameras are enabled).")
+
+
+def main():
+    video_dir = os.path.join(os.path.dirname(args_cli.checkpoint), "play_videos")
+    os.makedirs(video_dir, exist_ok=True)
+    video_path = os.path.join(video_dir, "rollout.mp4")
+
+    env_cfg = parse_env_cfg(args_cli.task, device=args_cli.device, num_envs=1)
+    env_cfg.observations.policy.concatenate_terms = True
+
+    env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array")
+
+    device = TorchUtils.get_torch_device(try_to_use_cuda=True)
+    policy, _ = FileUtils.policy_from_checkpoint(
+        ckpt_path=args_cli.checkpoint, device=device, verbose=True
+    )
+    with torch.inference_mode():
+        rollout(policy, env, args_cli.horizon, device, video_path)
 
     env.close()
 

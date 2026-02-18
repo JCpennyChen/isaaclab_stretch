@@ -11,7 +11,7 @@
     }
   },
   "train": {
-    "data": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/stretch_cabinet_demo.hdf5",
+    "data": [{"path": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/stretch_cabinet_demo.hdf5"}],
     "output_dir": null,
     "num_data_workers": 0,
     "hdf5_cache_mode": "all",

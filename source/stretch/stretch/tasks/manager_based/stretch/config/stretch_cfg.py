@@ -27,6 +27,9 @@ default_joint_map = dict(zip(curobo_joint_names, curobo_joint_values))
 STRETCH_CFG = ArticulationCfg(
     spawn=UsdFileCfg(
         usd_path=usd_full_path,
+        collision_props=sim_utils.CollisionPropertiesCfg(
+            collision_enabled=True, contact_offset=1e-3, rest_offset=0.0
+        ),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             max_depenetration_velocity=5.0,
@@ -42,11 +45,18 @@ STRETCH_CFG = ArticulationCfg(
         joint_pos=default_joint_map,
     ),
     actuators={
-        "all_joints": ImplicitActuatorCfg(
-            joint_names_expr=[".*"],
+        "body": ImplicitActuatorCfg(
+            joint_names_expr=["^(?!joint_gripper_finger_).*"],
             effort_limit=5000.0,
             stiffness=2000.0,
-            damping=150.0,
+            damping=500.0,
+            velocity_limit=100.0,
+        ),
+        "gripper": ImplicitActuatorCfg(
+            joint_names_expr=["joint_gripper_finger_.*"],
+            effort_limit=20000.0,
+            stiffness=20000.0,
+            damping=500.0,
             velocity_limit=100.0,
         ),
     },

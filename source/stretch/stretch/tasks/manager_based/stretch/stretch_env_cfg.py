@@ -7,43 +7,79 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
 from isaaclab.actuators import ImplicitActuatorCfg
+from isaaclab.envs.mdp import JointPositionAction
 from isaaclab.assets import ArticulationCfg
 from isaaclab.managers import EventTermCfg
 from isaaclab.managers import SceneEntityCfg
+from isaaclab.utils.math import quat_apply
 import isaaclab.sim as sim_utils
 import torch
-
 
 from isaaclab.envs import mdp as isaac_mdp
 from config.stretch_cfg import STRETCH_CFG
 
 
+class ReplicatedJointPositionAction(JointPositionAction):
+    """
+    Takes a 1-dimensional action and replicates it across all selected joints.
+    Useful for telescoping arms or parallel grippers.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._action_dim = 1
+
+    @property
+    def action_dim(self):
+        """Force the environment to see this as 1 dimension."""
+        return 1
+
+    def process_action(self, action: torch.Tensor):
+        expanded_action = action.expand(-1, self.num_joints)
+        super().process_action(expanded_action)
+
+
 def reward_distance_to_handle(
-    env, robot_cfg: SceneEntityCfg, cabinet_cfg: SceneEntityCfg
+    env, robot_cfg: SceneEntityCfg, cabinet_cfg: SceneEntityCfg, offset: list = None
 ):
     """
-    Reward for minimizing distance between the robot's grasp center and the cabinet handle.
+    Reward for minimizing distance to the handle, with an optional local offset.
     """
     gripper_pos = env.scene[robot_cfg.name].data.body_pos_w[:, robot_cfg.body_ids]
     handle_pos = env.scene[cabinet_cfg.name].data.body_pos_w[:, cabinet_cfg.body_ids]
-    distance = torch.norm(gripper_pos - handle_pos, dim=-1)
+    handle_quat = env.scene[cabinet_cfg.name].data.body_quat_w[:, cabinet_cfg.body_ids]
+
+    if offset is not None:
+        offset_vec = torch.tensor(offset, device=env.device).repeat(
+            handle_pos.shape[0], 1
+        )
+        target_pos = handle_pos + quat_apply(handle_quat, offset_vec)
+    else:
+        target_pos = handle_pos
+
+    distance = torch.norm(gripper_pos - target_pos, dim=-1)
     return 1.0 / (1.0 + distance.squeeze(-1) ** 2)
 
 
-def reward_cabinet_opened(env, cabinet_cfg: SceneEntityCfg):
+def reward_cabinet_opening_proportional(
+    env, cabinet_cfg: SceneEntityCfg, max_open: float = 0.4
+):
     """
-    Reward for opening the cabinet door.
+    Reward that scales non-linearly with how open the drawer is.
     """
     door_pos = env.scene[cabinet_cfg.name].data.joint_pos[:, cabinet_cfg.joint_ids]
-    return torch.sum(door_pos, dim=-1)
+    normalized_pos = torch.clamp(door_pos / max_open, min=0.0, max=1.0)
+    return torch.sum(torch.pow(normalized_pos, 2), dim=-1)
 
 
-def terminate_if_door_open(env, asset_cfg: SceneEntityCfg, threshold: float = 1.0):
+def position_rel(env, asset_cfg: SceneEntityCfg, target_cfg: SceneEntityCfg):
     """
-    Terminate the episode if the cabinet door is opened beyond 'threshold' radians.
+    Computes the relative position of a target body w.r.t to an asset body.
+    Returns: (target_pos - asset_pos)
     """
-    joint_pos = env.scene[asset_cfg.name].data.joint_pos[:, asset_cfg.joint_ids]
-    return torch.any(joint_pos > threshold, dim=-1)
+    asset_pos = env.scene[asset_cfg.name].data.body_pos_w[:, asset_cfg.body_ids[0]]
+    target_pos = env.scene[target_cfg.name].data.body_pos_w[:, target_cfg.body_ids[0]]
+    return target_pos - asset_pos
 
 
 @configclass
@@ -91,7 +127,6 @@ class StretchSceneCfg(InteractiveSceneCfg):
         spawn=sim_utils.CuboidCfg(
             size=(0.3, 0.3, 0.3),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0)),
-            # Add these to enable physics/gravity:
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),
             collision_props=sim_utils.CollisionPropertiesCfg(),
             mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
@@ -109,36 +144,22 @@ class StretchSceneCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the Stretch."""
 
-    # 1. BASE
-    base = isaac_mdp.JointVelocityActionCfg(
+    body_joints = isaac_mdp.JointPositionActionCfg(
         asset_name="robot",
-        joint_names=["rotate_z", "base_forward"],
-        scale=1.0,
+        joint_names=[
+            "rotate_z",
+            "base_forward",
+            "joint_lift",
+            "joint_wrist_.*",
+            "joint_gripper_.*",
+        ],
         use_default_offset=False,
     )
-    # 2. LIFT
-    lift_velocity = isaac_mdp.JointVelocityActionCfg(
+
+    arm_extension = isaac_mdp.JointPositionActionCfg(
+        class_type=ReplicatedJointPositionAction,
         asset_name="robot",
-        joint_names=["joint_lift"],
-        scale=1.0,
-    )
-    # 3. ARM
-    arm_velocity = isaac_mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=["joint_arm_l.*"],
-        scale=1.0,
-    )
-    # 4. WRIST (
-    wrist_velocity = isaac_mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=["joint_wrist_yaw", "joint_wrist_pitch", "joint_wrist_roll"],
-        scale=1.0,
-    )
-    # 5. GRIPPER
-    gripper = isaac_mdp.JointPositionActionCfg(
-        asset_name="robot",
-        joint_names=["joint_gripper_finger_.*"],
-        scale=1.0,
+        joint_names=["joint_arm_.*"],
         use_default_offset=False,
     )
 
@@ -158,27 +179,46 @@ class ObservationsCfg:
             params={"asset_cfg": SceneEntityCfg("cabinet")},
         )
 
-        # Cabinet Base Position (XYZ)
-        cabinet_base_pos = ObsTerm(
-            func=isaac_mdp.root_pos_w,
-            params={"asset_cfg": SceneEntityCfg("cabinet")},
-        )
+        # # Cabinet Base Position (XYZ)
+        # cabinet_base_pos = ObsTerm(
+        #     func=isaac_mdp.root_pos_w,
+        #     params={"asset_cfg": SceneEntityCfg("cabinet")},
+        # )
 
-        # Robot Base Position (XYZ)
-        robot_root_pos = ObsTerm(
-            func=isaac_mdp.root_pos_w, params={"asset_cfg": SceneEntityCfg("robot")}
-        )
+        # # Robot Base Position (XYZ)
+        # robot_root_pos = ObsTerm(
+        #     func=isaac_mdp.root_pos_w, params={"asset_cfg": SceneEntityCfg("robot")}
+        # )
 
-        # Robot Base Rotation (Quaternion)
-        robot_root_rot = ObsTerm(
-            func=isaac_mdp.root_quat_w, params={"asset_cfg": SceneEntityCfg("robot")}
-        )
+        # # Robot Base Rotation (Quaternion)
+        # robot_root_rot = ObsTerm(
+        #     func=isaac_mdp.root_quat_w, params={"asset_cfg": SceneEntityCfg("robot")}
+        # )
 
         # Gripper Center Pose (Position + Rotation)
         eef_pose = ObsTerm(
             func=isaac_mdp.body_pose_w,
             params={
                 "asset_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"])
+            },
+        )
+
+        # Relative position from gripper center to cabinet handle
+        handle_rel = ObsTerm(
+            func=position_rel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"]),
+                "target_cfg": SceneEntityCfg(
+                    "cabinet", body_names=["drawer_handle_top"]
+                ),
+            },
+        )
+
+        # Gripper Finger Positions
+        gripper_state = ObsTerm(
+            func=isaac_mdp.joint_pos_rel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=["joint_gripper_.*"]),
             },
         )
 
@@ -204,27 +244,27 @@ class RewardsCfg:
     # 1. Survival
     alive = RewTerm(func=isaac_mdp.is_alive, weight=1.0)
 
-    # 2. Reaching the Handle
+    # 2. Opening the Door
+    door_opening = RewTerm(
+        func=reward_cabinet_opening_proportional,
+        weight=50.0,
+        params={
+            "cabinet_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"]),
+            "max_open": 0.4,
+        },
+    )
+
     reach_handle = RewTerm(
         func=reward_distance_to_handle,
-        weight=2.0,
+        weight=10.0,
         params={
             "robot_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"]),
             "cabinet_cfg": SceneEntityCfg("cabinet", body_names=["drawer_handle_top"]),
+            "offset": [0.305, 0.0, 0.01],
         },
     )
 
-    # 3. Opening the Door
-    door_opening = RewTerm(
-        func=reward_cabinet_opened,
-        weight=10.0,
-        params={
-            # Make sure you have 'joint_names' here!
-            "cabinet_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"]),
-        },
-    )
-
-    # 4. Penalties (Penalize large, jerky actions to keep movement smooth)
+    # 4. Penalize large, jerky actions to keep movement smooth
     action_rate = RewTerm(func=isaac_mdp.action_rate_l2, weight=-0.01)
 
     # 5. Penalize high joint velocities
@@ -241,16 +281,6 @@ class TerminationsCfg:
 
     # 1. Time Out
     time_out = DoneTerm(func=isaac_mdp.time_out, time_out=True)
-
-    # 2. Success Condition
-
-    door_is_open = DoneTerm(
-        func=terminate_if_door_open,
-        params={
-            "asset_cfg": SceneEntityCfg("cabinet", joint_names=["door_left_joint"]),
-            "threshold": 1.0,
-        },
-    )
 
 
 @configclass
