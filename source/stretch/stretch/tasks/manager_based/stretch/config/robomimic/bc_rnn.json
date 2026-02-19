@@ -21,18 +21,18 @@
   "train": {
     "data": "/mnt/shared_ssd/JohnChen/stretch/datasets/stretch_cabinet_demo.hdf5",
     "output_dir": "../bc_rnn_trained_models",
-    "num_data_workers": 4,
+    "num_data_workers": 8,
     "hdf5_cache_mode": "all",
     "hdf5_use_swmr": true,
-    "hdf5_normalize_obs": true,
+    "hdf5_normalize_obs": false,
     "hdf5_filter_key": "train",
     "hdf5_validation_filter_key": "valid",
     "seq_length": 30,
     "dataset_keys": ["actions", "rewards", "dones"],
     "action_keys": ["actions"],
     "cuda": true,
-    "batch_size": 256,
-    "num_epochs": 200,
+    "batch_size": 1024,
+    "num_epochs": 500,
     "seed": 1
   },
   "algo": {
@@ -42,7 +42,7 @@
         "learning_rate": {
           "initial": 1e-4,
           "decay_factor": 0.1,
-          "epoch_schedule": []
+          "epoch_schedule": [300, 400]
         },
         "regularization": {
           "L2": 0.0
@@ -54,11 +54,11 @@
       "l1_weight": 1.0,
       "cos_weight": 0.1
     },
-    "actor_layer_dims": [400, 400],
+    "actor_layer_dims": [256, 256],
     "rnn": {
       "enabled": true,
-      "horizon": 10,
-      "hidden_dim": 400,
+      "horizon": 20,
+      "hidden_dim": 256,
       "rnn_type": "LSTM",
       "num_layers": 2,
       "open_loop": false,

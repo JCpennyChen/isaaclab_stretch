@@ -13,6 +13,7 @@ parser.add_argument(
     "--headless", action="store_true", default=False, help="Force display off"
 )
 args_cli = parser.parse_args()
+args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
@@ -214,6 +215,17 @@ def main():
         # PLANNER TRIGGER
         # ==========================================
         robot_entity = env.scene["robot"]
+        body_joint_names = [
+            "rotate_z",
+            "base_forward",
+            "joint_lift",
+            "joint_wrist_.*",
+            "joint_gripper_.*",
+        ]
+        body_indices, _ = robot_entity.find_joints(body_joint_names)
+
+        arm_joint_names = ["joint_arm_.*"]
+        arm_indices, _ = robot_entity.find_joints(arm_joint_names)
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
         vel_threshold = 2.0 if phase_two_done else 0.5
         is_static = robot_velocity < vel_threshold
@@ -328,7 +340,13 @@ def main():
         else:
             actions[0, gripper_idx] = GRIPPER_OPEN_POS
 
-        obs, rew, terminated, truncated, extras = env.step(actions)
+        full_action = actions[0]
+        body_vals = full_action[body_indices]
+        arm_vals = full_action[arm_indices]
+        arm_avg = torch.mean(arm_vals).unsqueeze(0)
+        env_actions = torch.cat([body_vals, arm_avg]).unsqueeze(0)
+
+        obs, rew, terminated, truncated, extras = env.step(env_actions)
         step_count += 1
 
     env.close()

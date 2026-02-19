@@ -12,6 +12,7 @@ from isaaclab.assets import ArticulationCfg
 from isaaclab.managers import EventTermCfg
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils.math import quat_apply
+from isaaclab.sensors import CameraCfg
 import isaaclab.sim as sim_utils
 import torch
 
@@ -86,7 +87,7 @@ def position_rel(env, asset_cfg: SceneEntityCfg, target_cfg: SceneEntityCfg):
 class StretchSceneCfg(InteractiveSceneCfg):
     """Configuration for the scene with the Stretch robot."""
 
-    # Ground Plane
+    # 1. Ground Plane
     bg_env = AssetBaseCfg(
         prim_path="/World/Env",
         spawn=sim_utils.UsdFileCfg(
@@ -94,7 +95,7 @@ class StretchSceneCfg(InteractiveSceneCfg):
         ),
     )
 
-    # Cabinet
+    # 2. Cabinet
     cabinet = ArticulationCfg(
         prim_path="{ENV_REGEX_NS}/Cabinet",
         spawn=sim_utils.UsdFileCfg(
@@ -121,7 +122,7 @@ class StretchSceneCfg(InteractiveSceneCfg):
         },
     )
 
-    # Obstacle Cube
+    # 3. Obstacle Cube
     obstacle_cube = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/ObstacleCube",
         spawn=sim_utils.CuboidCfg(
@@ -134,9 +135,24 @@ class StretchSceneCfg(InteractiveSceneCfg):
         init_state=AssetBaseCfg.InitialStateCfg(pos=(1.0, 0.0, 0.5)),
     )
 
-    # Robot
+    # 4. Robot MUST BE DEFINED BEFORE THE CAMERA
     robot = STRETCH_CFG.replace(
         prim_path="{ENV_REGEX_NS}/Robot",
+    )
+
+    # 5. Head Camera (Now it can safely find the robot's camera_color_frame)
+    head_camera = CameraCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/camera_color_frame/camera",
+        update_period=0.1,
+        height=480,
+        width=640,
+        data_types=["rgb", "distance_to_image_plane"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=24.0,
+            focus_distance=400.0,
+            horizontal_aperture=20.955,
+            clipping_range=(0.1, 1.0e5),
+        ),
     )
 
 
@@ -178,22 +194,6 @@ class ObservationsCfg:
             func=isaac_mdp.joint_pos,
             params={"asset_cfg": SceneEntityCfg("cabinet")},
         )
-
-        # # Cabinet Base Position (XYZ)
-        # cabinet_base_pos = ObsTerm(
-        #     func=isaac_mdp.root_pos_w,
-        #     params={"asset_cfg": SceneEntityCfg("cabinet")},
-        # )
-
-        # # Robot Base Position (XYZ)
-        # robot_root_pos = ObsTerm(
-        #     func=isaac_mdp.root_pos_w, params={"asset_cfg": SceneEntityCfg("robot")}
-        # )
-
-        # # Robot Base Rotation (Quaternion)
-        # robot_root_rot = ObsTerm(
-        #     func=isaac_mdp.root_quat_w, params={"asset_cfg": SceneEntityCfg("robot")}
-        # )
 
         # Gripper Center Pose (Position + Rotation)
         eef_pose = ObsTerm(
@@ -279,7 +279,6 @@ class RewardsCfg:
 class TerminationsCfg:
     """Termination terms for ending the episode."""
 
-    # 1. Time Out
     time_out = DoneTerm(func=isaac_mdp.time_out, time_out=True)
 
 

@@ -22,6 +22,7 @@ parser.add_argument(
     "--num_demos", type=int, default=10, help="Target number of successful demos"
 )
 args_cli = parser.parse_args()
+args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
@@ -484,7 +485,7 @@ def main():
                     )
                     collector.reset_buffer()
                     obs, _ = env.reset()
-                    randomize_cabinet()
+                    # randomize_cabinet()
                     initial_handle_pos = cabinet_entity.data.body_pos_w[
                         0, handle_body_idx
                     ].clone()
@@ -602,7 +603,7 @@ def main():
 
                 obs, _ = env.reset()
 
-                randomize_cabinet()
+                # randomize_cabinet()
                 initial_handle_pos = cabinet_entity.data.body_pos_w[
                     0, handle_body_idx
                 ].clone()
