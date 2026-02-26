@@ -87,7 +87,6 @@ def position_rel(env, asset_cfg: SceneEntityCfg, target_cfg: SceneEntityCfg):
 class StretchSceneCfg(InteractiveSceneCfg):
     """Configuration for the scene with the Stretch robot."""
 
-    # 1. Ground Plane
     bg_env = AssetBaseCfg(
         prim_path="/World/Env",
         spawn=sim_utils.UsdFileCfg(
@@ -95,7 +94,6 @@ class StretchSceneCfg(InteractiveSceneCfg):
         ),
     )
 
-    # 2. Cabinet
     cabinet = ArticulationCfg(
         prim_path="{ENV_REGEX_NS}/Cabinet",
         spawn=sim_utils.UsdFileCfg(
@@ -117,12 +115,11 @@ class StretchSceneCfg(InteractiveSceneCfg):
                 effort_limit=50.0,
                 velocity_limit=100.0,
                 stiffness=0.0,
-                damping=10.0,
+                damping=200.0,
             ),
         },
     )
 
-    # 3. Obstacle Cube
     obstacle_cube = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/ObstacleCube",
         spawn=sim_utils.CuboidCfg(
@@ -135,12 +132,10 @@ class StretchSceneCfg(InteractiveSceneCfg):
         init_state=AssetBaseCfg.InitialStateCfg(pos=(1.0, 0.0, 0.5)),
     )
 
-    # 4. Robot MUST BE DEFINED BEFORE THE CAMERA
     robot = STRETCH_CFG.replace(
         prim_path="{ENV_REGEX_NS}/Robot",
     )
 
-    # 5. Head Camera (Now it can safely find the robot's camera_color_frame)
     head_camera = CameraCfg(
         prim_path="{ENV_REGEX_NS}/Robot/camera_color_frame/camera",
         update_period=0.1,
@@ -152,6 +147,11 @@ class StretchSceneCfg(InteractiveSceneCfg):
             focus_distance=400.0,
             horizontal_aperture=20.955,
             clipping_range=(0.1, 1.0e5),
+        ),
+        offset=CameraCfg.OffsetCfg(
+            pos=(0.0, 0.0, 0.0),
+            rot=(0.0, 0.0, 0.0, 1.0),
+            convention="ros",
         ),
     )
 
@@ -254,20 +254,20 @@ class RewardsCfg:
         },
     )
 
-    reach_handle = RewTerm(
-        func=reward_distance_to_handle,
-        weight=10.0,
-        params={
-            "robot_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"]),
-            "cabinet_cfg": SceneEntityCfg("cabinet", body_names=["drawer_handle_top"]),
-            "offset": [0.305, 0.0, 0.01],
-        },
-    )
+    # reach_handle = RewTerm(
+    #     func=reward_distance_to_handle,
+    #     weight=10.0,
+    #     params={
+    #         "robot_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"]),
+    #         "cabinet_cfg": SceneEntityCfg("cabinet", body_names=["drawer_handle_top"]),
+    #         "offset": [0.305, 0.0, 0.01],
+    #     },
+    # )
 
-    # 4. Penalize large, jerky actions to keep movement smooth
+    # Penalize large, jerky actions to keep movement smooth
     action_rate = RewTerm(func=isaac_mdp.action_rate_l2, weight=-0.01)
 
-    # 5. Penalize high joint velocities
+    # Penalize high joint velocities
     joint_vel = RewTerm(
         func=isaac_mdp.joint_vel_l2,
         weight=-0.001,

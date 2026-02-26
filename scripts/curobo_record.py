@@ -21,6 +21,13 @@ parser.add_argument(
 parser.add_argument(
     "--num_demos", type=int, default=10, help="Target number of successful demos"
 )
+parser.add_argument(
+    "--ratio",
+    type=float,
+    default=0.1,
+    help="Fraction of dataset to use for validation (0.0 to 1.0)",
+)
+
 args_cli = parser.parse_args()
 args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
@@ -33,9 +40,9 @@ target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/st
 if target_config_dir not in sys.path:
     sys.path.append(target_config_dir)
 
-from stretch_env_cfg import StretchEnvCfg
+from stretch_bc_rnn_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
-from isaaclab.utils.math import combine_frame_transforms
+from isaaclab.utils.math import combine_frame_transforms, quat_inv, quat_apply, quat_mul
 from isaacsim.core.prims import XFormPrim
 
 # ==========================================
@@ -46,7 +53,6 @@ from curobo.types.base import TensorDeviceType
 from curobo.types.math import Pose
 from curobo.types.robot import JointState
 from curobo.util.logger import setup_curobo_logger
-from curobo.util.usd_helper import UsdHelper
 from curobo.util_file import load_yaml
 from curobo.geom.sdf.world import CollisionCheckerType
 from curobo.wrap.reacher.motion_gen import (
@@ -255,6 +261,7 @@ def main():
         directory_path=log_dir,
         filename=args_cli.filename,
         num_demos=args_cli.num_demos,
+        val_ratio=args_cli.ratio,
     )
 
     robot_cfg = load_yaml(CUROBO_CONFIG_PATH)["robot_cfg"]
@@ -283,11 +290,15 @@ def main():
     )
 
     motion_gen = MotionGen(motion_gen_config)
+
+    if (
+        hasattr(motion_gen, "self_collision_checker")
+        and motion_gen.self_collision_checker is not None
+    ):
+        motion_gen.self_collision_checker.min_dist = 0.005
+
     print("[CuRobo] Warming up...")
     motion_gen.warmup(enable_graph=True)
-
-    usd_help = UsdHelper()
-    usd_help.load_stage(env.sim.stage)
 
     plan_config = MotionGenPlanConfig(
         enable_graph=False,
@@ -313,8 +324,6 @@ def main():
         new_pos[0] += rand_x[0]
         new_pos[1] += rand_y[0]
 
-        print(f"--> [DEBUG] Cabinet Position: {new_pos.cpu().numpy()}")
-
         cabinet_view.set_world_poses(
             positions=new_pos.unsqueeze(0), orientations=default_cabinet_rot
         )
@@ -325,14 +334,6 @@ def main():
 
         cabinet_articulation.write_root_pose_to_sim(root_state[:, :7])
         cabinet_articulation.write_root_velocity_to_sim(root_state[:, 7:])
-
-        # Force Update World immediately after moving cabinet
-        base_env_path = "/World/envs/env_0"
-        obstacles = usd_help.get_obstacles_from_stage(
-            only_paths=[f"{base_env_path}/Cabinet", f"{base_env_path}/ObstacleCube"],
-            ignore_substring=[f"{base_env_path}/Robot"],
-        ).get_collision_check_world()
-        motion_gen.update_world(obstacles)
 
     cabinet_entity = env.scene["cabinet"]
     handle_body_idx = cabinet_entity.data.body_names.index("drawer_handle_top")
@@ -361,9 +362,12 @@ def main():
             print(f"[SUCCESS] Collected {args_cli.num_demos} demos. Stopping.")
             break
 
-        # --- Determine Target Pose ---
         if target_pose is None:
-            curr_pos, curr_quat = target_frame_view.get_world_poses()
+            curr_pos, _ = target_frame_view.get_world_poses()
+
+            cabinet_prim_path = "/World/envs/env_0/Cabinet"
+            cabinet_view = XFormPrim(cabinet_prim_path, name="cabinet")
+            _, cabinet_rot = cabinet_view.get_world_poses()
 
             if not phase_one_done:
                 print(
@@ -381,45 +385,35 @@ def main():
                 print(f"[Logic] Phase 3: Planning Pull {PHASE_OFFSETS['pull']}...")
                 front_offset = torch.tensor([PHASE_OFFSETS["pull"]], device=env.device)
 
-            target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
             target_pos_w, _ = combine_frame_transforms(
                 curr_pos[0:1], cabinet_rot, front_offset
             )
-            target_pose = Pose(position=target_pos_w, quaternion=target_quat_w)
+            target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
 
-        # ==========================================
-        # DYNAMIC OBSTACLE UPDATE
-        # ==========================================
-        needs_update = (step_count % 60 == 0 and step_count > 0) or (
-            phase_two_done and trajectory is None
-        )
-        if needs_update:
-            base_env_path = "/World/envs/env_0"
-            obstacle_paths = [
-                f"{base_env_path}/Cabinet",
-                f"{base_env_path}/ObstacleCube",
-            ]
+            robot = env.scene["robot"]
+            robot_pos_w = robot.data.root_state_w[0:1, :3]
+            robot_quat_w = robot.data.root_state_w[0:1, 3:7]
 
-            if phase_one_done:
-                obstacle_paths = [f"{base_env_path}/ObstacleCube"]
+            rel_pos = target_pos_w - robot_pos_w
 
-            obstacles = usd_help.get_obstacles_from_stage(
-                only_paths=obstacle_paths,
-                ignore_substring=[f"{base_env_path}/Robot"],
-            ).get_collision_check_world()
-            motion_gen.update_world(obstacles)
+            target_pos_r = quat_apply(quat_inv(robot_quat_w), rel_pos)
+            target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
+
+            target_pose = Pose(position=target_pos_r, quaternion=target_quat_r)
 
         # ==========================================
         # PLANNER TRIGGER
         # ==========================================
         robot_entity = env.scene["robot"]
-
         body_joint_names = [
-            "rotate_z",
-            "base_forward",
+            "joint_x",
+            "joint_y",
+            "joint_rot_z",
             "joint_lift",
             "joint_wrist_.*",
             "joint_gripper_.*",
+            "joint_arm_.*",
+            "joint_head_.*",
         ]
         body_indices, _ = robot_entity.find_joints(body_joint_names)
 
@@ -485,7 +479,7 @@ def main():
                     )
                     collector.reset_buffer()
                     obs, _ = env.reset()
-                    # randomize_cabinet()
+                    randomize_cabinet()
                     initial_handle_pos = cabinet_entity.data.body_pos_w[
                         0, handle_body_idx
                     ].clone()
@@ -569,9 +563,7 @@ def main():
 
         full_action = actions[0]
         body_vals = full_action[body_indices]
-        arm_vals = full_action[arm_indices]
-        arm_avg = torch.mean(arm_vals).unsqueeze(0)
-        env_actions = torch.cat([body_vals, arm_avg]).unsqueeze(0)
+        env_actions = torch.cat([body_vals]).unsqueeze(0)
 
         next_obs, rew, terminated, truncated, extras = env.step(env_actions)
 
@@ -603,7 +595,7 @@ def main():
 
                 obs, _ = env.reset()
 
-                # randomize_cabinet()
+                randomize_cabinet()
                 initial_handle_pos = cabinet_entity.data.body_pos_w[
                     0, handle_body_idx
                 ].clone()

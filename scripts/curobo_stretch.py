@@ -24,9 +24,9 @@ target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/st
 if target_config_dir not in sys.path:
     sys.path.append(target_config_dir)
 
-from stretch_env_cfg import StretchEnvCfg
+from stretch_bc_rnn_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
-from isaaclab.utils.math import combine_frame_transforms
+from isaaclab.utils.math import combine_frame_transforms, quat_inv, quat_apply, quat_mul
 from isaacsim.core.prims import XFormPrim
 
 from curobo.geom.types import WorldConfig, Cuboid
@@ -34,7 +34,6 @@ from curobo.types.base import TensorDeviceType
 from curobo.types.math import Pose
 from curobo.types.robot import JointState
 from curobo.util.logger import setup_curobo_logger
-from curobo.util.usd_helper import UsdHelper
 from curobo.util_file import load_yaml
 from curobo.geom.sdf.world import CollisionCheckerType
 from curobo.wrap.reacher.motion_gen import (
@@ -70,9 +69,9 @@ PLANNER_CONFIG = {
 }
 
 PHASE_OFFSETS = {
-    "safe_spot": [0.05, 0.0, 0.02],
-    "insert": [-0.03, 0.0, 0.02],
-    "pull": [0.45, 0.0, 0.02],
+    "safe_spot": [0.05, 0.0, 0.03],
+    "insert": [-0.05, 0.0, 0.03],
+    "pull": [0.45, 0.0, 0.03],
 }
 
 LINEAR_PLAN_CONFIG = MotionGenPlanConfig(
@@ -114,7 +113,6 @@ def main():
         ]
     )
 
-    # 1. SETUP MOTION GEN
     motion_gen_config = MotionGenConfig.load_from_robot_config(
         robot_cfg,
         dummy_world,
@@ -128,11 +126,14 @@ def main():
     )
     motion_gen = MotionGen(motion_gen_config)
 
+    if (
+        hasattr(motion_gen, "self_collision_checker")
+        and motion_gen.self_collision_checker is not None
+    ):
+        motion_gen.self_collision_checker.min_dist = 0.005
+
     print("[CuRobo] Warming up...")
     motion_gen.warmup(enable_graph=True)
-
-    usd_help = UsdHelper()
-    usd_help.load_stage(env.sim.stage)
 
     plan_config = MotionGenPlanConfig(
         enable_graph=False,
@@ -186,52 +187,37 @@ def main():
             )
             target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
 
-            target_pose = Pose(position=target_pos_w, quaternion=target_quat_w)
+            robot = env.scene["robot"]
+            robot_pos_w = robot.data.root_state_w[0:1, :3]
+            robot_quat_w = robot.data.root_state_w[0:1, 3:7]
 
-        # ==========================================
-        # DYNAMIC OBSTACLE UPDATE
-        # ==========================================
-        needs_update = (step_count % 60 == 0 and step_count > 0) or (
-            phase_two_done and trajectory is None
-        )
+            rel_pos = target_pos_w - robot_pos_w
 
-        if needs_update:
-            base_env_path = "/World/envs/env_0"
-            obstacle_paths = [
-                f"{base_env_path}/Cabinet",
-                f"{base_env_path}/ObstacleCube",
-            ]
+            target_pos_r = quat_apply(quat_inv(robot_quat_w), rel_pos)
+            target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
 
-            if phase_one_done:
-                obstacle_paths = [f"{base_env_path}/ObstacleCube"]
-
-            obstacles = usd_help.get_obstacles_from_stage(
-                only_paths=obstacle_paths,
-                ignore_substring=[f"{base_env_path}/Robot"],
-            ).get_collision_check_world()
-            motion_gen.update_world(obstacles)
+            target_pose = Pose(position=target_pos_r, quaternion=target_quat_r)
 
         # ==========================================
         # PLANNER TRIGGER
         # ==========================================
         robot_entity = env.scene["robot"]
         body_joint_names = [
-            "rotate_z",
-            "base_forward",
+            "joint_x",
+            "joint_y",
+            "joint_rot_z",
             "joint_lift",
             "joint_wrist_.*",
             "joint_gripper_.*",
+            "joint_arm_.*",
+            "joint_head_.*",
         ]
         body_indices, _ = robot_entity.find_joints(body_joint_names)
-
-        arm_joint_names = ["joint_arm_.*"]
-        arm_indices, _ = robot_entity.find_joints(arm_joint_names)
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
         vel_threshold = 2.0 if phase_two_done else 0.5
         is_static = robot_velocity < vel_threshold
-        force_plan = phase_two_done and trajectory is None
 
-        if trajectory is None and step_count > 5 and (is_static or force_plan):
+        if trajectory is None and step_count > 5 and is_static:
             current_phase = "1"
             if phase_one_done:
                 current_phase = "2"
@@ -288,9 +274,10 @@ def main():
 
         if trajectory is not None:
             if traj_idx >= len(trajectory.position):
+                target_state = trajectory[-1]
+
                 if not phase_one_done:
                     transition_timer += 1
-                    target_state = trajectory[-1]
                     if transition_timer > TRANSITION_WAIT_STEPS:
                         print("--> Phase 1 Done. Switching to Phase 2...")
                         hold_joints = actions.clone()
@@ -301,10 +288,9 @@ def main():
                         transition_timer = 0
 
                 elif not phase_two_done:
-                    target_state = trajectory[-1]
                     gripper_timer += 1
                     if gripper_timer > GRIPPER_LOCK_STEPS:
-                        print("--> Gripper Locked! Switching to Phase 3 (Pull)...")
+                        print("--> Gripper Locked! Switching to Phase 3...")
                         phase_two_done = True
                         hold_joints = actions.clone()
                         trajectory = None
@@ -313,7 +299,6 @@ def main():
                         gripper_timer = 0
 
                 else:
-                    target_state = trajectory[-1]
                     phase_three_done = True
 
             else:
@@ -342,9 +327,7 @@ def main():
 
         full_action = actions[0]
         body_vals = full_action[body_indices]
-        arm_vals = full_action[arm_indices]
-        arm_avg = torch.mean(arm_vals).unsqueeze(0)
-        env_actions = torch.cat([body_vals, arm_avg]).unsqueeze(0)
+        env_actions = torch.cat([body_vals]).unsqueeze(0)
 
         obs, rew, terminated, truncated, extras = env.step(env_actions)
         step_count += 1

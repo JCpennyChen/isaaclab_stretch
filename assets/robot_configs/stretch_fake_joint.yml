@@ -9,13 +9,10 @@
 ## its affiliates is strictly prohibited.
 ##
 
-
-
-
-
 robot_cfg:
   kinematics:
-    usd_path: "assets/robot/stretch_fake_joint.usd"
+    use_usd_kinematics: False
+    usd_path: "robot/stretch_fake_joint.usd"
     usd_robot_root: "robot"
     isaac_usd_path: ""
     usd_flip_joints: {}
@@ -27,7 +24,7 @@ robot_cfg:
     base_link: "base_ground"
     ee_link: "link_grasp_center"
     link_names: null
-    lock_joints: {"joint_gripper_finger_left": 0.00, "joint_gripper_finger_right": 0.0}
+    lock_joints: {"joint_gripper_finger_left": 0, "joint_gripper_finger_right": 0,  "joint_head_pan": 0,"joint_head_tilt": 0} # Dict[str, float]
     extra_links: null
 
 
@@ -275,29 +272,27 @@ robot_cfg:
     
     cspace:
       joint_names: [
-        # "joint_right_wheel",
-        # "joint_left_wheel",
         "joint_lift",
         "joint_arm_l3",
         "joint_arm_l2",
         "joint_arm_l1",
         "joint_arm_l0",
         "joint_wrist_yaw",
-        "joint_head_pan",
-        "joint_head_tilt",
         "joint_wrist_pitch",
         "joint_wrist_roll",
-        "joint_gripper_finger_right",
-        "joint_gripper_finger_left",
-        "rotate_z",
-        "base_forward",
-
-        # "dex_gripper_1",
-        # "dex_gripper_2"      
+        "joint_x",
+        "joint_y",
+        "joint_rot_z",
+    
       ] # List[str], removed the fixed joints
 
-      retract_config: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # List[float]
-      null_space_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # List[float]
-      cspace_distance_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # List[float]
+      # retract_config: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.6, 0.6, 0.0, 0.0] # List[float]
+      # null_space_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # List[float]
+      # cspace_distance_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # List[float]
+
+      retract_config: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # List[float]
+      null_space_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # List[float]
+      cspace_distance_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 , 1.0] # List[float]
+
       max_jerk: 500.0
       max_acceleration: 15.0

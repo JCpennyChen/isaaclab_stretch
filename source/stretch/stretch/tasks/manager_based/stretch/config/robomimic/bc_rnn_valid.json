@@ -9,12 +9,11 @@
     },
     "save": {
       "enabled": true,
-      "every_n_epochs": 50,
       "on_best_validation": true,
       "on_best_rollout_success_rate": false
     },
     "rollout": {
-      "enabled": false
+      "enabled": true
     },
     "render": false
   },
@@ -24,7 +23,7 @@
     "num_data_workers": 8,
     "hdf5_cache_mode": "all",
     "hdf5_use_swmr": true,
-    "hdf5_normalize_obs": false,
+    "hdf5_normalize_obs": true,
     "hdf5_filter_key": "train",
     "hdf5_validation_filter_key": "valid",
     "seq_length": 30,
@@ -32,7 +31,7 @@
     "action_keys": ["actions"],
     "cuda": true,
     "batch_size": 1024,
-    "num_epochs": 500,
+    "num_epochs": 5000,
     "seed": 1
   },
   "algo": {
@@ -40,9 +39,9 @@
       "policy": {
         "optimizer_type": "adam",
         "learning_rate": {
-          "initial": 1e-4,
+          "initial": 0.0001,
           "decay_factor": 0.1,
-          "epoch_schedule": [300, 400]
+          "epoch_schedule": [3000, 4000]
         },
         "regularization": {
           "L2": 0.0
@@ -50,9 +49,9 @@
       }
     },
     "loss": {
-      "l2_weight": 0.0,
-      "l1_weight": 1.0,
-      "cos_weight": 0.1
+      "l2_weight": 1.0,
+      "l1_weight": 0.0,
+      "cos_weight": 0.0
     },
     "actor_layer_dims": [256, 256],
     "rnn": {

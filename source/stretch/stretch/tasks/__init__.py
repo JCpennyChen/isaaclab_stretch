@@ -10,7 +10,7 @@ from isaaclab_tasks.utils import import_packages
 
 # 1. Import your Environment Configuration
 # Make sure this path matches where your stretch_env_cfg.py actually lives
-from .manager_based.stretch.stretch_env_cfg import StretchEnvCfg
+from .manager_based.stretch.stretch_rl_cfg import StretchEnvCfg
 
 # 2. Define the path to your Training Config (bc.yaml)
 # This assumes you created the file at: .../tasks/manager_based/stretch/config/robomimic/bc.json

@@ -42,7 +42,7 @@ task_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/str
 if task_config_path not in sys.path:
     sys.path.append(task_config_path)
 
-from stretch_env_cfg import StretchEnvCfg
+from stretch_bc_rnn_cfg import StretchEnvCfg
 
 if "Isaac-Stretch-Cabinet-v0" not in gym.envs.registry:
     gym.register(

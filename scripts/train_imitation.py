@@ -19,7 +19,7 @@ if task_config_path not in sys.path:
 
 import gym
 import gymnasium
-from stretch_env_cfg import StretchEnvCfg
+from stretch_bc_rnn_cfg import StretchEnvCfg
 
 bc_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.json"
 bc_rnn_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_rnn.json"
