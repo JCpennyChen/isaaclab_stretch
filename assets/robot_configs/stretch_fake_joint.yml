@@ -9,7 +9,12 @@
 ## its affiliates is strictly prohibited.
 ##
 
+
+
+
+
 robot_cfg:
+
   kinematics:
     use_usd_kinematics: False
     usd_path: "robot/stretch_fake_joint.usd"
@@ -18,7 +23,7 @@ robot_cfg:
     usd_flip_joints: {}
     usd_flip_joint_limits: []
 
-    urdf_path: "assets/robot_raw/stretch_description_RE2V0_fake_joint.urdf"
+    urdf_path: "robot_raw/stretch_description_RE2V0_fake_joint.urdf"
     asset_root_path: "robot_raw/meshes"
 
     base_link: "base_ground"

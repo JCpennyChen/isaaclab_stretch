@@ -1,7 +1,7 @@
 {
   "algo_name": "bc",
   "experiment": {
-    "name": "stretch_bc_rnn",
+    "name": "bc_rnn_reach_phase",
     "validate": true,
     "logging": {
       "terminal_output_to_txt": true,
@@ -19,7 +19,7 @@
     "render": false
   },
   "train": {
-    "data": "/mnt/shared_ssd/JohnChen/stretch/datasets/stretch_cabinet_demo.hdf5",
+    "data": "/mnt/shared_ssd/JohnChen/stretch/datasets/stretch_cabinet_reach.hdf5",
     "output_dir": "../bc_rnn_trained_models",
     "num_data_workers": 8,
     "hdf5_cache_mode": "all",
@@ -27,12 +27,12 @@
     "hdf5_normalize_obs": true,
     "hdf5_filter_key": "train",
     "hdf5_validation_filter_key": "valid",
-    "seq_length": 55,
+    "seq_length": 32,
     "dataset_keys": ["actions"],
     "action_keys": ["actions"],
     "cuda": true,
-    "batch_size": 1024,
-    "num_epochs": 5000,
+    "batch_size": 512,
+    "num_epochs": 2000,
     "seed": 1
   },
   "algo": {
@@ -42,25 +42,25 @@
         "learning_rate": {
           "initial": 1e-4,
           "decay_factor": 0.1,
-          "epoch_schedule": [3000, 4000]
+          "epoch_schedule": [1200, 1600]
         },
         "regularization": {
-          "L2": 0.0
+          "L2": 1e-5
         }
       }
     },
     "loss": {
-      "l2_weight": 0.0,
-      "l1_weight": 1.0,
-      "cos_weight": 0.1
+      "l2_weight": 1.0,
+      "l1_weight": 0.0,
+      "cos_weight": 0.0
     },
-    "actor_layer_dims": [256, 256],
+    "actor_layer_dims": [512, 512],
     "rnn": {
       "enabled": true,
-      "horizon": 45,
-      "hidden_dim": 256,
+      "horizon": 30,
+      "hidden_dim": 512,
       "rnn_type": "LSTM",
-      "num_layers": 2,
+      "num_layers": 3,
       "open_loop": false,
       "kwargs": {
         "bidirectional": false

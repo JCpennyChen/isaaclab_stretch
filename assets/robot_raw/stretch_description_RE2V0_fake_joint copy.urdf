@@ -10,7 +10,41 @@
   <link name="virtual_link_y"/>
   <link name="virtual_link_z"/>
 
-  
+   <!-- This is the previous setting: -->
+
+<!--   
+  <link name="rotate_link_z"/>
+
+
+
+  <joint name="rotate_z" type="revolute">
+    <origin rpy="0 0 0.0" xyz="0 0 0.0"/>
+    <parent link="base_ground"/>
+    <child link="rotate_link_z"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="10.0"/>
+    <limit effort="87" lower="-31.4" upper="31.4" velocity="1.50"/>
+  </joint>
+
+  <joint name="base_forward" type="prismatic">
+    <origin rpy="0 0 0.0" xyz="0 0 0.0"/>
+    <parent link="rotate_link_z"/>
+    <child link="base_link"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="10.0"/>
+    <limit effort="200" lower="-10.0" upper="10.0" velocity="1.0"/>
+  </joint> -->
+
+
+  <!-- This is the end of the previous setting. The following is the new setting, which is more compatible with the current navigation stack and tf tree, and also has a more accurate collision model for the base link. The previous setting is kept here for reference and comparison. -->
+
+  <!-- <link name="virtual_link_x">
+    <inertial>
+        <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link> -->
 
   <joint name="joint_x" type="prismatic">
     <origin rpy="0 0 0" xyz="0 0 0"/> 
@@ -21,7 +55,13 @@
     <dynamics damping="10.0"/>
   </joint>
 
-
+  <!-- <link name="virtual_link_y">
+    <inertial>
+        <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link> -->
 
   <joint name="joint_y" type="prismatic">
     <origin rpy="0 0 0" xyz="0 0 0"/> 
@@ -46,7 +86,6 @@
     <parent link="virtual_link_z"/>
     <child link="base_link"/>
     <axis xyz="0 0 0"/>
-  </joint>
 
 
 
@@ -999,9 +1038,7 @@
   <link name="link_gripper_fingertip_right">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0.008126"/>
-      <!-- <mass value="0.003822"/> -->
-      <mass value="0.05"/>
-
+      <mass value="0.003822"/>
       <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="1E-06"/>
     </inertial>
     <visual>
@@ -1020,18 +1057,12 @@
       </geometry>
     </collision>
   </link>
-
-
   <joint name="joint_gripper_fingertip_right" type="fixed">
     <origin rpy="-1.57079632679483 -3.43320051448326E-14 0.540456056432235" xyz="-0.190596948563868 -0.015 0"/>
     <parent link="link_gripper_finger_right"/>
     <child link="link_gripper_fingertip_right"/>
     <axis xyz="0 0 0"/>
-  </joint> 
-
-
-
-
+  </joint>
   <link name="link_gripper_finger_left">
     <inertial>
       <origin rpy="0 0 0" xyz="0.094071 0.011377 0"/>
@@ -1064,9 +1095,7 @@
   <link name="link_gripper_fingertip_left">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0.008126"/>
-      <!-- <mass value="0.003822"/> -->
-      <mass value="0.05"/>
-
+      <mass value="0.003822"/>
       <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="1E-06"/>
     </inertial>
     <visual>
@@ -1091,7 +1120,6 @@
     <child link="link_gripper_fingertip_left"/>
     <axis xyz="0 0 0"/>
   </joint>
-
 
 
   <link name="link_grasp_center">

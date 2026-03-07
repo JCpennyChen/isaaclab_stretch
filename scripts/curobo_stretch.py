@@ -24,10 +24,16 @@ target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/st
 if target_config_dir not in sys.path:
     sys.path.append(target_config_dir)
 
-from stretch_bc_rnn_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
-from isaaclab.utils.math import combine_frame_transforms, quat_inv, quat_apply, quat_mul
+from stretch_bc_rnn_cfg import StretchEnvCfg
 from isaacsim.core.prims import XFormPrim
+from isaaclab.utils.math import (
+    combine_frame_transforms,
+    quat_inv,
+    quat_apply,
+    quat_mul,
+    axis_angle_from_quat,
+)
 
 from curobo.geom.types import WorldConfig, Cuboid
 from curobo.types.base import TensorDeviceType
@@ -41,7 +47,6 @@ from curobo.wrap.reacher.motion_gen import (
     MotionGenConfig,
     MotionGenPlanConfig,
 )
-
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
@@ -51,16 +56,9 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 CUROBO_CONFIG_PATH = os.path.join(
     PROJECT_ROOT, "assets", "robot_configs", "stretch_fake_joint.yml"
 )
-ASSET_ROOT = PROJECT_ROOT
+ASSET_ROOT = os.path.join(PROJECT_ROOT, "assets")
 
 TARGET_FRAME_PATH = "/World/envs/env_0/Cabinet/drawer_handle_top/drawer_handle_frame"
-
-MOTION_GEN_PARAMS = {
-    "num_trajopt_seeds": 12,
-    "num_graph_seeds": 12,
-    "trajopt_tsteps": 40,
-    "interpolation_dt": 0.0167,
-}
 
 PLANNER_CONFIG = {
     "max_attempts": 10,
@@ -71,7 +69,7 @@ PLANNER_CONFIG = {
 PHASE_OFFSETS = {
     "safe_spot": [0.05, 0.0, 0.03],
     "insert": [-0.05, 0.0, 0.03],
-    "pull": [0.45, 0.0, 0.03],
+    "pull": [0.40, 0.0, 0.03],
 }
 
 LINEAR_PLAN_CONFIG = MotionGenPlanConfig(
@@ -83,8 +81,8 @@ LINEAR_PLAN_CONFIG = MotionGenPlanConfig(
 
 TRANSITION_WAIT_STEPS = 30
 GRIPPER_LOCK_STEPS = 30
-GRIPPER_OPEN_POS = 0.3
-GRIPPER_CLOSE_POS = -0.2
+GRIPPER_OPEN_POS = 0.1
+GRIPPER_CLOSE_POS = -0.1
 
 
 # ==========================================
@@ -118,11 +116,11 @@ def main():
         dummy_world,
         tensor_args,
         collision_checker_type=CollisionCheckerType.MESH,
+        optimize_dt=True,
         num_trajopt_seeds=12,
         num_graph_seeds=12,
+        trajopt_tsteps=40,
         interpolation_dt=0.0167,
-        optimize_dt=True,
-        trajopt_tsteps=32,
     )
     motion_gen = MotionGen(motion_gen_config)
 
@@ -141,29 +139,36 @@ def main():
         **PLANNER_CONFIG,
     )
 
-    # --- State Variables ---
+    # ==========================================
+    # State Variables
+    # ==========================================
     trajectory = None
     traj_idx = 0
     step_count = 0
     target_pose = None
 
     target_frame_view = XFormPrim(TARGET_FRAME_PATH, name="target_frame")
+    cabinet_view = XFormPrim("/World/envs/env_0/Cabinet", name="cabinet")
     phase_one_done = False
     phase_two_done = False
     phase_three_done = False
 
     transition_timer = 0
     gripper_timer = 0
-    hold_joints = None
+
+    robot_entity = env.scene["robot"]
+
+    # Resolve base joint indices ONCE
+    base_joint_ids_isaac = robot_entity.find_joints(
+        ["joint_x", "joint_y", "joint_rot_z"]
+    )[0]
+    eef_idx = robot_entity.find_bodies("link_grasp_center")[0][0]
 
     print(">>> Starting Simulation Loop...")
     while simulation_app.is_running():
         # --- Determine Target Pose ---
         if target_pose is None:
             curr_pos, _ = target_frame_view.get_world_poses()
-
-            cabinet_prim_path = "/World/envs/env_0/Cabinet"
-            cabinet_view = XFormPrim(cabinet_prim_path, name="cabinet")
             _, cabinet_rot = cabinet_view.get_world_poses()
 
             if not phase_one_done:
@@ -182,55 +187,44 @@ def main():
                 print(f"[Logic] Phase 3: Planning Pull {PHASE_OFFSETS['pull']}...")
                 front_offset = torch.tensor([PHASE_OFFSETS["pull"]], device=env.device)
 
+            identity_quat = torch.tensor([[1.0, 0.0, 0.0, 0.0]], device=env.device)
             target_pos_w, _ = combine_frame_transforms(
-                curr_pos[0:1], cabinet_rot, front_offset
+                curr_pos[0:1], cabinet_rot, front_offset, identity_quat
             )
             target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
 
-            robot = env.scene["robot"]
-            robot_pos_w = robot.data.root_state_w[0:1, :3]
-            robot_quat_w = robot.data.root_state_w[0:1, 3:7]
+            robot_pos_w = robot_entity.data.root_state_w[0:1, :3]
+            robot_quat_w = robot_entity.data.root_state_w[0:1, 3:7]
 
             rel_pos = target_pos_w - robot_pos_w
 
             target_pos_r = quat_apply(quat_inv(robot_quat_w), rel_pos)
             target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
 
+            print(f"  Robot base pos: {robot_pos_w}")
+            print(f"  Target pos (robot frame): {target_pos_r}")
+            print(f"  Target quat (robot frame): {target_quat_r}")
+
             target_pose = Pose(position=target_pos_r, quaternion=target_quat_r)
 
         # ==========================================
         # PLANNER TRIGGER
         # ==========================================
-        robot_entity = env.scene["robot"]
-        body_joint_names = [
-            "joint_x",
-            "joint_y",
-            "joint_rot_z",
-            "joint_lift",
-            "joint_wrist_.*",
-            "joint_gripper_.*",
-            "joint_arm_.*",
-            "joint_head_.*",
-        ]
-        body_indices, _ = robot_entity.find_joints(body_joint_names)
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
-        vel_threshold = 2.0 if phase_two_done else 0.5
+        vel_threshold = 2.0
         is_static = robot_velocity < vel_threshold
 
-        if trajectory is None and step_count > 5 and is_static:
-            current_phase = "1"
-            if phase_one_done:
-                current_phase = "2"
+        if trajectory is None and step_count > 5 and is_static and not phase_three_done:
             if phase_two_done:
                 current_phase = "3"
+            elif phase_one_done:
+                current_phase = "2"
+            else:
+                current_phase = "1"
 
             print(f"[CuRobo] Planning Phase {current_phase}...")
 
-            start_state = (
-                hold_joints[0]
-                if hold_joints is not None
-                else robot_entity.data.joint_pos[0]
-            )
+            start_state = robot_entity.data.joint_pos[0]
 
             cu_js = JointState(
                 position=start_state.unsqueeze(0),
@@ -239,8 +233,8 @@ def main():
                 joint_names=robot_entity.joint_names,
             ).get_ordered_joint_state(motion_gen.kinematics.joint_names)
 
-            if current_phase == "3":
-                print(" -> Using LINEAR MODE for Phase 3 Pull")
+            if current_phase in ["2", "3"]:
+                print(f" -> Using LINEAR MODE for Phase {current_phase}")
                 active_config = LINEAR_PLAN_CONFIG
             else:
                 active_config = plan_config
@@ -257,6 +251,12 @@ def main():
 
                 trajectory = result.get_interpolated_plan()
                 trajectory = motion_gen.get_full_js(trajectory)
+
+                # Verify joint ordering (check once, then safe to remove)
+                if trajectory.joint_names is not None:
+                    print(f"  CuRobo full-JS names: {trajectory.joint_names}")
+                    print(f"  IsaacLab joint names: {robot_entity.joint_names}")
+
                 traj_idx = 0
             else:
                 print(f"\n[DEBUG] Phase {current_phase} PLAN FAILED!")
@@ -264,23 +264,37 @@ def main():
                 if "COLLISION" in str(result.status):
                     print(" -> CAUSE: The robot is likely starting in collision.")
 
-        # --- Execution Logic ---
-        actions = robot_entity.data.joint_pos.clone()
+        # ==========================================
+        # Execution Logic (Delta Task Space)
+        # ==========================================
 
-        if hold_joints is not None:
-            actions = hold_joints.clone()
-        else:
-            actions = robot_entity.data.joint_pos.clone()
+        delta_pos = torch.zeros((1, 3), device=env.device)
+        delta_rot = torch.zeros((1, 3), device=env.device)
+        base_action = torch.zeros((1, 3), device=env.device)
 
         if trajectory is not None:
+            # Get Current Physical EEF Pose FIRST
+            robot_pos_w = robot_entity.data.root_state_w[0:1, :3]
+            robot_quat_w = robot_entity.data.root_state_w[0:1, 3:7]
+            curr_eef_pos_w = robot_entity.data.body_pos_w[0:1, eef_idx]
+            curr_eef_quat_w = robot_entity.data.body_quat_w[0:1, eef_idx]
+
+            curr_eef_pos_b = quat_apply(
+                quat_inv(robot_quat_w), curr_eef_pos_w - robot_pos_w
+            )
+            curr_eef_quat_b = quat_mul(quat_inv(robot_quat_w), curr_eef_quat_w)
+
+            # Phase Transition & Trajectory Logic
+            fk_computed = False
             if traj_idx >= len(trajectory.position):
+                # End of trajectory: Hold the very last position
                 target_state = trajectory[-1]
+                base_action = target_state.position[base_joint_ids_isaac].unsqueeze(0)
 
                 if not phase_one_done:
                     transition_timer += 1
                     if transition_timer > TRANSITION_WAIT_STEPS:
                         print("--> Phase 1 Done. Switching to Phase 2...")
-                        hold_joints = actions.clone()
                         phase_one_done = True
                         trajectory = None
                         target_pose = None
@@ -292,42 +306,77 @@ def main():
                     if gripper_timer > GRIPPER_LOCK_STEPS:
                         print("--> Gripper Locked! Switching to Phase 3...")
                         phase_two_done = True
-                        hold_joints = actions.clone()
                         trajectory = None
                         target_pose = None
                         traj_idx = 0
                         gripper_timer = 0
 
                 else:
+                    cabinet = env.scene["cabinet"]
+                    drawer_pos = cabinet.data.joint_pos[0]
+                    drawer_open_threshold = 0.38
+
+                    if drawer_pos.max().item() > drawer_open_threshold:
+                        print(
+                            f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
+                        )
+
                     phase_three_done = True
+                    trajectory = None
+                    target_pose = None
 
             else:
+                # Mid-trajectory: Extract current target state and Base Action
                 target_state = trajectory[traj_idx]
-                traj_idx += 1
+                base_action = target_state.position[base_joint_ids_isaac].unsqueeze(0)
 
+                fk_out = motion_gen.kinematics.forward(target_state.position)
+                target_eef_pos_b = fk_out[0][0:1]
+                target_eef_quat_b = fk_out[1][0:1]
+                fk_computed = True
+
+                pos_error = torch.norm(target_eef_pos_b - curr_eef_pos_b).item()
+                if pos_error < 0.04:
+                    traj_idx += 1
+
+            # Compute deltas only if trajectory is still active
             if trajectory is not None:
-                flat_pos = target_state.position.view(-1)
-                target_pos_dict = {
-                    name: flat_pos[i] for i, name in enumerate(trajectory.joint_names)
-                }
-                for i, name in enumerate(env.scene["robot"].joint_names):
-                    if name in target_pos_dict:
-                        actions[0, i] = target_pos_dict[name]
+                if not fk_computed:
+                    fk_out = motion_gen.kinematics.forward(target_state.position)
+                    target_eef_pos_b = fk_out[0][0:1]
+                    target_eef_quat_b = fk_out[1][0:1]
+
+                delta_pos = target_eef_pos_b - curr_eef_pos_b
+                delta_quat = quat_mul(target_eef_quat_b, quat_inv(curr_eef_quat_b))
+                delta_rot = axis_angle_from_quat(delta_quat)
+
+                # SAFETY CLAMP: Prevent massive errors from breaking the IK Solver
+                max_pos_step = 0.05
+                pos_norm = torch.norm(delta_pos)
+                if pos_norm > max_pos_step:
+                    delta_pos = delta_pos * (max_pos_step / pos_norm)
+
+                max_rot_step = 0.2
+                rot_norm = torch.norm(delta_rot)
+                if rot_norm > max_rot_step:
+                    delta_rot = delta_rot * (max_rot_step / rot_norm)
+
+        else:
+            # No active trajectory — hold current physical base position
+            base_action = robot_entity.data.joint_pos[:, base_joint_ids_isaac]
+
+        # Construct the Arm Action Tensor [1, 6]
+        arm_action = torch.cat([delta_pos, delta_rot], dim=-1)
 
         # ==========================================
         # GRIPPER LOGIC
         # ==========================================
-        gripper_idx = -1
         should_close = phase_two_done or phase_three_done or (gripper_timer > 0)
+        gripper_cmd = GRIPPER_CLOSE_POS if should_close else GRIPPER_OPEN_POS
 
-        if should_close:
-            actions[0, gripper_idx] = GRIPPER_CLOSE_POS
-        else:
-            actions[0, gripper_idx] = GRIPPER_OPEN_POS
+        gripper_action = torch.tensor([[gripper_cmd, gripper_cmd]], device=env.device)
 
-        full_action = actions[0]
-        body_vals = full_action[body_indices]
-        env_actions = torch.cat([body_vals]).unsqueeze(0)
+        env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
 
         obs, rew, terminated, truncated, extras = env.step(env_actions)
         step_count += 1

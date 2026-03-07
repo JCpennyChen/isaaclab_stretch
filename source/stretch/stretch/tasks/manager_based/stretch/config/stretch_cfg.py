@@ -45,19 +45,35 @@ STRETCH_CFG = ArticulationCfg(
         joint_pos=default_joint_map,
     ),
     actuators={
-        "body": ImplicitActuatorCfg(
-            joint_names_expr=["^(?!joint_gripper_finger_).*"],
-            effort_limit=5000.0,
-            stiffness=2000.0,
-            damping=500.0,
-            velocity_limit=100.0,
+        # Base Joints
+        "base": ImplicitActuatorCfg(
+            joint_names_expr=["joint_x", "joint_y", "joint_rot_z"],
+            stiffness=4000.0,  # Set it to 0 when using velocity control to make it a pure velocity servo. For position control, use a high stiffness like 4000.0. --- IGNORE ---
+            damping=400.0,
+            effort_limit=400.0,
+            velocity_limit=1.0,
         ),
+        # Lift, Arm, & Wrist Joints
+        "arm_and_wrist": ImplicitActuatorCfg(
+            joint_names_expr=["joint_lift", "joint_arm_l.*", "joint_wrist_.*"],
+            stiffness=4000.0,
+            damping=400.0,
+            effort_limit=200.0,
+            velocity_limit=0.5,
+        ),
+        # Gripper Joints
         "gripper": ImplicitActuatorCfg(
             joint_names_expr=["joint_gripper_finger_.*"],
-            effort_limit=20000.0,
-            stiffness=20000.0,
-            damping=500.0,
-            velocity_limit=100.0,
+            stiffness=2000.0,
+            damping=200.0,
+            effort_limit=100.0,
+            velocity_limit=0.5,
+        ),
+        # Passive Joints (Locked to prevent slipping/flopping)
+        "passive": ImplicitActuatorCfg(
+            joint_names_expr=["joint_head_.*", "joint_.*_wheel"],
+            stiffness=4000.0,
+            damping=400.0,
         ),
     },
 )

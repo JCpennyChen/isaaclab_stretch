@@ -11,7 +11,6 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.math import quat_apply, quat_inv, quat_mul
 from isaaclab.actuators import ImplicitActuatorCfg
-from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
 import isaaclab.sim as sim_utils
 import torch
 
@@ -99,8 +98,7 @@ class StretchSceneCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the Stretch."""
 
-    # 1. Arm Task Space Control (Delta IK) - 8 Joints
-    arm_action = isaac_mdp.DifferentialInverseKinematicsActionCfg(
+    arm_action = isaac_mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "joint_lift",
@@ -109,25 +107,13 @@ class ActionsCfg:
             "joint_wrist_pitch",
             "joint_wrist_roll",
         ],
-        body_name="link_grasp_center",
-        controller=DifferentialIKControllerCfg(
-            command_type="pose",
-            use_relative_mode=True,
-            ik_method="dls",
-            ik_params={"lambda_val": 0.01},
-        ),
     )
 
-    # 2. Base Velocity Control - 3 Joints (vx, vy, yaw_rate)
-    # stiffness=0 in stretch_cfg.py means the actuator is a pure velocity servo:
-    # F = damping * (v_cmd - v_actual).  Send [v, 0, w] each step.
-    base_action = isaac_mdp.JointVelocityActionCfg(
+    base_action = isaac_mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=["joint_x", "joint_y", "joint_rot_z"],
-        use_default_offset=False,
     )
 
-    # 3. Gripper Control (Absolute) - 2 Joints
     gripper_action = isaac_mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=["joint_gripper_.*"],
@@ -240,70 +226,6 @@ class StretchEnvCfg(ManagerBasedRLEnvCfg):
     scene: StretchSceneCfg = StretchSceneCfg(num_envs=1, env_spacing=4.0)
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
-    events: EventCfg = EventCfg()
-    rewards: RewardsCfg = RewardsCfg()
-    terminations: TerminationsCfg = TerminationsCfg()
-
-    def __post_init__(self) -> None:
-        self.decimation = 2
-        self.episode_length_s = 3600.0
-        self.viewer.eye = (4.0, 2.0, 3.0)
-        self.sim.dt = 1 / 120
-        self.sim.render_interval = self.decimation
-
-
-# =========================================================
-# PLAYBACK CONFIG — All joints use direct JointPosition control.
-#
-# The default ActionsCfg uses DifferentialIK for the arm, which means
-# sending arm_action=zeros actively HOLDS the arm in place via the IK
-# controller, overriding any joint-level targets. For trajectory replay
-# (like cuRobo planned paths), we need direct joint position control
-# for ALL joints so we can send the exact waypoints from the plan.
-# =========================================================
-@configclass
-class PlaybackActionsCfg:
-    """All joints driven by direct position targets — no IK layer."""
-
-    # Arm joints: lift + 4 arm extension + 3 wrist = 8 dims
-    arm_action = isaac_mdp.JointPositionActionCfg(
-        asset_name="robot",
-        joint_names=[
-            "joint_lift",
-            "joint_arm_l0",
-            "joint_arm_l1",
-            "joint_arm_l2",
-            "joint_arm_l3",
-            "joint_wrist_yaw",
-            "joint_wrist_pitch",
-            "joint_wrist_roll",
-        ],
-        use_default_offset=False,
-    )
-
-    # Base: x, y, yaw — velocity control (stiffness=0 in stretch_cfg.py).
-    # During playback the base should be stationary; send zeros each step.
-    base_action = isaac_mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=["joint_x", "joint_y", "joint_rot_z"],
-        use_default_offset=False,
-    )
-
-    # Gripper: left + right finger = 2 dims (unchanged)
-    gripper_action = isaac_mdp.JointPositionActionCfg(
-        asset_name="robot",
-        joint_names=["joint_gripper_.*"],
-        use_default_offset=False,
-    )
-
-
-@configclass
-class StretchPlaybackEnvCfg(ManagerBasedRLEnvCfg):
-    """Env config for trajectory playback — all joints are JointPosition controlled."""
-
-    scene: StretchSceneCfg = StretchSceneCfg(num_envs=1, env_spacing=4.0)
-    observations: ObservationsCfg = ObservationsCfg()
-    actions: PlaybackActionsCfg = PlaybackActionsCfg()
     events: EventCfg = EventCfg()
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()

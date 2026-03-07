@@ -23,6 +23,8 @@ from stretch_bc_rnn_cfg import StretchEnvCfg
 
 bc_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc.json"
 bc_rnn_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_rnn.json"
+bc_rnn_reach_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_rnn_reach.json"
+bc_rnn_pull_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_rnn_pull.json"
 bc_diffusion_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch/config/robomimic/bc_diffusion.json"
 
 # ==========================================
@@ -35,7 +37,8 @@ gymnasium.register(
     kwargs={
         "env_cfg_entry_point": StretchEnvCfg,
         "robomimic_bc_cfg_entry_point": bc_config_path,
-        "robomimic_bc_rnn_cfg_entry_point": bc_rnn_config_path,
+        "robomimic_bc_rnn_reach_cfg_entry_point": bc_rnn_reach_config_path,
+        "robomimic_bc_rnn_pull_cfg_entry_point": bc_rnn_pull_config_path,
         "robomimic_diffusion_policy_cfg_entry_point": bc_diffusion_config_path,
     },
 )
@@ -226,7 +229,7 @@ def train(config: Config, device: str, log_dir: str, ckpt_dir: str, video_dir: s
         batch_size=config.train.batch_size,
         shuffle=(train_sampler is None),
         num_workers=config.train.num_data_workers,
-        drop_last=True,
+        drop_last=False,
     )
 
     if config.experiment.validate:
@@ -434,6 +437,14 @@ if __name__ == "__main__":
             "Optional: Number of training epochs. If specified, overrides the number of epochs from the JSON training"
             " config."
         ),
+    )
+
+    parser.add_argument(
+        "--phase",
+        type=str,
+        default="reach",
+        choices=["reach", "pull"],
+        help="Which phase to train: 'reach' or 'pull'",
     )
 
     args = parser.parse_args()
