@@ -65,7 +65,8 @@ task_config_path = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/str
 if task_config_path not in sys.path:
     sys.path.append(task_config_path)
 
-from stretch_bc_rnn_cfg import StretchEnvCfg
+from stretch_bc_rnn_cfg_wrong_base import StretchEnvCfg
+# from stretch_bc_rnn_cfg import StretchEnvCfg
 
 if "Isaac-Stretch-Cabinet-v0" not in gym.envs.registry:
     gym.register(
@@ -79,7 +80,7 @@ if "Isaac-Stretch-Cabinet-v0" not in gym.envs.registry:
 # ==========================================
 # PHASE SWITCHING HELPERS
 # ==========================================
-GRIPPER_CLOSE_POS = -0.2
+GRIPPER_CLOSE_POS = -0.1
 
 
 def get_eef_handle_distance(scene):
@@ -161,7 +162,6 @@ def rollout(reach_policy, pull_policy, env, horizon, device, video_path, args):
             actions = torch.from_numpy(actions).to(device=device)
             if actions.ndim == 1:
                 actions = actions.unsqueeze(0)
-            actions = actions[:, :action_dim]
 
             # Check if EEF is close enough to handle to start gripper lock
             distance = get_eef_handle_distance(scene)
@@ -191,7 +191,6 @@ def rollout(reach_policy, pull_policy, env, horizon, device, video_path, args):
             actions = torch.from_numpy(actions).to(device=device)
             if actions.ndim == 1:
                 actions = actions.unsqueeze(0)
-            actions = actions[:, :action_dim]
 
             # Keep gripper closed during pull
             for idx in gripper_indices:

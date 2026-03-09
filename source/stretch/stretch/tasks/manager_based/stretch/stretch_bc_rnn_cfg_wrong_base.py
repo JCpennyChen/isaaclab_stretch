@@ -29,14 +29,18 @@ def reward_cabinet_opening_proportional(
     return torch.sum(torch.pow(normalized_pos, 2), dim=-1)
 
 
-def position_rel(env, asset_cfg: SceneEntityCfg, target_cfg: SceneEntityCfg):
+def handle_rel_pos(env, asset_cfg: SceneEntityCfg, target_cfg: SceneEntityCfg):
     """
-    Computes the relative position of a target body w.r.t to an asset body.
-    Returns: (target_pos - asset_pos)
+    Returns the 3D vector from the EEF to the drawer handle in world frame.
+    Slices [:, :3] to avoid subtracting quaternions from body_pose_w.
     """
-    asset_pos = env.scene[asset_cfg.name].data.body_pose_w[:, asset_cfg.body_ids[0]]
-    target_pos = env.scene[target_cfg.name].data.body_pose_w[:, target_cfg.body_ids[0]]
-    return target_pos - asset_pos
+    asset_pos = env.scene[asset_cfg.name].data.body_pos_w[
+        :, asset_cfg.body_ids[0]
+    ]  # (B, 3)
+    target_pos = env.scene[target_cfg.name].data.body_pos_w[
+        :, target_cfg.body_ids[0]
+    ]  # (B, 3)
+    return target_pos - asset_pos  # (B, 3)
 
 
 def eef_pose_in_base(env, asset_cfg: SceneEntityCfg):
@@ -132,12 +136,6 @@ class ObservationsCfg:
                 "asset_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"])
             },
         )
-        eef_quat_b = ObsTerm(
-            func=isaac_mdp.root_quat_w,
-            params={
-                "asset_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"])
-            },
-        )
 
         arm_joint_pos = ObsTerm(
             func=isaac_mdp.joint_pos_rel,
@@ -157,14 +155,11 @@ class ObservationsCfg:
                 ),
             },
         )
-
         handle_rel = ObsTerm(
-            func=position_rel,
+            func=handle_rel_pos,
             params={
                 "asset_cfg": SceneEntityCfg("robot", body_names=["link_grasp_center"]),
-                "target_cfg": SceneEntityCfg(
-                    "cabinet", body_names=["drawer_handle_top"]
-                ),
+                "target_cfg": SceneEntityCfg("cabinet", body_names=["drawer_handle_top"]),
             },
         )
 

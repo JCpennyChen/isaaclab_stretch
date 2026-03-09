@@ -32,7 +32,7 @@
     "action_keys": ["actions"],
     "cuda": true,
     "batch_size": 512,
-    "num_epochs": 2000,
+    "num_epochs": 5000,
     "seed": 1
   },
   "algo": {
@@ -42,7 +42,7 @@
         "learning_rate": {
           "initial": 1e-4,
           "decay_factor": 0.1,
-          "epoch_schedule": [1200, 1600]
+          "epoch_schedule": [3000, 4000]
         },
         "regularization": {
           "L2": 1e-5
