@@ -2,54 +2,53 @@ import os
 
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 import sys
-import h5py
-import json
 import torch
 import argparse
-import numpy as np
+import time
 
 # ==========================================
 # ISAAC SIM INITIALIZATION
 # ==========================================
 from isaaclab.app import AppLauncher
 
-parser = argparse.ArgumentParser(description="Teleop Recording for Imitation Learning")
+parser = argparse.ArgumentParser(description="Stretch Cabinet Demo Recording")
 AppLauncher.add_app_launcher_args(parser)
 parser.add_argument(
-    "--filename", type=str, default="stretch_cabinet_demo", help="Name of output file"
+    "--filename",
+    type=str,
+    default="stretch_cabinet_demo",
+    help="Base name of output files",
 )
 parser.add_argument(
     "--num_demos", type=int, default=10, help="Target number of successful demos"
 )
+parser.add_argument("--ratio", type=float, default=0.1, help="Validation split ratio")
 parser.add_argument(
-    "--ratio",
+    "--noise_range",
     type=float,
     default=0.1,
-    help="Fraction of dataset to use for validation (0.0 to 1.0)",
+    help="Cabinet position randomization range (meters)",
 )
-
 args_cli = parser.parse_args()
-args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
 # ==========================================
-# ENVIRONMENT & UTILITY IMPORTS
+# PATH SETUP & IMPORTS
 # ==========================================
 target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
-if target_config_dir not in sys.path:
-    sys.path.append(target_config_dir)
+sys.path.append(target_config_dir)
 
-from stretch_bc_rnn_cfg import StretchEnvCfg
+
+from curobo_stretch_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
+from isaacsim.core.prims import XFormPrim
 from isaaclab.utils.math import (
     combine_frame_transforms,
     quat_inv,
     quat_apply,
     quat_mul,
-    axis_angle_from_quat,
 )
-from isaacsim.core.prims import XFormPrim
 
 # ==========================================
 # CUROBO IMPORTS
@@ -76,16 +75,9 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 CUROBO_CONFIG_PATH = os.path.join(
     PROJECT_ROOT, "assets", "robot_configs", "stretch_fake_joint.yml"
 )
-ASSET_ROOT = PROJECT_ROOT
+ASSET_ROOT = os.path.join(PROJECT_ROOT, "assets")
 
 TARGET_FRAME_PATH = "/World/envs/env_0/Cabinet/drawer_handle_top/drawer_handle_frame"
-
-MOTION_GEN_PARAMS = {
-    "num_trajopt_seeds": 12,
-    "num_graph_seeds": 12,
-    "trajopt_tsteps": 40,
-    "interpolation_dt": 0.0167,
-}
 
 PLANNER_CONFIG = {
     "max_attempts": 10,
@@ -108,142 +100,73 @@ LINEAR_PLAN_CONFIG = MotionGenPlanConfig(
 
 TRANSITION_WAIT_STEPS = 30
 GRIPPER_LOCK_STEPS = 30
-GRIPPER_OPEN_POS = 0.2
+GRIPPER_OPEN_POS = 0.1
 GRIPPER_CLOSE_POS = -0.1
+DRAWER_OPEN_THRESHOLD = 0.38
+MAX_PLAN_FAILURES = 5
+SUCCESS_HOLD_STEPS = 30
+HANDLE_DISPLACEMENT_THRESHOLD = 0.05
+
+
+from robomimic_collector import RobomimicDataCollector
 
 
 # ==========================================
-#  ROBOMIMIC DATA COLLECTOR
+# HELPER FUNCTIONS
 # ==========================================
-class RobomimicDataCollector:
-    """Saves data to HDF5 in Robomimic structure, handling nested Isaac Lab obs."""
+def compute_phase_targets(target_frame_view, cabinet_view, robot_entity, device):
+    """Compute all three phase target poses in the robot's base frame."""
+    curr_pos, _ = target_frame_view.get_world_poses()
+    _, cabinet_rot = cabinet_view.get_world_poses()
+    robot_pos_w = robot_entity.data.root_state_w[0:1, :3]
+    robot_quat_w = robot_entity.data.root_state_w[0:1, 3:7]
+    identity_quat = torch.tensor([[1.0, 0.0, 0.0, 0.0]], device=device)
+    target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=device)
+    target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
 
-    def __init__(self, env_name, directory_path, filename, num_demos, val_ratio=0.1):
-        self.num_demos = num_demos
-        self.val_ratio = val_ratio
-
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
-
-        self.file_path = os.path.join(directory_path, f"{filename}.hdf5")
-        self.f = h5py.File(self.file_path, "w")
-        self.data_group = self.f.create_group("data")
-        env_args = {
-            "env_name": env_name,
-            "type": 1,
-            "env_kwargs": {},
-        }
-        self.data_group.attrs["total"] = 0
-        self.data_group.attrs["env_args"] = json.dumps(env_args)
-        self.train_demos = []
-        self.valid_demos = []
-
-        self.reset_buffer()
-        print(f"[INFO] Data Collector initialized. Saving to: {self.file_path}")
-
-    def reset_buffer(self):
-        self.current_episode = {
-            "obs": [],
-            "next_obs": [],
-            "actions": [],
-            "rewards": [],
-            "dones": [],
-        }
-
-    def reset(self):
-        self.reset_buffer()
-
-    def _to_numpy(self, value):
-        """Recursive helper to convert tensors/dicts to numpy."""
-        if isinstance(value, dict):
-            return {k: self._to_numpy(v) for k, v in value.items()}
-        elif isinstance(value, torch.Tensor):
-            return value.flatten().detach().cpu().numpy()
-        else:
-            return value
-
-    def add(self, key, value):
-        val_np = self._to_numpy(value)
-        if key in self.current_episode:
-            self.current_episode[key].append(val_np)
-
-    def _save_dict_group(self, h5_parent, data_list, group_name):
-        """Recursively saves a list of nested dictionaries into HDF5 groups."""
-        first_frame = data_list[0]
-
-        if isinstance(first_frame, dict):
-            grp = h5_parent.create_group(group_name)
-            for key in first_frame.keys():
-                child_data_list = [frame[key] for frame in data_list]
-                self._save_dict_group(grp, child_data_list, key)
-        else:
-            data_stack = np.array(data_list)
-            h5_parent.create_dataset(group_name, data=data_stack)
-
-    def flush(self):
-        demo_idx = self.data_group.attrs["total"]
-        demo_group_name = f"demo_{demo_idx}"
-        ep_grp = self.data_group.create_group(demo_group_name)
-
-        if len(self.current_episode["obs"]) > 0:
-            obs_grp = ep_grp.create_group("obs")
-            first_obs = self.current_episode["obs"][0]
-            if isinstance(first_obs, dict):
-                for key in first_obs.keys():
-                    column = [x[key] for x in self.current_episode["obs"]]
-                    self._save_dict_group(obs_grp, column, key)
-            else:
-                print("[Warning] Obs is not a dict, saving as raw 'obs'")
-                ep_grp.create_dataset("obs", data=np.array(self.current_episode["obs"]))
-
-            if len(self.current_episode["next_obs"]) > 0:
-                next_obs_grp = ep_grp.create_group("next_obs")
-                if isinstance(first_obs, dict):
-                    for key in first_obs.keys():
-                        column = [x[key] for x in self.current_episode["next_obs"]]
-                        self._save_dict_group(next_obs_grp, column, key)
-
-        for key in ["actions", "rewards", "dones"]:
-            if self.current_episode[key]:
-                data_stack = np.array(self.current_episode[key])
-                ep_grp.create_dataset(key, data=data_stack)
-
-        ep_grp.attrs["num_samples"] = len(self.current_episode["actions"])
-        ep_grp.attrs["model_file"] = "xml"
-
-        is_last_demo = (demo_idx + 1) >= self.num_demos
-        if (np.random.rand() < self.val_ratio) or (
-            is_last_demo and len(self.valid_demos) == 0
-        ):
-            self.valid_demos.append(demo_group_name)
-            split_name = "VALID"
-        else:
-            self.train_demos.append(demo_group_name)
-            split_name = "TRAIN"
-
-        self.data_group.attrs["total"] += 1
-        print(
-            f"[INFO] Saved {demo_group_name} to {split_name} ({ep_grp.attrs['num_samples']} steps)"
+    targets = {}
+    for phase_name, offset in PHASE_OFFSETS.items():
+        offset_t = torch.tensor([offset], device=device)
+        target_pos_w, _ = combine_frame_transforms(
+            curr_pos[0:1], cabinet_rot, offset_t, identity_quat
         )
+        target_pos_r = quat_apply(quat_inv(robot_quat_w), target_pos_w - robot_pos_w)
+        targets[phase_name] = Pose(position=target_pos_r, quaternion=target_quat_r)
+    return targets
 
-        self.f.flush()
-        self.reset_buffer()
 
-    def is_stopped(self):
-        return self.data_group.attrs["total"] >= self.num_demos
+def randomize_cabinet(
+    cabinet_view, cabinet_articulation, default_pos, default_rot, device, noise_range
+):
+    """Randomize cabinet XY position within noise_range."""
+    new_pos = default_pos.clone()
+    new_pos[0] += (torch.rand(1, device=device) * 2 - 1).item() * noise_range
+    new_pos[1] += (torch.rand(1, device=device) * 2 - 1).item() * noise_range
 
-    def close(self):
-        if "mask" in self.f:
-            del self.f["mask"]
-        mask_grp = self.f.create_group("mask")
+    cabinet_view.set_world_poses(
+        positions=new_pos.unsqueeze(0), orientations=default_rot
+    )
+    root_state = cabinet_articulation.data.default_root_state.clone()
+    root_state[:, :3] = new_pos
+    cabinet_articulation.write_root_pose_to_sim(root_state[:, :7])
+    cabinet_articulation.write_root_velocity_to_sim(root_state[:, 7:])
 
-        mask_grp.create_dataset("train", data=np.array(self.train_demos, dtype="S"))
-        mask_grp.create_dataset("valid", data=np.array(self.valid_demos, dtype="S"))
 
-        print(
-            f"[INFO] Closing file. Final Split -> Train: {len(self.train_demos)}, Valid: {len(self.valid_demos)}"
-        )
-        self.f.close()
+def reset_episode_state():
+    """Return a fresh set of episode state variables."""
+    return {
+        "trajectory": None,
+        "traj_idx": 0,
+        "step_count": 0,
+        "phase_one_done": False,
+        "phase_two_done": False,
+        "phase_three_done": False,
+        "transition_timer": 0,
+        "gripper_timer": 0,
+        "success_hold_timer": 0,
+        "plan_fail_count": 0,
+        "current_phase_name": "safe_spot",
+    }
 
 
 # ==========================================
@@ -251,8 +174,6 @@ class RobomimicDataCollector:
 # ==========================================
 def main():
     env_cfg = StretchEnvCfg()
-    env_cfg.viewer.eye = (2.0, 2.0, 2.0)
-    env_cfg.episode_length_s = 3600.0
 
     print("[IsaacLab] Creating environment")
     env = ManagerBasedRLEnv(cfg=env_cfg)
@@ -261,9 +182,11 @@ def main():
     setup_curobo_logger("warn")
     tensor_args = TensorDeviceType(device=env.device)
 
+    # ==========================================
+    # Data Collectors
+    # ==========================================
     log_dir = os.path.join(os.getcwd(), "datasets")
 
-    # Collector for phase 1 + 2 (reaching + inserting)
     collector_reach = RobomimicDataCollector(
         env_name="Isaac-Stretch-Cabinet-v0",
         directory_path=log_dir,
@@ -271,8 +194,6 @@ def main():
         num_demos=args_cli.num_demos,
         val_ratio=args_cli.ratio,
     )
-
-    # Collector for phase 3 (pulling)
     collector_pull = RobomimicDataCollector(
         env_name="Isaac-Stretch-Cabinet-v0",
         directory_path=log_dir,
@@ -281,6 +202,9 @@ def main():
         val_ratio=args_cli.ratio,
     )
 
+    # ==========================================
+    # CuRobo Setup
+    # ==========================================
     robot_cfg = load_yaml(CUROBO_CONFIG_PATH)["robot_cfg"]
     robot_cfg["kinematics"]["external_asset_path"] = ASSET_ROOT
 
@@ -292,21 +216,17 @@ def main():
         ]
     )
 
-    collector_reach.reset()
-    collector_pull.reset()
-
     motion_gen_config = MotionGenConfig.load_from_robot_config(
         robot_cfg,
         dummy_world,
         tensor_args,
         collision_checker_type=CollisionCheckerType.MESH,
+        optimize_dt=True,
         num_trajopt_seeds=12,
         num_graph_seeds=12,
+        trajopt_tsteps=40,
         interpolation_dt=0.0167,
-        optimize_dt=True,
-        trajopt_tsteps=32,
     )
-
     motion_gen = MotionGen(motion_gen_config)
 
     if (
@@ -320,309 +240,235 @@ def main():
 
     plan_config = MotionGenPlanConfig(
         enable_graph=False,
-        enable_graph_attempt=2,
-        max_attempts=10,
         enable_finetune_trajopt=True,
-        time_dilation_factor=0.5,
+        **PLANNER_CONFIG,
     )
 
-    cabinet_prim_path = "/World/envs/env_0/Cabinet"
-    cabinet_view = XFormPrim(cabinet_prim_path, name="cabinet")
-    _, cabinet_rot = cabinet_view.get_world_poses()
+    # ==========================================
+    # Scene References & Joint Index Resolution
+    # ==========================================
+    robot_entity = env.scene["robot"]
+    cabinet_entity = env.scene["cabinet"]
+
+    arm_joint_names = [
+        "joint_lift",
+        "joint_arm_l0",
+        "joint_arm_l1",
+        "joint_arm_l2",
+        "joint_arm_l3",
+        "joint_wrist_yaw",
+        "joint_wrist_pitch",
+        "joint_wrist_roll",
+    ]
+    base_joint_names = ["joint_x", "joint_y", "joint_rot_z"]
+
+    arm_joint_ids_isaac = robot_entity.find_joints(arm_joint_names)[0]
+    base_joint_ids_isaac = robot_entity.find_joints(base_joint_names)[0]
+
+    curobo_names = motion_gen.kinematics.joint_names
+    arm_ids_curobo = [curobo_names.index(n) for n in arm_joint_names]
+    base_ids_curobo = [curobo_names.index(n) for n in base_joint_names]
+
+    handle_body_idx = cabinet_entity.data.body_names.index("drawer_handle_top")
+
+    # ==========================================
+    # Cabinet Setup
+    # ==========================================
+    target_frame_view = XFormPrim(TARGET_FRAME_PATH, name="target_frame")
+    cabinet_view = XFormPrim("/World/envs/env_0/Cabinet", name="cabinet")
     default_cabinet_pos, default_cabinet_rot = cabinet_view.get_world_poses()
     default_cabinet_pos = default_cabinet_pos[0].clone()
 
-    def randomize_cabinet():
-        noise_range = 0.1
+    # Initial randomization
+    randomize_cabinet(
+        cabinet_view,
+        cabinet_entity,
+        default_cabinet_pos,
+        default_cabinet_rot,
+        env.device,
+        args_cli.noise_range,
+    )
 
-        rand_x = (torch.rand(1, device=env.device) * 2 - 1) * noise_range
-        rand_y = (torch.rand(1, device=env.device) * 2 - 1) * noise_range
+    # Let physics propagate the new cabinet position
+    zero_action = torch.zeros(1, 13, device=env.device)
+    for _ in range(5):
+        env.step(zero_action)
 
-        new_pos = default_cabinet_pos.clone()
-        new_pos[0] += rand_x[0]
-        new_pos[1] += rand_y[0]
-
-        cabinet_view.set_world_poses(
-            positions=new_pos.unsqueeze(0), orientations=default_cabinet_rot
-        )
-
-        cabinet_articulation = env.scene["cabinet"]
-        root_state = cabinet_articulation.data.default_root_state.clone()
-        root_state[:, :3] = new_pos
-
-        cabinet_articulation.write_root_pose_to_sim(root_state[:, :7])
-        cabinet_articulation.write_root_velocity_to_sim(root_state[:, 7:])
-
-    cabinet_entity = env.scene["cabinet"]
-    handle_body_idx = cabinet_entity.data.body_names.index("drawer_handle_top")
+    # Compute initial targets and handle position
+    phase_targets = compute_phase_targets(
+        target_frame_view, cabinet_view, robot_entity, env.device
+    )
     initial_handle_pos = cabinet_entity.data.body_pos_w[0, handle_body_idx].clone()
 
-    trajectory = None
-    traj_idx = 0
-    step_count = 0
-    target_pose = None
+    # ==========================================
+    # Episode State
+    # ==========================================
+    ep = reset_episode_state()
+    target_pose = phase_targets[ep["current_phase_name"]]
 
-    target_frame_view = XFormPrim(TARGET_FRAME_PATH, name="target_frame")
-    phase_one_done = False
-    phase_two_done = False
-    phase_three_done = False
+    demos_collected = 0
+    demos_failed = 0
+    sim_start_time = time.time()
 
-    transition_timer = 0
-    gripper_timer = 0
-    hold_joints = None
-
-    success_hold_timer = 0
-    plan_fail_count = 0
-
-    print(">>> Starting Simulation Loop...")
+    print(">>> Starting Recording Loop...")
     while simulation_app.is_running():
         if collector_reach.is_stopped() or collector_pull.is_stopped():
-            print(f"[SUCCESS] Collected {args_cli.num_demos} demos. Stopping.")
+            print(f"\n[DONE] Collected {args_cli.num_demos} demos.")
             break
-
-        if target_pose is None:
-            curr_pos, _ = target_frame_view.get_world_poses()
-
-            cabinet_prim_path = "/World/envs/env_0/Cabinet"
-            cabinet_view = XFormPrim(cabinet_prim_path, name="cabinet")
-            _, cabinet_rot = cabinet_view.get_world_poses()
-
-            if not phase_one_done:
-                print(
-                    f"[Logic] Phase 1: Planning to Safe Spot {PHASE_OFFSETS['safe_spot']}..."
-                )
-                front_offset = torch.tensor(
-                    [PHASE_OFFSETS["safe_spot"]], device=env.device
-                )
-            elif not phase_two_done:
-                print(f"[Logic] Phase 2: Planning Insert {PHASE_OFFSETS['insert']}...")
-                front_offset = torch.tensor(
-                    [PHASE_OFFSETS["insert"]], device=env.device
-                )
-            else:
-                print(f"[Logic] Phase 3: Planning Pull {PHASE_OFFSETS['pull']}...")
-                front_offset = torch.tensor([PHASE_OFFSETS["pull"]], device=env.device)
-
-            target_pos_w, _ = combine_frame_transforms(
-                curr_pos[0:1], cabinet_rot, front_offset
-            )
-            target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
-
-            robot = env.scene["robot"]
-            robot_pos_w = robot.data.root_state_w[0:1, :3]
-            robot_quat_w = robot.data.root_state_w[0:1, 3:7]
-
-            rel_pos = target_pos_w - robot_pos_w
-
-            target_pos_r = quat_apply(quat_inv(robot_quat_w), rel_pos)
-            target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
-
-            target_pose = Pose(position=target_pos_r, quaternion=target_quat_r)
 
         # ==========================================
         # PLANNER TRIGGER
         # ==========================================
-        robot_entity = env.scene["robot"]
-        body_joint_names = [
-            "joint_x",
-            "joint_y",
-            "joint_rot_z",
-            "joint_lift",
-            "joint_wrist_.*",
-            "joint_gripper_.*",
-            "joint_arm_.*",
-            # "joint_head_.*",          # Note: For later updates when we want to enable head tracking as well
-        ]
-        body_indices, _ = robot_entity.find_joints(body_joint_names)
-
-        arm_joint_names = ["joint_arm_.*"]
-        arm_indices, _ = robot_entity.find_joints(arm_joint_names)
-
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
-        vel_threshold = 2.0
-        is_static = robot_velocity < vel_threshold
+        is_static = robot_velocity < 2.0
 
-        if trajectory is None and step_count > 5 and is_static and not phase_three_done:
-            current_phase = "1"
-            if phase_one_done:
-                current_phase = "2"
-            if phase_two_done:
+        if (
+            ep["trajectory"] is None
+            and ep["step_count"] > 5
+            and is_static
+            and not ep["phase_three_done"]
+        ):
+            if ep["phase_two_done"]:
                 current_phase = "3"
+            elif ep["phase_one_done"]:
+                current_phase = "2"
+            else:
+                current_phase = "1"
 
             print(f"[CuRobo] Planning Phase {current_phase}...")
 
-            start_state = (
-                hold_joints[0]
-                if hold_joints is not None
-                else robot_entity.data.joint_pos[0]
-            )
-
             cu_js = JointState(
-                position=start_state.unsqueeze(0),
+                position=robot_entity.data.joint_pos[0].unsqueeze(0),
                 velocity=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
                 acceleration=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
                 joint_names=robot_entity.joint_names,
             ).get_ordered_joint_state(motion_gen.kinematics.joint_names)
 
-            if current_phase in ["2", "3"]:
-                print(f" -> Using LINEAR MODE for Phase {current_phase}")
-                active_config = LINEAR_PLAN_CONFIG
-            else:
-                active_config = plan_config
-
+            active_config = (
+                LINEAR_PLAN_CONFIG if current_phase in ["2", "3"] else plan_config
+            )
             result = motion_gen.plan_single(cu_js, target_pose, active_config)
 
             if result.success.item():
                 traj_len = result.optimized_plan.position.shape[1]
-                print(f"\nPhase {current_phase} PLAN SUCCESS!")
-                print(f" -> Generated {traj_len} steps.")
+                print(f"  Phase {current_phase} PLAN SUCCESS! ({traj_len} steps)")
 
-                if traj_len < 5:
-                    print(" -> WARNING: Path is extremely short!")
-
-                trajectory = result.get_interpolated_plan()
-                trajectory = motion_gen.get_full_js(trajectory)
-                plan_fail_count = 0
-                traj_idx = 0
+                ep["trajectory"] = result.get_interpolated_plan()
+                ep["trajectory"] = motion_gen.get_full_js(ep["trajectory"])
+                ep["traj_idx"] = 0
+                ep["plan_fail_count"] = 0
             else:
-                print(f"\n[DEBUG] Phase {current_phase} PLAN FAILED!")
-                print(f" -> Status: {result.status}")
+                print(f"  Phase {current_phase} PLAN FAILED: {result.status}")
+                ep["plan_fail_count"] += 1
 
-                plan_fail_count += 1
-
-                if plan_fail_count >= 5:
+                if ep["plan_fail_count"] >= MAX_PLAN_FAILURES:
                     print(
-                        f"--> [RESET] Planner stuck ({plan_fail_count} failures). Resetting Episode..."
+                        f"  [RESET] {MAX_PLAN_FAILURES} failures. Discarding episode."
                     )
                     collector_reach.reset_buffer()
                     collector_pull.reset_buffer()
+                    demos_failed += 1
+
                     obs, _ = env.reset()
-                    randomize_cabinet()
+                    randomize_cabinet(
+                        cabinet_view,
+                        cabinet_entity,
+                        default_cabinet_pos,
+                        default_cabinet_rot,
+                        env.device,
+                        args_cli.noise_range,
+                    )
+                    for _ in range(5):
+                        env.step(zero_action)
+                    phase_targets = compute_phase_targets(
+                        target_frame_view, cabinet_view, robot_entity, env.device
+                    )
                     initial_handle_pos = cabinet_entity.data.body_pos_w[
                         0, handle_body_idx
                     ].clone()
-                    trajectory = None
-                    target_pose = None
-                    traj_idx = 0
-                    phase_one_done = False
-                    phase_two_done = False
-                    phase_three_done = False
-                    hold_joints = None
-
-                    gripper_timer = 0
-                    success_hold_timer = 0
-                    transition_timer = 0
-                    plan_fail_count = 0
+                    ep = reset_episode_state()
+                    target_pose = phase_targets[ep["current_phase_name"]]
                     motion_gen.reset()
-
                     continue
 
         # ==========================================
-        # Execution Logic (Delta Task Space)
+        # Execution Logic (Joint Position)
         # ==========================================
+        if ep["trajectory"] is not None:
+            if ep["traj_idx"] >= len(ep["trajectory"].position):
+                # End of trajectory
+                target_state = ep["trajectory"][-1]
 
-        delta_pos = torch.zeros((1, 3), device=env.device)
-        delta_rot = torch.zeros((1, 3), device=env.device)
-
-        if trajectory is not None:
-            # 1. Get Current Physical EEF Pose FIRST
-            eef_idx = robot_entity.find_bodies("link_grasp_center")[0][0]
-            robot_pos_w = robot_entity.data.root_state_w[0:1, :3]
-            robot_quat_w = robot_entity.data.root_state_w[0:1, 3:7]
-            curr_eef_pos_w = robot_entity.data.body_pos_w[0:1, eef_idx]
-            curr_eef_quat_w = robot_entity.data.body_quat_w[0:1, eef_idx]
-
-            curr_eef_pos_b = quat_apply(
-                quat_inv(robot_quat_w), curr_eef_pos_w - robot_pos_w
-            )
-            curr_eef_quat_b = quat_mul(quat_inv(robot_quat_w), curr_eef_quat_w)
-
-            # 2. Phase Transition & Trajectory Logic
-            if traj_idx >= len(trajectory.position):
-                target_state = trajectory[-1]
-
-                if not phase_one_done:
-                    transition_timer += 1
-                    if transition_timer > TRANSITION_WAIT_STEPS:
+                if not ep["phase_one_done"]:
+                    ep["transition_timer"] += 1
+                    if ep["transition_timer"] > TRANSITION_WAIT_STEPS:
                         print("--> Phase 1 Done. Switching to Phase 2...")
-                        phase_one_done = True
-                        trajectory = None
-                        target_pose = None
-                        traj_idx = 0
-                        transition_timer = 0
+                        ep["phase_one_done"] = True
+                        ep["trajectory"] = None
+                        ep["current_phase_name"] = "insert"
+                        target_pose = phase_targets[ep["current_phase_name"]]
+                        ep["traj_idx"] = 0
+                        ep["transition_timer"] = 0
 
-                elif not phase_two_done:
-                    gripper_timer += 1
-                    if gripper_timer > GRIPPER_LOCK_STEPS:
+                elif not ep["phase_two_done"]:
+                    ep["gripper_timer"] += 1
+                    if ep["gripper_timer"] > GRIPPER_LOCK_STEPS:
                         print("--> Gripper Locked! Switching to Phase 3...")
-                        phase_two_done = True
-                        trajectory = None
-                        target_pose = None
-                        traj_idx = 0
-                        gripper_timer = 0
+                        ep["phase_two_done"] = True
+                        ep["trajectory"] = None
+                        ep["current_phase_name"] = "pull"
+                        target_pose = phase_targets[ep["current_phase_name"]]
+                        ep["traj_idx"] = 0
+                        ep["gripper_timer"] = 0
 
                 else:
-                    cabinet = env.scene["cabinet"]
-                    drawer_pos = cabinet.data.joint_pos[0]
-                    drawer_open_threshold = 0.38
-
-                    if drawer_pos.max().item() > drawer_open_threshold:
+                    drawer_pos = cabinet_entity.data.joint_pos[0]
+                    if drawer_pos.max().item() > DRAWER_OPEN_THRESHOLD:
                         print(
                             f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
                         )
-                    phase_three_done = True
-                    trajectory = None
-                    target_pose = None
+                        ep["phase_three_done"] = True
+                        ep["trajectory"] = None
 
             else:
-                target_state = trajectory[traj_idx]
+                # Mid-trajectory
+                target_state = ep["trajectory"][ep["traj_idx"]]
+                joint_error = torch.norm(
+                    target_state.position[arm_ids_curobo]
+                    - robot_entity.data.joint_pos[0, arm_joint_ids_isaac]
+                ).item()
+                if joint_error < 0.05:
+                    ep["traj_idx"] += 1
 
-                # Forward Kinematics for the current waypoint
-                fk_out = motion_gen.kinematics.forward(target_state.position)
-                target_eef_pos_b = fk_out[0][0:1]
-
-                # "CARROT-ON-A-STICK": Only advance trajectory if the robot is close
-                pos_error = torch.norm(target_eef_pos_b - curr_eef_pos_b).item()
-                if pos_error < 0.04:
-                    traj_idx += 1
-
-            # 3. Calculate Final Target Pose based on (potentially paused) trajectory
-            fk_out = motion_gen.kinematics.forward(target_state.position)
-            target_eef_pos_b = fk_out[0][0:1]
-            target_eef_quat_b = fk_out[1][0:1]
-
-            # 4. Compute the Delta Action
-            delta_pos = target_eef_pos_b - curr_eef_pos_b
-            delta_quat = quat_mul(target_eef_quat_b, quat_inv(curr_eef_quat_b))
-            delta_rot = axis_angle_from_quat(delta_quat)
-
-            # 5. SAFETY CLAMP
-            max_pos_step = 0.05
-            pos_norm = torch.norm(delta_pos)
-            if pos_norm > max_pos_step:
-                delta_pos = delta_pos * (max_pos_step / pos_norm)
-
-            max_rot_step = 0.2
-            rot_norm = torch.norm(delta_rot)
-            if rot_norm > max_rot_step:
-                delta_rot = delta_rot * (max_rot_step / rot_norm)
-
-        # Construct the Arm Action Tensor [1, 6]
-        arm_action = torch.cat([delta_pos, delta_rot], dim=-1)
+            # Build actions from trajectory or hold
+            if ep["trajectory"] is not None:
+                arm_action = target_state.position[arm_ids_curobo].unsqueeze(0)
+                base_action = target_state.position[base_ids_curobo].unsqueeze(0)
+            else:
+                arm_action = robot_entity.data.joint_pos[:, arm_joint_ids_isaac]
+                base_action = robot_entity.data.joint_pos[:, base_joint_ids_isaac]
+        else:
+            arm_action = robot_entity.data.joint_pos[:, arm_joint_ids_isaac]
+            base_action = robot_entity.data.joint_pos[:, base_joint_ids_isaac]
 
         # ==========================================
         # GRIPPER LOGIC
         # ==========================================
-        should_close = phase_two_done or phase_three_done or (gripper_timer > 0)
+        should_close = (
+            ep["phase_two_done"] or ep["phase_three_done"] or (ep["gripper_timer"] > 0)
+        )
         gripper_cmd = GRIPPER_CLOSE_POS if should_close else GRIPPER_OPEN_POS
-
         gripper_action = torch.tensor([[gripper_cmd, gripper_cmd]], device=env.device)
 
-        env_actions = torch.cat([arm_action, gripper_action], dim=-1)
+        env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
 
-        next_obs, rew, terminated, truncated, extras = env.step(env_actions)
+        # ==========================================
+        # STEP & RECORD
+        # ==========================================
+        next_obs, rew, terminated, truncated, _ = env.step(env_actions)
 
-        if not phase_two_done:
+        # Record to the appropriate collector based on current phase
+        if not ep["phase_two_done"]:
             collector_reach.add("obs", obs)
             collector_reach.add("actions", env_actions)
             collector_reach.add("rewards", rew)
@@ -636,45 +482,66 @@ def main():
             collector_pull.add("next_obs", next_obs)
 
         obs = next_obs
-        step_count += 1
+        ep["step_count"] += 1
 
-        # --- SUCCESS CHECK ---
-        if phase_three_done:
-            success_hold_timer += 1
-            if success_hold_timer > 30:
+        # ==========================================
+        # SUCCESS CHECK
+        # ==========================================
+        if ep["phase_three_done"]:
+            ep["success_hold_timer"] += 1
+            if ep["success_hold_timer"] > SUCCESS_HOLD_STEPS:
                 final_pos = cabinet_entity.data.body_pos_w[0, handle_body_idx]
-                displacement = torch.norm(final_pos - initial_handle_pos)
-                if displacement > 0.05:
+                displacement = torch.norm(final_pos - initial_handle_pos).item()
+
+                if displacement > HANDLE_DISPLACEMENT_THRESHOLD:
                     print(
-                        f"[Record] SUCCESS! Drawer opened {displacement:.2f}m. Saving..."
+                        f"[Record] SUCCESS! Drawer moved {displacement:.3f}m. Saving demo."
                     )
                     collector_reach.flush()
                     collector_pull.flush()
+                    demos_collected += 1
                 else:
                     print(
-                        f"[Record] FAIL. Drawer only moved {displacement:.2f}m. Discarding."
+                        f"[Record] FAIL. Drawer only moved {displacement:.3f}m. Discarding."
                     )
                     collector_reach.reset_buffer()
                     collector_pull.reset_buffer()
+                    demos_failed += 1
 
+                elapsed = time.time() - sim_start_time
+                print(
+                    f"  [{demos_collected}/{args_cli.num_demos} demos | {demos_failed} failed | {elapsed:.0f}s elapsed]"
+                )
+
+                # Reset for next episode
                 obs, _ = env.reset()
-
-                randomize_cabinet()
+                randomize_cabinet(
+                    cabinet_view,
+                    cabinet_entity,
+                    default_cabinet_pos,
+                    default_cabinet_rot,
+                    env.device,
+                    args_cli.noise_range,
+                )
+                for _ in range(5):
+                    env.step(zero_action)
+                phase_targets = compute_phase_targets(
+                    target_frame_view, cabinet_view, robot_entity, env.device
+                )
                 initial_handle_pos = cabinet_entity.data.body_pos_w[
                     0, handle_body_idx
                 ].clone()
-                trajectory = None
-                target_pose = None
-                traj_idx = 0
-                phase_one_done = False
-                phase_two_done = False
-                phase_three_done = False
-                hold_joints = None
-                gripper_timer = 0
-                success_hold_timer = 0
-                transition_timer = 0
+                ep = reset_episode_state()
+                target_pose = phase_targets[ep["current_phase_name"]]
                 motion_gen.reset()
 
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    total_time = time.time() - sim_start_time
+    print(
+        f"\n[SUMMARY] {demos_collected} demos saved, {demos_failed} failed | {total_time:.0f}s total"
+    )
     env.close()
     collector_reach.close()
     collector_pull.close()

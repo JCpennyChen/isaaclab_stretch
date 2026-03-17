@@ -1,39 +1,16 @@
-"""
-test_curobo.py — CuRobo Phase 1 (Safe Spot) Path Visualizer for Stretch
-
-Plans a single motion to the "safe spot" in front of the drawer handle
-(Phase 1 from curobo_stretch.py) and visualizes the planned EEF path
-using USD sphere prims.
-
-Usage:
-  python test_curobo.py
-  python test_curobo.py --playback
-  python test_curobo.py --headless
-"""
-
 import os
 import sys
 import torch
-import numpy as np
 import argparse
+import time
 
 # ==========================================
 # ISAAC SIM INITIALIZATION
 # ==========================================
 from isaaclab.app import AppLauncher
 
-parser = argparse.ArgumentParser(description="Stretch + CuRobo Phase 1 Visualizer")
-parser.add_argument(
-    "--headless", action="store_true", default=False, help="Force display off"
-)
-parser.add_argument(
-    "--playback",
-    action="store_true",
-    default=False,
-    help="Play the trajectory on the robot after visualizing",
-)
+parser = argparse.ArgumentParser(description="Stretch + CuRobo Integration")
 args_cli = parser.parse_args()
-args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
@@ -41,20 +18,24 @@ simulation_app = app_launcher.app
 # PATH SETUP & IMPORTS
 # ==========================================
 target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
-if target_config_dir not in sys.path:
-    sys.path.append(target_config_dir)
+sys.path.append(target_config_dir)
 
+# ==========================================
+# ISAAC SIM IMPORTS
+# ==========================================
 from isaaclab.envs import ManagerBasedRLEnv
-from stretch_bc_rnn_cfg import StretchEnvCfg
+from curobo_stretch_cfg import StretchEnvCfg
 from isaacsim.core.prims import XFormPrim
 from isaaclab.utils.math import (
     combine_frame_transforms,
     quat_inv,
     quat_apply,
     quat_mul,
-    axis_angle_from_quat,
 )
 
+# ==========================================
+# CUROBO IMPORTS
+# ==========================================
 from curobo.geom.types import WorldConfig, Cuboid
 from curobo.types.base import TensorDeviceType
 from curobo.types.math import Pose
@@ -69,7 +50,7 @@ from curobo.wrap.reacher.motion_gen import (
 )
 
 # ==========================================
-# PATHS
+# GLOBAL CONFIGURATION
 # ==========================================
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -79,93 +60,43 @@ CUROBO_CONFIG_PATH = os.path.join(
 )
 ASSET_ROOT = os.path.join(PROJECT_ROOT, "assets")
 
-# Phase 1 target: same prim paths and offset as curobo_stretch.py
 TARGET_FRAME_PATH = "/World/envs/env_0/Cabinet/drawer_handle_top/drawer_handle_frame"
-CABINET_PRIM_PATH = "/World/envs/env_0/Cabinet"
-SAFE_SPOT_OFFSET = [0.05, 0.0, 0.03]
+
+PLANNER_CONFIG = {
+    "max_attempts": 10,
+    "time_dilation_factor": 0.5,
+    "enable_graph_attempt": 2,
+}
+
+PHASE_OFFSETS = {
+    "safe_spot": [0.05, 0.0, 0.03],
+    "insert": [-0.05, 0.0, 0.03],
+    "pull": [0.40, 0.0, 0.03],
+}
+
+LINEAR_PLAN_CONFIG = MotionGenPlanConfig(
+    enable_graph=False,
+    enable_finetune_trajopt=True,
+    max_attempts=1,
+    time_dilation_factor=1.0,
+)
+
+TRANSITION_WAIT_STEPS = 30
+GRIPPER_LOCK_STEPS = 30
+GRIPPER_OPEN_POS = 0.1
+GRIPPER_CLOSE_POS = -0.1
+DRAWER_OPEN_THRESHOLD = 0.38
 
 
 # ==========================================
-# FK PATH COMPUTATION
-# ==========================================
-def compute_eef_path_from_trajectory(motion_gen, trajectory):
-    """
-    Run FK on every trajectory waypoint to get the EEF path in robot base frame.
-
-    IMPORTANT DETAILS:
-    1) get_full_js() returns 15 joints (11 active + 4 locked), but
-       kinematics.forward() expects only the 11 active joints.
-       We must extract only the active joint columns.
-    2) CuRobo's FK reuses internal CUDA buffers, so each call to forward()
-       overwrites the previous output. We must .clone() the results.
-    """
-    curobo_joint_names = motion_gen.kinematics.joint_names  # 11 active joints
-    traj_joint_names = trajectory.joint_names  # 15 joints (active + locked)
-
-    # Build index mapping: for each CuRobo active joint, find its column
-    # in the full trajectory
-    joint_idx_map = [traj_joint_names.index(c) for c in curobo_joint_names]
-
-    positions = trajectory.position  # (T, 15)
-    active_positions = positions[:, joint_idx_map]  # (T, 11)
-
-    eef_pos_list = []
-    eef_quat_list = []
-
-    for t in range(active_positions.shape[0]):
-        fk_out = motion_gen.kinematics.forward(active_positions[t : t + 1])
-        # fk_out is a tuple of 7 elements:
-        #   [0] = ee position  (1, 3)
-        #   [1] = ee quaternion (1, 4)
-        #   [2-6] = other data (link poses, collision spheres, etc.)
-        #
-        # .clone() is CRITICAL: CuRobo reuses internal CUDA buffers,
-        # so without clone, all entries point to the same (last) value.
-        eef_pos_list.append(fk_out[0][0].clone())
-        eef_quat_list.append(fk_out[1][0].clone())
-
-    eef_positions = torch.stack(eef_pos_list, dim=0)  # (T, 3)
-    eef_quats = torch.stack(eef_quat_list, dim=0)  # (T, 4)
-
-    print(f"  [FK] EEF pos[0]:   {eef_positions[0].cpu().numpy().round(4)}")
-    print(
-        f"  [FK] EEF pos[mid]: "
-        f"{eef_positions[len(eef_positions)//2].cpu().numpy().round(4)}"
-    )
-    print(f"  [FK] EEF pos[-1]:  {eef_positions[-1].cpu().numpy().round(4)}")
-
-    return eef_positions, eef_quats
-
-
-# ==========================================
-# MAIN
+# MAIN EXECUTION
 # ==========================================
 def main():
-    # ------------------------------------------------------------------
-    # STEP 1: Create the Stretch environment
-    # ------------------------------------------------------------------
     env_cfg = StretchEnvCfg()
-    env_cfg.viewer.eye = (2.0, 2.0, 2.0)
-    env_cfg.episode_length_s = 10000.0
 
-    print("=" * 60)
-    print("[Step 1] Creating Stretch environment")
-    print("=" * 60)
+    print("[IsaacLab] Creating environment")
     env = ManagerBasedRLEnv(cfg=env_cfg)
-    obs, _ = env.reset()
-
-    robot_entity = env.scene["robot"]
-    eef_idx = robot_entity.find_bodies("link_grasp_center")[0][0]
-    base_joint_ids_isaac = robot_entity.find_joints(
-        ["joint_x", "joint_y", "joint_rot_z"]
-    )[0]
-
-    # ------------------------------------------------------------------
-    # STEP 2: Initialize CuRobo MotionGen
-    # ------------------------------------------------------------------
-    print("\n" + "=" * 60)
-    print("[Step 2] Initializing CuRobo MotionGen")
-    print("=" * 60)
+    env.reset()
 
     setup_curobo_logger("warn")
     tensor_args = TensorDeviceType(device=env.device)
@@ -176,9 +107,7 @@ def main():
     dummy_world = WorldConfig(
         cuboid=[
             Cuboid(
-                "startup_dummy",
-                pose=[0, 0, -10.0, 1, 0, 0, 0],
-                dims=[1.0, 1.0, 1.0],
+                "startup_dummy", pose=[0, 0, -10.0, 1, 0, 0, 0], dims=[1.0, 1.0, 1.0]
             )
         ]
     )
@@ -202,199 +131,236 @@ def main():
     ):
         motion_gen.self_collision_checker.min_dist = 0.005
 
-    print("  Warming up planner...")
+    print("[CuRobo] Warming up...")
     motion_gen.warmup(enable_graph=True)
-    print("  Warmup complete!")
 
-    # ------------------------------------------------------------------
-    # STEP 3: Compute Phase 1 target from the drawer handle
-    # ------------------------------------------------------------------
-    print("\n" + "=" * 60)
-    print("[Step 3] Computing Phase 1 target (safe spot near drawer handle)")
-    print("=" * 60)
-
-    # Let the sim settle
-    for _ in range(10):
-        zero_action = torch.zeros((1, env.action_space.shape[-1]), device=env.device)
-        env.step(zero_action)
-
-    # Read handle and cabinet poses from the USD stage
-    target_frame_view = XFormPrim(TARGET_FRAME_PATH, name="target_frame")
-    cabinet_view = XFormPrim(CABINET_PRIM_PATH, name="cabinet")
-
-    handle_pos_w, _ = target_frame_view.get_world_poses()
-    _, cabinet_rot_w = cabinet_view.get_world_poses()
-
-    print(f"  Handle world position:  {handle_pos_w}")
-    print(f"  Cabinet world rotation: {cabinet_rot_w}")
-
-    # Apply the safe spot offset in the cabinet's local frame
-    front_offset = torch.tensor([SAFE_SPOT_OFFSET], device=env.device)
-    identity_quat = torch.tensor([[1.0, 0.0, 0.0, 0.0]], device=env.device)
-
-    target_pos_w, _ = combine_frame_transforms(
-        handle_pos_w[0:1], cabinet_rot_w, front_offset, identity_quat
-    )
-
-    # Fixed gripper orientation (same as curobo_stretch.py)
-    target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
-
-    print(f"  Phase 1 target (world): {target_pos_w}")
-
-    # Transform into robot base frame
-    robot_pos_w = robot_entity.data.root_state_w[0:1, :3]
-    robot_quat_w = robot_entity.data.root_state_w[0:1, 3:7]
-
-    rel_pos = target_pos_w - robot_pos_w
-    target_pos_r = quat_apply(quat_inv(robot_quat_w), rel_pos)
-    target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
-
-    print(f"  Robot base (world):     {robot_pos_w}")
-    print(f"  Target pos (robot):     {target_pos_r}")
-    print(f"  Target quat (robot):    {target_quat_r}")
-
-    target_pose = Pose(position=target_pos_r, quaternion=target_quat_r)
-
-    # ------------------------------------------------------------------
-    # STEP 4: Build start state and plan
-    # ------------------------------------------------------------------
-    print("\n" + "=" * 60)
-    print("[Step 4] Planning Phase 1 (safe spot approach)")
-    print("=" * 60)
-
-    start_joint_pos = robot_entity.data.joint_pos[0].clone()
-    start_joint_vel = robot_entity.data.joint_vel[0].clone()
-
-    cu_js = JointState(
-        position=start_joint_pos.unsqueeze(0),
-        velocity=start_joint_vel.unsqueeze(0) * 0.0,
-        acceleration=start_joint_vel.unsqueeze(0) * 0.0,
-        joint_names=robot_entity.joint_names,
-    ).get_ordered_joint_state(motion_gen.kinematics.joint_names)
-
-    print(f"  Start joints (CuRobo order): {cu_js.position.cpu().numpy().round(4)}")
-
-    # Phase 1 uses the full planner (not linear mode)
     plan_config = MotionGenPlanConfig(
         enable_graph=False,
         enable_finetune_trajopt=True,
-        max_attempts=10,
-        time_dilation_factor=0.5,
-        enable_graph_attempt=2,
+        **PLANNER_CONFIG,
     )
 
-    result = motion_gen.plan_single(cu_js, target_pose, plan_config)
+    # ==========================================
+    # State Variables
+    # ==========================================
+    trajectory = None
+    traj_idx = 0
+    step_count = 0
 
-    if not result.success.item():
-        print(f"\n  *** PHASE 1 PLANNING FAILED ***")
-        print(f"  Status: {result.status}")
-        if "COLLISION" in str(result.status):
-            print("  The robot is likely starting in collision.")
-        print("\n  Keeping sim alive for inspection...")
-        while simulation_app.is_running():
-            zero_action = torch.zeros(
-                (1, env.action_space.shape[-1]), device=env.device
-            )
-            env.step(zero_action)
-        env.close()
-        return
+    phase_one_done = False
+    phase_two_done = False
+    phase_three_done = False
 
-    trajectory = result.get_interpolated_plan()
-    trajectory = motion_gen.get_full_js(trajectory)
-    traj_len = trajectory.position.shape[0]
+    transition_timer = 0
+    gripper_timer = 0
 
-    print(f"\n  PHASE 1 PLAN SUCCESS!")
-    print(f"  Trajectory waypoints: {traj_len}")
+    robot_entity = env.scene["robot"]
 
-    # ------------------------------------------------------------------
-    # STEP 5: Visualize the planned EEF path
-    # ------------------------------------------------------------------
-    print("\n" + "=" * 60)
-    print("[Step 5] Visualizing planned path (USD spheres)")
-    print("=" * 60)
+    # Resolve Isaac Lab joint indices
+    arm_joint_names = [
+        "joint_lift",
+        "joint_arm_l0",
+        "joint_arm_l1",
+        "joint_arm_l2",
+        "joint_arm_l3",
+        "joint_wrist_yaw",
+        "joint_wrist_pitch",
+        "joint_wrist_roll",
+    ]
+    base_joint_names = ["joint_x", "joint_y", "joint_rot_z"]
 
-    eef_positions, eef_quats = compute_eef_path_from_trajectory(motion_gen, trajectory)
+    arm_joint_ids_isaac = robot_entity.find_joints(arm_joint_names)[0]
+    base_joint_ids_isaac = robot_entity.find_joints(base_joint_names)[0]
 
-    # Convert from robot base frame -> world frame for visualization
-    eef_positions_world = []
-    for i in range(eef_positions.shape[0]):
-        p_r = eef_positions[i].unsqueeze(0)
-        p_w = quat_apply(robot_quat_w, p_r) + robot_pos_w
-        eef_positions_world.append(p_w.squeeze(0).cpu().numpy())
-    eef_positions_world = np.array(eef_positions_world)
+    # Resolve CuRobo joint indices (different ordering, no wheel joints)
+    curobo_names = motion_gen.kinematics.joint_names
+    arm_ids_curobo = [curobo_names.index(n) for n in arm_joint_names]
+    base_ids_curobo = [curobo_names.index(n) for n in base_joint_names]
 
-    # Target and start in world frame
-    target_w_np = target_pos_w.squeeze(0).cpu().numpy()
-    start_eef_w = robot_entity.data.body_pos_w[0, eef_idx].cpu().numpy()
+    # ==========================================
+    # Precompute all phase target poses
+    # ==========================================
+    target_frame_view = XFormPrim(TARGET_FRAME_PATH, name="target_frame")
+    cabinet_view = XFormPrim("/World/envs/env_0/Cabinet", name="cabinet")
 
-    print(
-        f"  Start EEF (world): "
-        f"[{start_eef_w[0]:.3f}, {start_eef_w[1]:.3f}, {start_eef_w[2]:.3f}]"
-    )
-    print(
-        f"  Target    (world): "
-        f"[{target_w_np[0]:.3f}, {target_w_np[1]:.3f}, {target_w_np[2]:.3f}]"
-    )
+    curr_pos, _ = target_frame_view.get_world_poses()
+    _, cabinet_rot = cabinet_view.get_world_poses()
+    robot_pos_w = robot_entity.data.root_state_w[0:1, :3]
+    robot_quat_w = robot_entity.data.root_state_w[0:1, 3:7]
+    identity_quat = torch.tensor([[1.0, 0.0, 0.0, 0.0]], device=env.device)
+    target_quat_w = torch.tensor([[0.5, 0.5, -0.5, -0.5]], device=env.device)
+    target_quat_r = quat_mul(quat_inv(robot_quat_w), target_quat_w)
 
-    # --- Debug: print path samples ---
-    print(f"\n  --- EEF Path Debug (every 25th waypoint) ---")
-    print(f"  {'Idx':>5s}  {'X':>8s}  {'Y':>8s}  {'Z':>8s}")
-    print(f"  {'-'*35}")
-    for i in range(0, len(eef_positions_world), 25):
-        p = eef_positions_world[i]
-        print(f"  {i:5d}  {p[0]:8.4f}  {p[1]:8.4f}  {p[2]:8.4f}")
-    p = eef_positions_world[-1]
-    print(f"  {len(eef_positions_world)-1:5d}  {p[0]:8.4f}  {p[1]:8.4f}  {p[2]:8.4f}")
+    phase_targets = {}
+    for phase_name, offset in PHASE_OFFSETS.items():
+        offset_t = torch.tensor([offset], device=env.device)
+        target_pos_w, _ = combine_frame_transforms(
+            curr_pos[0:1], cabinet_rot, offset_t, identity_quat
+        )
+        target_pos_r = quat_apply(quat_inv(robot_quat_w), target_pos_w - robot_pos_w)
+        phase_targets[phase_name] = Pose(
+            position=target_pos_r, quaternion=target_quat_r
+        )
+        print(f"  [{phase_name}] Target pos (robot frame): {target_pos_r}")
 
-    # --- Sanity check ---
-    path_start = eef_positions_world[0]
-    path_end = eef_positions_world[-1]
-    dist_start_to_eef = np.linalg.norm(path_start - start_eef_w)
-    dist_end_to_target = np.linalg.norm(path_end - target_w_np)
-    total_path_length = sum(
-        np.linalg.norm(eef_positions_world[i + 1] - eef_positions_world[i])
-        for i in range(len(eef_positions_world) - 1)
-    )
-    print(f"\n  --- Path Sanity Check ---")
-    print(f"  Path start vs actual EEF:   {dist_start_to_eef:.4f} m (should be ~0)")
-    print(f"  Path end vs target:         {dist_end_to_target:.4f} m (should be ~0)")
-    print(f"  Total path length:          {total_path_length:.4f} m")
-    print(
-        f"  Straight-line distance:     "
-        f"{np.linalg.norm(target_w_np - start_eef_w):.4f} m"
-    )
+    current_phase_name = "safe_spot"
+    target_pose = phase_targets[current_phase_name]
 
-    # --- Create USD sphere visualization ---
-    create_path_spheres(
-        eef_positions_world, name_prefix="path", radius=0.015, color=(0, 1, 0)
-    )
-    create_marker_sphere(
-        start_eef_w, name="start_marker", radius=0.03, color=(0, 0.3, 1)
-    )
-    create_marker_sphere(
-        target_w_np, name="target_marker", radius=0.03, color=(1, 0, 0)
-    )
-
-    print("\n  Legend:")
-    print("    GREEN spheres = planned EEF path")
-    print("    BLUE  sphere  = start EEF")
-    print("    RED   sphere  = safe spot target (near handle)")
-
-    # ------------------------------------------------------------------
-    # STEP 7: Keep sim alive
-    # ------------------------------------------------------------------
-    print("\n" + "=" * 60)
-    print("[Done] Phase 1 visualization complete.")
-    print("       Close the window or Ctrl+C to exit.")
-    print("=" * 60)
-
+    print(">>> Starting Simulation Loop...")
+    sim_start_time = time.time()
     while simulation_app.is_running():
-        base_action = robot_entity.data.joint_pos[:, base_joint_ids_isaac]
-        arm_action = torch.zeros((1, 6), device=env.device)
-        gripper_action = torch.tensor([[0.1, 0.1]], device=env.device)
-        env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
-        env.step(env_actions)
 
+        # ==========================================
+        # PLANNER TRIGGER
+        # ==========================================
+        robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
+        vel_threshold = 2.0
+        is_static = robot_velocity < vel_threshold
+
+        if trajectory is None and step_count > 5 and is_static and not phase_three_done:
+            if phase_two_done:
+                current_phase = "3"
+            elif phase_one_done:
+                current_phase = "2"
+            else:
+                current_phase = "1"
+
+            print(f"[CuRobo] Planning Phase {current_phase}...")
+
+            start_state = robot_entity.data.joint_pos[0]
+
+            cu_js = JointState(
+                position=start_state.unsqueeze(0),
+                velocity=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
+                acceleration=robot_entity.data.joint_vel[0].unsqueeze(0) * 0.0,
+                joint_names=robot_entity.joint_names,
+            ).get_ordered_joint_state(motion_gen.kinematics.joint_names)
+
+            if current_phase in ["2", "3"]:
+                print(f" -> Using LINEAR MODE for Phase {current_phase}")
+                active_config = LINEAR_PLAN_CONFIG
+            else:
+                active_config = plan_config
+
+            result = motion_gen.plan_single(cu_js, target_pose, active_config)
+
+            if result.success.item():
+                traj_len = result.optimized_plan.position.shape[1]
+                print(f"\nPhase {current_phase} PLAN SUCCESS!")
+                print(f" -> Generated {traj_len} steps.")
+
+                if traj_len < 5:
+                    print(" -> WARNING: Path is extremely short!")
+
+                trajectory = result.get_interpolated_plan()
+                trajectory = motion_gen.get_full_js(trajectory)
+
+                if trajectory.joint_names is not None:
+                    print(f"  CuRobo full-JS names: {trajectory.joint_names}")
+                    print(f"  IsaacLab joint names: {robot_entity.joint_names}")
+
+                traj_idx = 0
+            else:
+                print(f"\n[DEBUG] Phase {current_phase} PLAN FAILED!")
+                print(f" -> Status: {result.status}")
+                if "COLLISION" in str(result.status):
+                    print(" -> CAUSE: The robot is likely starting in collision.")
+
+        # ==========================================
+        # Execution Logic (Joint Position)
+        # ==========================================
+        if trajectory is not None:
+            if traj_idx >= len(trajectory.position):
+                # End of trajectory: Hold the last position
+                target_state = trajectory[-1]
+
+                if not phase_one_done:
+                    transition_timer += 1
+                    if transition_timer > TRANSITION_WAIT_STEPS:
+                        print("--> Phase 1 Done. Switching to Phase 2...")
+                        phase_one_done = True
+                        trajectory = None
+                        current_phase_name = "insert"
+                        target_pose = phase_targets[current_phase_name]
+                        traj_idx = 0
+                        transition_timer = 0
+
+                elif not phase_two_done:
+                    gripper_timer += 1
+                    if gripper_timer > GRIPPER_LOCK_STEPS:
+                        print("--> Gripper Locked! Switching to Phase 3...")
+                        phase_two_done = True
+                        trajectory = None
+                        current_phase_name = "pull"
+                        target_pose = phase_targets[current_phase_name]
+                        traj_idx = 0
+                        gripper_timer = 0
+
+                else:
+                    cabinet = env.scene["cabinet"]
+                    drawer_pos = cabinet.data.joint_pos[0]
+
+                    if drawer_pos.max().item() > DRAWER_OPEN_THRESHOLD:
+                        print(
+                            f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
+                        )
+                        phase_three_done = True
+                        trajectory = None
+
+            else:
+                # Mid-trajectory: Advance when close enough (compare arm joints only)
+                target_state = trajectory[traj_idx]
+                joint_error = torch.norm(
+                    target_state.position[arm_ids_curobo]
+                    - robot_entity.data.joint_pos[0, arm_joint_ids_isaac]
+                ).item()
+                if joint_error < 0.05:
+                    traj_idx += 1
+
+            # Send joint positions directly (cuRobo indices for trajectory, Isaac indices for robot)
+            if trajectory is not None:
+                arm_action = target_state.position[arm_ids_curobo].unsqueeze(0)
+                base_action = target_state.position[base_ids_curobo].unsqueeze(0)
+            else:
+                # Phase just ended — hold current position
+                arm_action = robot_entity.data.joint_pos[:, arm_joint_ids_isaac]
+                base_action = robot_entity.data.joint_pos[:, base_joint_ids_isaac]
+
+        else:
+            # No active trajectory — hold current position
+            arm_action = robot_entity.data.joint_pos[:, arm_joint_ids_isaac]
+            base_action = robot_entity.data.joint_pos[:, base_joint_ids_isaac]
+
+        # ==========================================
+        # GRIPPER LOGIC
+        # ==========================================
+        should_close = phase_two_done or phase_three_done or (gripper_timer > 0)
+        gripper_cmd = GRIPPER_CLOSE_POS if should_close else GRIPPER_OPEN_POS
+        gripper_action = torch.tensor([[gripper_cmd, gripper_cmd]], device=env.device)
+
+        env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
+
+        obs, _, _, _, _ = env.step(env_actions)
+        step_count += 1
+
+        # ==========================================
+        # DEBUG: Print obs and actions every 25 steps
+        # ==========================================
+        if step_count % 25 == 0:
+            elapsed = time.time() - sim_start_time
+            sim_time = step_count * env_cfg.sim.dt * env_cfg.decimation
+            print(
+                f"\n[DEBUG] Step {step_count} | Sim time: {sim_time:.2f}s | Wall time: {elapsed:.1f}s"
+            )
+            print(f"  Phase: {current_phase_name}")
+            print(f"  Actions:      {env_actions}")
+            print(f"  Obs (concat): {obs['policy']}")
+
+    total_time = time.time() - sim_start_time
+    total_sim_time = step_count * env_cfg.sim.dt * env_cfg.decimation
+    print(
+        f"\n[DONE] {step_count} steps | Sim time: {total_sim_time:.2f}s | Wall time: {total_time:.1f}s"
+    )
     env.close()
 
 

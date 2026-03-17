@@ -99,7 +99,7 @@ class StretchSceneCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the Stretch."""
 
-    # 1. Arm Task Space Control (Delta IK) - 8 Joints
+    # Arm Task Space Control
     arm_action = isaac_mdp.DifferentialInverseKinematicsActionCfg(
         asset_name="robot",
         joint_names=[
@@ -118,16 +118,14 @@ class ActionsCfg:
         ),
     )
 
-    # 2. Base Velocity Control - 3 Joints (vx, vy, yaw_rate)
-    # stiffness=0 in stretch_cfg.py means the actuator is a pure velocity servo:
-    # F = damping * (v_cmd - v_actual).  Send [v, 0, w] each step.
+    # Base Velocity Control
     base_action = isaac_mdp.JointVelocityActionCfg(
         asset_name="robot",
         joint_names=["joint_x", "joint_y", "joint_rot_z"],
         use_default_offset=False,
     )
 
-    # 3. Gripper Control (Absolute) - 2 Joints
+    # Gripper Control
     gripper_action = isaac_mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=["joint_gripper_.*"],
@@ -189,7 +187,6 @@ class ObservationsCfg:
             },
         )
 
-        # 5. Only the relevant drawer joint (for pull phase feedback)
         drawer_pos = ObsTerm(
             func=isaac_mdp.joint_pos,
             params={
