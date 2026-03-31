@@ -71,7 +71,7 @@ PLANNER_CONFIG = {
 PHASE_OFFSETS = {
     "safe_spot": [0.05, 0.0, 0.03],
     "insert": [-0.05, 0.0, 0.03],
-    "pull": [0.40, 0.0, 0.03],
+    "pull": [0.45, 0.0, 0.03],
 }
 
 LINEAR_PLAN_CONFIG = MotionGenPlanConfig(

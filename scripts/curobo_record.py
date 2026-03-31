@@ -289,11 +289,6 @@ def main():
         args_cli.noise_range,
     )
 
-    # Let physics propagate the new cabinet position
-    zero_action = torch.zeros(1, 13, device=env.device)
-    for _ in range(5):
-        env.step(zero_action)
-
     # Compute initial targets and handle position
     phase_targets = compute_phase_targets(
         target_frame_view, cabinet_view, robot_entity, env.device
@@ -378,8 +373,6 @@ def main():
                         env.device,
                         args_cli.noise_range,
                     )
-                    for _ in range(5):
-                        env.step(zero_action)
                     phase_targets = compute_phase_targets(
                         target_frame_view, cabinet_view, robot_entity, env.device
                     )
@@ -437,7 +430,9 @@ def main():
                     target_state.position[arm_ids_curobo]
                     - robot_entity.data.joint_pos[0, arm_joint_ids_isaac]
                 ).item()
-                if joint_error < 0.05:
+                # Looser tolerance during pull phase (drawer resists)
+                threshold = 0.15 if ep["phase_two_done"] else 0.05
+                if joint_error < threshold:
                     ep["traj_idx"] += 1
 
             # Build actions from trajectory or hold
@@ -485,6 +480,19 @@ def main():
         ep["step_count"] += 1
 
         # ==========================================
+        # PHASE 3 GLOBAL TIMEOUT
+        # ==========================================
+        if ep["phase_two_done"] and not ep["phase_three_done"]:
+            if ep["step_count"] > 300:
+                drawer_pos = cabinet_entity.data.joint_pos[0]
+                print(
+                    f"--> Phase 3 global timeout at step {ep['step_count']}. "
+                    f"Drawer at {drawer_pos.max().item():.3f}m."
+                )
+                ep["phase_three_done"] = True
+                ep["trajectory"] = None
+
+        # ==========================================
         # SUCCESS CHECK
         # ==========================================
         if ep["phase_three_done"]:
@@ -523,8 +531,6 @@ def main():
                     env.device,
                     args_cli.noise_range,
                 )
-                for _ in range(5):
-                    env.step(zero_action)
                 phase_targets = compute_phase_targets(
                     target_frame_view, cabinet_view, robot_entity, env.device
                 )
