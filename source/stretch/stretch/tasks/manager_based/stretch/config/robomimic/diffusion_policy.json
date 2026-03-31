@@ -1,7 +1,7 @@
 {
   "algo_name": "diffusion_policy",
   "experiment": {
-    "name": "stretch_diffusion_policy",
+    "name": "diffusion_policy_full",
     "validate": true,
     "logging": {
       "terminal_output_to_txt": true,
@@ -19,45 +19,49 @@
     "render": false
   },
   "train": {
-    "data": "/mnt/shared_ssd/JohnChen/stretch/datasets/stretch_cabinet_demo.hdf5",
-    "output_dir": "../diffusion_trained_models",
-    "num_data_workers": 4,
+    "data": "/mnt/shared_ssd/JohnChen/stretch/datasets/diff_pol_model.hdf5",
+    "output_dir": "../diffusion_policy_trained_models",
+    "num_data_workers": 8,
     "hdf5_cache_mode": "all",
     "hdf5_use_swmr": true,
     "hdf5_normalize_obs": true,
     "hdf5_filter_key": "train",
     "hdf5_validation_filter_key": "valid",
-    "seq_length": 16,
-    "dataset_keys": ["actions", "rewards", "dones"],
+    "seq_length": 8,
+    "dataset_keys": ["actions"],
     "action_keys": ["actions"],
+    "action_config": {
+      "actions": {
+        "normalization": "gaussian"
+      }
+    },
     "cuda": true,
     "batch_size": 128,
-    "num_epochs": 200,
+    "num_epochs": 500,
     "seed": 1
   },
   "algo": {
     "optim_params": {
       "policy": {
-        "optimizer_type": "adamw",
+        "optimizer_type": "adam",
         "learning_rate": {
           "initial": 1e-4,
           "decay_factor": 0.1,
-          "epoch_schedule": []
+          "epoch_schedule": [],
+          "scheduler_type": "multistep"
         },
         "regularization": {
-          "L2": 1e-6
+          "L2": 0.0
         }
       }
     },
-    "ddpm": {
-      "num_inference_timesteps": 100,
-      "beta_schedule": "squaredcos_cap_v2",
-      "prediction_horizon": 16,
-      "observation_horizon": 2,
-      "action_horizon": 8,
-      "clip_sample": true
+    "horizon": {
+      "observation_horizon": 1,
+      "action_horizon": 4,
+      "prediction_horizon": 8
     },
     "unet": {
+      "enabled": true,
       "diffusion_step_embed_dim": 256,
       "down_dims": [256, 512, 1024],
       "kernel_size": 5,
@@ -66,12 +70,20 @@
     "ema": {
       "enabled": true,
       "power": 0.75
+    },
+    "ddpm": {
+      "enabled": true,
+      "num_train_timesteps": 100,
+      "num_inference_timesteps": 10,
+      "beta_schedule": "squaredcos_cap_v2",
+      "clip_sample": true,
+      "prediction_type": "epsilon"
     }
   },
   "observation": {
     "modalities": {
       "obs": {
-        "low_dim": ["policy"],
+        "low_dim": ["policy", "handle_target"],
         "rgb": [],
         "depth": [],
         "scan": []
@@ -86,9 +98,7 @@
     "encoder": {
       "low_dim": {
         "core_class": null,
-        "core_kwargs": {},
-        "flatten": true,
-        "n_obs_steps": 2
+        "core_kwargs": {}
       }
     }
   }

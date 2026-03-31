@@ -44,6 +44,7 @@ class RobomimicDataCollector:
             "actions": [],
             "rewards": [],
             "dones": [],
+            "goal": [],
         }
 
     def _to_numpy(self, value):
@@ -76,7 +77,7 @@ class RobomimicDataCollector:
         ep_grp = self.data_group.create_group(demo_name)
 
         # Save obs and next_obs (may be dicts)
-        for obs_key in ["obs", "next_obs"]:
+        for obs_key in ["obs", "next_obs", "goal"]:
             if self.buffer[obs_key]:
                 self._save_nested(ep_grp, self.buffer[obs_key], obs_key)
 

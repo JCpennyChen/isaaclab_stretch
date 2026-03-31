@@ -1,3 +1,14 @@
+"""
+curobo_record_single.py
+
+Records full-episode demos (reach + grip + pull) as single continuous
+trajectories for training a unified Diffusion Policy.
+
+Usage:
+    ../IsaacLab/isaaclab.sh -p scripts/curobo_record_single.py \
+        --num_demos 100 --noise_range 0.0 --filename stretch_cabinet_full
+"""
+
 import os
 
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
@@ -11,22 +22,22 @@ import time
 # ==========================================
 from isaaclab.app import AppLauncher
 
-parser = argparse.ArgumentParser(description="Stretch Cabinet Demo Recording")
+parser = argparse.ArgumentParser(description="Stretch Cabinet Full-Episode Recording")
 AppLauncher.add_app_launcher_args(parser)
 parser.add_argument(
     "--filename",
     type=str,
-    default="stretch_cabinet_demo",
-    help="Base name of output files",
+    default="delta_action_diffustion_policy",
+    help="Base name of output HDF5 file",
 )
 parser.add_argument(
-    "--num_demos", type=int, default=10, help="Target number of successful demos"
+    "--num_demos", type=int, default=100, help="Target number of successful demos"
 )
 parser.add_argument("--ratio", type=float, default=0.1, help="Validation split ratio")
 parser.add_argument(
     "--noise_range",
     type=float,
-    default=0.1,
+    default=0.2,
     help="Cabinet position randomization range (meters)",
 )
 args_cli = parser.parse_args()
@@ -39,8 +50,7 @@ simulation_app = app_launcher.app
 target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
 sys.path.append(target_config_dir)
 
-
-from curobo_stretch_cfg import StretchEnvCfg
+from delta_action_diff_stretch_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
 from isaacsim.core.prims import XFormPrim
 from isaaclab.utils.math import (
@@ -88,7 +98,7 @@ PLANNER_CONFIG = {
 PHASE_OFFSETS = {
     "safe_spot": [0.05, 0.0, 0.03],
     "insert": [-0.05, 0.0, 0.03],
-    "pull": [0.40, 0.0, 0.03],
+    "pull": [0.45, 0.0, 0.03],
 }
 
 LINEAR_PLAN_CONFIG = MotionGenPlanConfig(
@@ -102,13 +112,13 @@ TRANSITION_WAIT_STEPS = 30
 GRIPPER_LOCK_STEPS = 30
 GRIPPER_OPEN_POS = 0.1
 GRIPPER_CLOSE_POS = -0.1
-DRAWER_OPEN_THRESHOLD = 0.38
+DRAWER_OPEN_THRESHOLD = 0.35
 MAX_PLAN_FAILURES = 5
 SUCCESS_HOLD_STEPS = 30
 HANDLE_DISPLACEMENT_THRESHOLD = 0.05
 
 
-from robomimic_collector import RobomimicDataCollector
+from scripts.tools.robomimic_collector import RobomimicDataCollector
 
 
 # ==========================================
@@ -166,6 +176,7 @@ def reset_episode_state():
         "success_hold_timer": 0,
         "plan_fail_count": 0,
         "current_phase_name": "safe_spot",
+        "phase3_start_step": None,
     }
 
 
@@ -183,21 +194,14 @@ def main():
     tensor_args = TensorDeviceType(device=env.device)
 
     # ==========================================
-    # Data Collectors
+    # Single Data Collector (full episode)
     # ==========================================
     log_dir = os.path.join(os.getcwd(), "datasets")
 
-    collector_reach = RobomimicDataCollector(
+    collector = RobomimicDataCollector(
         env_name="Isaac-Stretch-Cabinet-v0",
         directory_path=log_dir,
-        filename=args_cli.filename + "_reach",
-        num_demos=args_cli.num_demos,
-        val_ratio=args_cli.ratio,
-    )
-    collector_pull = RobomimicDataCollector(
-        env_name="Isaac-Stretch-Cabinet-v0",
-        directory_path=log_dir,
-        filename=args_cli.filename + "_pull",
+        filename=args_cli.filename,
         num_demos=args_cli.num_demos,
         val_ratio=args_cli.ratio,
     )
@@ -264,6 +268,8 @@ def main():
 
     arm_joint_ids_isaac = robot_entity.find_joints(arm_joint_names)[0]
     base_joint_ids_isaac = robot_entity.find_joints(base_joint_names)[0]
+    gripper_joint_names = ["joint_gripper_finger_left", "joint_gripper_finger_right"]
+    gripper_joint_ids_isaac = robot_entity.find_joints(gripper_joint_names)[0]
 
     curobo_names = motion_gen.kinematics.joint_names
     arm_ids_curobo = [curobo_names.index(n) for n in arm_joint_names]
@@ -293,6 +299,7 @@ def main():
     phase_targets = compute_phase_targets(
         target_frame_view, cabinet_view, robot_entity, env.device
     )
+    pull_goal = phase_targets["pull"].position
     initial_handle_pos = cabinet_entity.data.body_pos_w[0, handle_body_idx].clone()
 
     # ==========================================
@@ -307,7 +314,7 @@ def main():
 
     print(">>> Starting Recording Loop...")
     while simulation_app.is_running():
-        if collector_reach.is_stopped() or collector_pull.is_stopped():
+        if collector.is_stopped():
             print(f"\n[DONE] Collected {args_cli.num_demos} demos.")
             break
 
@@ -317,10 +324,13 @@ def main():
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
         is_static = robot_velocity < 2.0
 
+        # Skip is_static for Phase 3: gripper oscillation keeps velocity high
+        ready_to_plan = is_static or ep["phase_two_done"]
+
         if (
             ep["trajectory"] is None
             and ep["step_count"] > 5
-            and is_static
+            and ready_to_plan
             and not ep["phase_three_done"]
         ):
             if ep["phase_two_done"]:
@@ -360,8 +370,7 @@ def main():
                     print(
                         f"  [RESET] {MAX_PLAN_FAILURES} failures. Discarding episode."
                     )
-                    collector_reach.reset_buffer()
-                    collector_pull.reset_buffer()
+                    collector.reset_buffer()
                     demos_failed += 1
 
                     obs, _ = env.reset()
@@ -413,15 +422,7 @@ def main():
                         target_pose = phase_targets[ep["current_phase_name"]]
                         ep["traj_idx"] = 0
                         ep["gripper_timer"] = 0
-
-                else:
-                    drawer_pos = cabinet_entity.data.joint_pos[0]
-                    if drawer_pos.max().item() > DRAWER_OPEN_THRESHOLD:
-                        print(
-                            f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
-                        )
-                        ep["phase_three_done"] = True
-                        ep["trajectory"] = None
+                        ep["phase3_start_step"] = ep["step_count"]
 
             else:
                 # Mid-trajectory
@@ -434,6 +435,16 @@ def main():
                 threshold = 0.15 if ep["phase_two_done"] else 0.05
                 if joint_error < threshold:
                     ep["traj_idx"] += 1
+
+            # --- Phase 3 drawer check (runs every step, independent of traj progress) ---
+            if ep["phase_two_done"] and not ep["phase_three_done"]:
+                drawer_pos = cabinet_entity.data.joint_pos[0]
+                if drawer_pos.max().item() > DRAWER_OPEN_THRESHOLD:
+                    print(
+                        f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
+                    )
+                    ep["phase_three_done"] = True
+                    ep["trajectory"] = None
 
             # Build actions from trajectory or hold
             if ep["trajectory"] is not None:
@@ -458,23 +469,33 @@ def main():
         env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
 
         # ==========================================
-        # STEP & RECORD
+        # STEP & RECORD (single collector for full episode)
         # ==========================================
+        # Compute current joint positions (13D: 8 arm + 3 base + 2 gripper)
+        current_pos = torch.cat(
+            [
+                robot_entity.data.joint_pos[:, arm_joint_ids_isaac],
+                robot_entity.data.joint_pos[:, base_joint_ids_isaac],
+                robot_entity.data.joint_pos[:, gripper_joint_ids_isaac],
+            ],
+            dim=-1,
+        )
+
+        # Delta actions = target position - current position
+        delta_actions = env_actions - current_pos
+
+        # Step the env with absolute actions
         next_obs, rew, terminated, truncated, _ = env.step(env_actions)
 
-        # Record to the appropriate collector based on current phase
-        if not ep["phase_two_done"]:
-            collector_reach.add("obs", obs)
-            collector_reach.add("actions", env_actions)
-            collector_reach.add("rewards", rew)
-            collector_reach.add("dones", terminated | truncated)
-            collector_reach.add("next_obs", next_obs)
-        else:
-            collector_pull.add("obs", obs)
-            collector_pull.add("actions", env_actions)
-            collector_pull.add("rewards", rew)
-            collector_pull.add("dones", terminated | truncated)
-            collector_pull.add("next_obs", next_obs)
+        # Record delta actions (not absolute)
+        obs_with_goal = {**obs, "handle_target": pull_goal}
+        next_obs_with_goal = {**next_obs, "handle_target": pull_goal}
+
+        collector.add("obs", obs_with_goal)
+        collector.add("actions", delta_actions)
+        collector.add("rewards", rew)
+        collector.add("dones", terminated | truncated)
+        collector.add("next_obs", next_obs_with_goal)
 
         obs = next_obs
         ep["step_count"] += 1
@@ -483,10 +504,14 @@ def main():
         # PHASE 3 GLOBAL TIMEOUT
         # ==========================================
         if ep["phase_two_done"] and not ep["phase_three_done"]:
-            if ep["step_count"] > 300:
+            phase3_steps = ep["step_count"] - (
+                ep["phase3_start_step"] or ep["step_count"]
+            )
+            if phase3_steps > 300:
                 drawer_pos = cabinet_entity.data.joint_pos[0]
                 print(
-                    f"--> Phase 3 global timeout at step {ep['step_count']}. "
+                    f"--> Phase 3 global timeout at step {ep['step_count']} "
+                    f"({phase3_steps} steps into Phase 3). "
                     f"Drawer at {drawer_pos.max().item():.3f}m."
                 )
                 ep["phase_three_done"] = True
@@ -503,22 +528,22 @@ def main():
 
                 if displacement > HANDLE_DISPLACEMENT_THRESHOLD:
                     print(
-                        f"[Record] SUCCESS! Drawer moved {displacement:.3f}m. Saving demo."
+                        f"[Record] SUCCESS! Drawer moved {displacement:.3f}m. "
+                        f"Episode length: {ep['step_count']} steps. Saving demo."
                     )
-                    collector_reach.flush()
-                    collector_pull.flush()
+                    collector.flush()
                     demos_collected += 1
                 else:
                     print(
                         f"[Record] FAIL. Drawer only moved {displacement:.3f}m. Discarding."
                     )
-                    collector_reach.reset_buffer()
-                    collector_pull.reset_buffer()
+                    collector.reset_buffer()
                     demos_failed += 1
 
                 elapsed = time.time() - sim_start_time
                 print(
-                    f"  [{demos_collected}/{args_cli.num_demos} demos | {demos_failed} failed | {elapsed:.0f}s elapsed]"
+                    f"  [{demos_collected}/{args_cli.num_demos} demos | "
+                    f"{demos_failed} failed | {elapsed:.0f}s elapsed]"
                 )
 
                 # Reset for next episode
@@ -534,6 +559,7 @@ def main():
                 phase_targets = compute_phase_targets(
                     target_frame_view, cabinet_view, robot_entity, env.device
                 )
+                pull_goal = phase_targets["pull"].position
                 initial_handle_pos = cabinet_entity.data.body_pos_w[
                     0, handle_body_idx
                 ].clone()
@@ -549,8 +575,7 @@ def main():
         f"\n[SUMMARY] {demos_collected} demos saved, {demos_failed} failed | {total_time:.0f}s total"
     )
     env.close()
-    collector_reach.close()
-    collector_pull.close()
+    collector.close()
 
 
 if __name__ == "__main__":

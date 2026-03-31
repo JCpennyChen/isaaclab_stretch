@@ -1,0 +1,7 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H [INFO] Using python from: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/bin/python
+usage: bc_rnn_play.py [-h] --reach_ckpt REACH_CKPT [--pull_ckpt PULL_CKPT]
+                      [--num_episodes NUM_EPISODES]
+                      [--reach_steps REACH_STEPS] [--pull_steps PULL_STEPS]
+                      [--drawer_threshold DRAWER_THRESHOLD] [--record_video]
+                      [--video_dir VIDEO_DIR] [--video_fps VIDEO_FPS]
+bc_rnn_play.py: error: argument --reach_ckpt: expected one argument

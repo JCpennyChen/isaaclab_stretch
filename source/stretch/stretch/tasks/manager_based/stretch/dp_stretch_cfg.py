@@ -14,6 +14,7 @@ import isaaclab.sim as sim_utils
 import torch
 
 from isaaclab.envs import mdp as isaac_mdp
+from isaaclab.utils.math import quat_apply, quat_inv
 from config.stretch_cfg import STRETCH_CFG
 
 
@@ -28,7 +29,9 @@ def reward_cabinet_opening_proportional(
 def handle_rel_pos(env, asset_cfg: SceneEntityCfg, target_cfg: SceneEntityCfg):
     asset_pos = env.scene[asset_cfg.name].data.body_pos_w[:, asset_cfg.body_ids[0]]
     target_pos = env.scene[target_cfg.name].data.body_pos_w[:, target_cfg.body_ids[0]]
-    return target_pos - asset_pos
+    robot_quat_w = env.scene["robot"].data.root_state_w[:, 3:7]
+    world_vec = target_pos - asset_pos
+    return quat_apply(quat_inv(robot_quat_w), world_vec)
 
 
 @configclass

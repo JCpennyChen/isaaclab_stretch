@@ -23,8 +23,8 @@ sys.path.append(target_config_dir)
 # ==========================================
 # ISAAC SIM IMPORTS
 # ==========================================
+from bc_rnn_stretch_cfg import StretchEnvCfg
 from isaaclab.envs import ManagerBasedRLEnv
-from curobo_stretch_cfg import StretchEnvCfg
 from isaacsim.core.prims import XFormPrim
 from isaaclab.utils.math import (
     combine_frame_transforms,
@@ -172,7 +172,6 @@ def main():
     arm_joint_ids_isaac = robot_entity.find_joints(arm_joint_names)[0]
     base_joint_ids_isaac = robot_entity.find_joints(base_joint_names)[0]
 
-    # Resolve CuRobo joint indices (different ordering, no wheel joints)
     curobo_names = motion_gen.kinematics.joint_names
     arm_ids_curobo = [curobo_names.index(n) for n in arm_joint_names]
     base_ids_curobo = [curobo_names.index(n) for n in base_joint_names]
@@ -296,17 +295,6 @@ def main():
                         traj_idx = 0
                         gripper_timer = 0
 
-                else:
-                    cabinet = env.scene["cabinet"]
-                    drawer_pos = cabinet.data.joint_pos[0]
-
-                    if drawer_pos.max().item() > DRAWER_OPEN_THRESHOLD:
-                        print(
-                            f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
-                        )
-                        phase_three_done = True
-                        trajectory = None
-
             else:
                 # Mid-trajectory: Advance when close enough (compare arm joints only)
                 target_state = trajectory[traj_idx]
@@ -314,8 +302,37 @@ def main():
                     target_state.position[arm_ids_curobo]
                     - robot_entity.data.joint_pos[0, arm_joint_ids_isaac]
                 ).item()
-                if joint_error < 0.05:
+                if step_count % 25 == 0:
+                    print(
+                        f"[DEBUG Traj] Step {step_count} | "
+                        f"traj_idx: {traj_idx}/{len(trajectory.position)} | "
+                        f"joint_error: {joint_error:.4f} | "
+                        f"threshold: 0.05"
+                    )
+                if joint_error < 0.1:
                     traj_idx += 1
+
+            # --- Phase 3 drawer check (runs every step, independent of traj progress) ---
+            if phase_two_done and not phase_three_done:
+                cabinet = env.scene["cabinet"]
+                drawer_pos = cabinet.data.joint_pos[0]
+
+                if step_count % 10 == 0:
+                    print(
+                        f"[DEBUG Drawer] Step {step_count} | "
+                        f"joint_names: {cabinet.joint_names} | "
+                        f"joint_pos: {drawer_pos.tolist()} | "
+                        f"max: {drawer_pos.max().item():.4f} | "
+                        f"threshold: {DRAWER_OPEN_THRESHOLD}"
+                    )
+
+                if drawer_pos.max().item() > DRAWER_OPEN_THRESHOLD:
+                    print(
+                        f"--> Drawer open ({drawer_pos.max().item():.3f}m). Phase 3 Done!"
+                    )
+                    phase_three_done = True
+                    trajectory = None
+                    break
 
             # Send joint positions directly (cuRobo indices for trajectory, Isaac indices for robot)
             if trajectory is not None:
