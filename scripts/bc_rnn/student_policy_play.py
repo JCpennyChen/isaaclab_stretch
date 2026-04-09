@@ -32,17 +32,32 @@ from isaaclab.app import AppLauncher
 
 parser = argparse.ArgumentParser(description="Play trained student policies")
 parser.add_argument(
-    "--reach_ckpt", type=str, required=True, help="Path to trained reach student checkpoint"
+    "--reach_ckpt",
+    type=str,
+    required=True,
+    help="Path to trained reach student checkpoint",
 )
 parser.add_argument(
-    "--pull_ckpt", type=str, default=None, help="Path to trained pull student checkpoint"
+    "--pull_ckpt",
+    type=str,
+    default=None,
+    help="Path to trained pull student checkpoint",
 )
 parser.add_argument("--num_episodes", type=int, default=1)
-parser.add_argument("--reach_steps", type=int, default=400, help="Max reach phase steps")
+parser.add_argument(
+    "--reach_steps", type=int, default=175, help="Max reach phase steps"
+)
 parser.add_argument("--pull_steps", type=int, default=150, help="Max pull phase steps")
 parser.add_argument("--drawer_threshold", type=float, default=0.35)
-parser.add_argument("--image_h", type=int, default=120, help="Resized image height (must match training)")
-parser.add_argument("--image_w", type=int, default=160, help="Resized image width (must match training)")
+parser.add_argument(
+    "--image_h",
+    type=int,
+    default=120,
+    help="Resized image height (must match training)",
+)
+parser.add_argument(
+    "--image_w", type=int, default=160, help="Resized image width (must match training)"
+)
 parser.add_argument("--record_video", action="store_true", default=False)
 parser.add_argument(
     "--video_dir",
@@ -84,7 +99,7 @@ from isaaclab.envs import ManagerBasedRLEnv
 class StudentPolicy(nn.Module):
     """Simple CNN image encoder + MLP policy."""
 
-    def __init__(self, proprio_dim=26, action_dim=15, image_size=(120, 160)):
+    def __init__(self, proprio_dim=24, action_dim=13, image_size=(120, 160)):
         super().__init__()
 
         self.cnn = nn.Sequential(
@@ -123,7 +138,13 @@ def load_student_policy(ckpt_path, device, image_size):
         raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
 
     ckpt = torch.load(ckpt_path, map_location=device)
-    model = StudentPolicy(proprio_dim=26, action_dim=15, image_size=image_size)
+    # Infer dims from checkpoint weights so this always matches training
+    cnn_out_dim = 64 * 4 * 4  # 1024, matches the CNN architecture
+    proprio_dim = ckpt["model"]["mlp.0.weight"].shape[1] - cnn_out_dim
+    action_dim = ckpt["model"]["mlp.6.weight"].shape[0]
+    model = StudentPolicy(
+        proprio_dim=proprio_dim, action_dim=action_dim, image_size=image_size
+    )
     model.load_state_dict(ckpt["model"])
     model.to(device)
     model.eval()
@@ -184,12 +205,12 @@ def main():
     all_vel_ids = robot_entity.find_joints(ARM_JOINT_NAMES + BASE_JOINT_NAMES)[0]
 
     def get_proprioception():
-        """Extract proprio as a single (1, 26) tensor."""
-        arm = robot_entity.data.joint_pos[:, arm_joint_ids]
-        base = robot_entity.data.joint_pos[:, base_joint_ids]
-        vel = robot_entity.data.joint_vel[:, all_vel_ids]
-        grip = robot_entity.data.joint_pos[:, gripper_joint_ids]
-        head = robot_entity.data.joint_pos[:, head_joint_ids]
+        """Extract proprio as a single (1, 26) tensor — matches student_policy_train.py."""
+        arm = robot_entity.data.joint_pos[:, arm_joint_ids]  # 8D
+        base = robot_entity.data.joint_pos[:, base_joint_ids]  # 3D
+        vel = robot_entity.data.joint_vel[:, all_vel_ids]  # 11D
+        grip = robot_entity.data.joint_pos[:, gripper_joint_ids]  # 2D
+        head = robot_entity.data.joint_pos[:, head_joint_ids]  # 2D (pan, tilt)
         return torch.cat([arm, base, vel, grip, head], dim=-1)  # (1, 26)
 
     # Video recorder
@@ -217,26 +238,55 @@ def main():
         episode_success = False
 
         # ------------------------------------------
+        # PHASE 0: HEAD CAMERA ALIGNMENT (no policy)
+        # Match student_policy_record.py: settle head before policy runs
+        # ------------------------------------------
+        print("[Phase 0] Aligning head camera...")
+        zero_action = torch.zeros(1, 13, device=device)
+        head_settle_timer = 0
+        while head_settle_timer < 10:
+            head_target, _ = compute_head_look_at(
+                robot_entity,
+                cabinet_entity,
+                head_body_idx,
+                handle_body_idx,
+                head_joint_ids,
+            )
+            robot_entity.set_joint_position_target(
+                head_target.unsqueeze(0), joint_ids=head_joint_ids
+            )
+            head_current = robot_entity.data.joint_pos[0, head_joint_ids]
+            head_error = torch.norm(head_target - head_current).item()
+            if head_error < 0.05:
+                head_settle_timer += 1
+            else:
+                head_settle_timer = 0
+            obs, _, _, _, _ = env.step(zero_action)
+            step_count += 1
+        print(f"  Head aligned ({step_count} steps).")
+
+        # ------------------------------------------
         # REACH PHASE
         # ------------------------------------------
         print("[Phase] Running REACH student policy...")
         for step in range(args_cli.reach_steps):
             # Build student observation
-            proprio = get_proprioception()  # (1, 26)
+            proprio = get_proprioception()  # (1, 24)
             image = prepare_image(head_cam, image_size, device)  # (1, 3, H, W)
 
             with torch.no_grad():
-                action_15d = reach_policy(proprio, image)  # (1, 15)
+                env_action = reach_policy(proprio, image)  # (1, 13)
 
-            # Split: 13D env action + 2D head command
-            env_action = action_15d[:, :13]
-            head_delta = action_15d[:, 13:]
-
-            # Command head joints
-            current_head = robot_entity.data.joint_pos[:, head_joint_ids]
-            head_target = current_head + head_delta
+            # Head tracks handle analytically (independent controller, not part of policy)
+            head_target, _ = compute_head_look_at(
+                robot_entity,
+                cabinet_entity,
+                head_body_idx,
+                handle_body_idx,
+                head_joint_ids,
+            )
             robot_entity.set_joint_position_target(
-                head_target.float(), joint_ids=head_joint_ids
+                head_target.unsqueeze(0), joint_ids=head_joint_ids
             )
 
             obs, _, _, _, _ = env.step(env_action)
@@ -265,15 +315,18 @@ def main():
                 image = prepare_image(head_cam, image_size, device)
 
                 with torch.no_grad():
-                    action_15d = pull_policy(proprio, image)
+                    env_action = pull_policy(proprio, image)  # (1, 13)
 
-                env_action = action_15d[:, :13]
-                head_delta = action_15d[:, 13:]
-
-                current_head = robot_entity.data.joint_pos[:, head_joint_ids]
-                head_target = current_head + head_delta
+                # Head tracks handle analytically (independent controller, not part of policy)
+                head_target, _ = compute_head_look_at(
+                    robot_entity,
+                    cabinet_entity,
+                    head_body_idx,
+                    handle_body_idx,
+                    head_joint_ids,
+                )
                 robot_entity.set_joint_position_target(
-                    head_target.float(), joint_ids=head_joint_ids
+                    head_target.unsqueeze(0), joint_ids=head_joint_ids
                 )
 
                 obs, _, _, _, _ = env.step(env_action)
@@ -288,7 +341,9 @@ def main():
                     print(f"  [Step {step_count}] Drawer: {drawer_max:.4f}m")
 
                 if drawer_max > args_cli.drawer_threshold:
-                    print(f"  --> Drawer open ({drawer_max:.3f}m) at step {step_count}!")
+                    print(
+                        f"  --> Drawer open ({drawer_max:.3f}m) at step {step_count}!"
+                    )
                     episode_success = True
                     break
 

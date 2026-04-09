@@ -1,0 +1,177 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H  [INFO] Using python from: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/bin/python
+Loading user config located at: '/mnt/shared_ssd/JohnChen/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/data/Kit/Isaac-Sim/5.1/user.config.json'
+[Info] [carb] Logging to file: /mnt/shared_ssd/JohnChen/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260408_223323.log
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 550.163.01    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA GeForce RTX 3090 Ti       | Yes: 0 |     | 24810   MB | 10de      | 0          |
+|     |                                  |        |     |            | 2203      | 4a5eb22e.. |
+|     |                                  |        |     |            | 1         |            |
+|=============================================================================================|
+| OS: 22.04.5 LTS (Jammy Jellyfish) ubuntu, Version: 22.04.5, Kernel: 6.8.0-106-generic
+| XServer Vendor: The X.Org Foundation, XServer Version: 12101004 (1.21.1.4)
+| Processor: Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32053 | Free Memory: 20622
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 8526
+|---------------------------------------------------------------------------------------------|
+2026-04-09T04:33:24Z [869ms] [Warning] [gpu.foundation.plugin] CPU performance profile is set to powersave. This profile sets the CPU to the lowest frequency reducing performance.
+2026-04-09T04:33:24Z [874ms] [Warning] [gpu.foundation.plugin] IOMMU is enabled.
+2026-04-09T04:33:26Z [2,864ms] [Warning] [omni.log] Source: omni.hydra was already registered.
+2026-04-09T04:33:26Z [3,224ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-04-09T04:33:26Z [3,251ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+2026-04-09T04:33:27Z [4,146ms] [Warning] [pxr.Semantics] pxr.Semantics is deprecated - please use Semantics instead
+2026-04-09T04:33:28Z [4,771ms] [Warning] [omni.graph.core.plugin] Found duplicate of category 'Replicator' - was 'Annotators', adding 'Fabric Reader'
+2026-04-09T04:33:28Z [4,771ms] [Warning] [omni.graph.core.plugin] Category 'Replicator' not accepted on node type 'omni.replicator.core.FabricReader' in extension 'omni.replicator.core'
+2026-04-09T04:33:28Z [4,772ms] [Warning] [omni.replicator.core.scripts.extension] No material configuration file, adding configuration to material settings directly.
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /mnt/shared_ssd/JohnChen/IsaacLab/apps/isaaclab.python.headless.rendering.kit
+[IsaacLab] Creating environment
+[INFO] IsaacLab logging to file: /tmp/isaaclab_2026-04-08_22-33-34.log
+[33m22:33:34 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+2026-04-09T04:33:34Z [10,583ms] [Warning] [omni.fabric.plugin] Warning: attribute viewportHandle not found for bucket id 7
+
+2026-04-09T04:33:34Z [11,192ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+2026-04-09T04:33:46Z [22,833ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_finger_left/collisions/link_gripper_finger_left_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:33:46Z [22,833ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_fingertip_left/collisions/link_gripper_fingertip_left_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:33:46Z [22,833ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_finger_right/collisions/link_gripper_finger_right_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:33:46Z [22,833ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_fingertip_right/collisions/link_gripper_fingertip_right_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:33:46Z [22,848ms] [Error] [omni.physx.plugin] PhysX error: PxRigidBody::setMassSpaceInertiaTensor(): components must be > 0 for articulations, FILE /builds/omniverse/physics/physx/source/physx/src/NpRigidBodyTemplate.h, LINE 460
+2026-04-09T04:33:46Z [22,848ms] [Error] [omni.physx.plugin] PhysX error: PxRigidBody::setMassSpaceInertiaTensor(): components must be > 0 for articulations, FILE /builds/omniverse/physics/physx/source/physx/src/NpRigidBodyTemplate.h, LINE 460
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.008333333333333333
+	Rendering step-size   : 0.016666666666666666
+	Environment step-size : 0.016666666666666666
+[INFO]: Time taken for scene creation : 11.215404 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 1
+	Environment spacing   : 4.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[33m22:33:46 [actuator_pd.py] WARNING: The <ImplicitActuatorCfg> object has a value for 'effort_limit'. This parameter will be removed in the future. To set the effort limit, please use 'effort_limit_sim' instead.[0m
+[33m22:33:46 [actuator_pd.py] WARNING: The <ImplicitActuatorCfg> object has a value for 'velocity_limit'. Previously, although this value was specified, it was not getting used by implicit actuators. Since this parameter affects the simulation behavior, we continue to not use it. This parameter will be removed in the future. To set the velocity limit, please use 'velocity_limit_sim' instead.[0m
+[INFO]: Time taken for simulation start : 2.220259 seconds
+[INFO] Command Manager:  <CommandManager> contains 0 active terms.
++------------------------+
+|  Active Command Terms  |
++--------+-------+-------+
+| Index  | Name  |  Type |
++--------+-------+-------+
++--------+-------+-------+
+
+[INFO] Event Manager:  <EventManager> contains 1 active terms.
++---------------------------------+
+| Active Event Terms in Mode: 'reset' |
++------------+--------------------+
+|   Index    | Name               |
++------------+--------------------+
+|     0      | reset_all          |
++------------+--------------------+
+
+[INFO] Recorder Manager:  <RecorderManager> contains 0 active terms.
++---------------------+
+| Active Recorder Terms |
++-----------+---------+
+|   Index   | Name    |
++-----------+---------+
++-----------+---------+
+
+[INFO] Action Manager:  <ActionManager> contains 3 active terms.
++------------------------------------+
+|  Active Action Terms (shape: 13)   |
++-------+----------------+-----------+
+| Index | Name           | Dimension |
++-------+----------------+-----------+
+|   0   | arm_action     |         8 |
+|   1   | base_action    |         3 |
+|   2   | gripper_action |         2 |
++-------+----------------+-----------+
+
+[INFO] Observation Manager: <ObservationManager> contains 1 groups.
++------------------------------------------------------+
+| Active Observation Terms in Group: 'policy' (shape: (28,)) |
++------------+----------------------------+------------+
+|   Index    | Name                       |   Shape    |
++------------+----------------------------+------------+
+|     0      | arm_joint_pos              |    (8,)    |
+|     1      | base_pos                   |    (3,)    |
+|     2      | arm_joint_vel              |   (11,)    |
+|     3      | handle_rel                 |    (3,)    |
+|     4      | gripper_state              |    (2,)    |
+|     5      | drawer_pos                 |    (1,)    |
++------------+----------------------------+------------+
+
+[INFO] Termination Manager:  <TerminationManager> contains 1 active terms.
++-----------------------------+
+|   Active Termination Terms  |
++-------+----------+----------+
+| Index | Name     | Time Out |
++-------+----------+----------+
+|   0   | time_out |   True   |
++-------+----------+----------+
+
+[INFO] Reward Manager:  <RewardManager> contains 1 active terms.
++-------------------------------+
+|      Active Reward Terms      |
++-------+--------------+--------+
+| Index | Name         | Weight |
++-------+--------------+--------+
+|   0   | door_opening |   50.0 |
++-------+--------------+--------+
+
+[INFO] Curriculum Manager:  <CurriculumManager> contains 0 active terms.
++----------------------+
+| Active Curriculum Terms |
++-----------+----------+
+|   Index   | Name     |
++-----------+----------+
++-----------+----------+
+
+[INFO]: Completed setting up the environment...
+[Policy] Loading: checkpoints/student/reach/best.pth
+  Epoch: 50
+  Val loss: 1.6500088172842086e-05
+[Policy] Loading: checkpoints/student/pull/best.pth
+  Epoch: 45
+  Val loss: 0.00010886742674843807
+[Video] Recording enabled. Saving to: /home/johnchen/SharedSSD/JohnChen/stretch/videos
+
+============================================================
+  EPISODE 1/1
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+[Phase] Running REACH student policy...
+  [Step 150] EE->Handle: 0.9095m
+  [Step 200] EE->Handle: 0.5711m
+  [Step 250] EE->Handle: 0.3514m
+  Reach phase completed (175 steps)
+[Phase] Running PULL student policy...
+  [Step 300] Drawer: 0.0776m
+  --> Drawer open (0.351m) at step 318!
+  Pull phase completed (42 steps)
+
+  Result: SUCCESS
+  Final drawer position: 0.351m
+  Total steps: 318
+  [1/1 successful]
+[Video] Saving 217 frames to /home/johnchen/SharedSSD/JohnChen/stretch/videos/student_ep1_success.mp4
+
+============================================================
+  RESULTS SUMMARY
+============================================================
+  Episodes:     1
+  Successes:    1
+  Success rate: 100.0%
+  Total time:   18.1s
+============================================================

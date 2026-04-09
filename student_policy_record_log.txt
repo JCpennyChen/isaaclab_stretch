@@ -1,0 +1,1370 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H  [INFO] Using python from: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/bin/python
+Loading user config located at: '/mnt/shared_ssd/JohnChen/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/data/Kit/Isaac-Sim/5.1/user.config.json'
+[Info] [carb] Logging to file: /mnt/shared_ssd/JohnChen/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260408_221611.log
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 550.163.01    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA GeForce RTX 3090 Ti       | Yes: 0 |     | 24810   MB | 10de      | 0          |
+|     |                                  |        |     |            | 2203      | 4a5eb22e.. |
+|     |                                  |        |     |            | 1         |            |
+|=============================================================================================|
+| OS: 22.04.5 LTS (Jammy Jellyfish) ubuntu, Version: 22.04.5, Kernel: 6.8.0-106-generic
+| XServer Vendor: The X.Org Foundation, XServer Version: 12101004 (1.21.1.4)
+| Processor: Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32053 | Free Memory: 21921
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 8517
+|---------------------------------------------------------------------------------------------|
+2026-04-09T04:16:12Z [834ms] [Warning] [gpu.foundation.plugin] CPU performance profile is set to powersave. This profile sets the CPU to the lowest frequency reducing performance.
+2026-04-09T04:16:12Z [839ms] [Warning] [gpu.foundation.plugin] IOMMU is enabled.
+2026-04-09T04:16:14Z [2,803ms] [Warning] [omni.log] Source: omni.hydra was already registered.
+2026-04-09T04:16:14Z [3,175ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-04-09T04:16:14Z [3,201ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+2026-04-09T04:16:15Z [3,980ms] [Warning] [pxr.Semantics] pxr.Semantics is deprecated - please use Semantics instead
+2026-04-09T04:16:16Z [4,743ms] [Warning] [omni.graph.core.plugin] Found duplicate of category 'Replicator' - was 'Annotators', adding 'Fabric Reader'
+2026-04-09T04:16:16Z [4,743ms] [Warning] [omni.graph.core.plugin] Category 'Replicator' not accepted on node type 'omni.replicator.core.FabricReader' in extension 'omni.replicator.core'
+2026-04-09T04:16:16Z [4,744ms] [Warning] [omni.replicator.core.scripts.extension] No material configuration file, adding configuration to material settings directly.
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /mnt/shared_ssd/JohnChen/IsaacLab/apps/isaaclab.python.headless.rendering.kit
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/johnchen/SharedSSD/JohnChen/env_isaaclab/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+[Policy] Loading: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/lib/python3.11/site-packages/bc_rnn_trained_models/bc_rnn_reach_phase/20260408173631/models/model_epoch_188_best_validation_0.027132312394678594.pth
+============= Loaded Config =============
+{
+    "algo_name": "bc",
+    "experiment": {
+        "name": "bc_rnn_reach_phase",
+        "validate": true,
+        "logging": {
+            "terminal_output_to_txt": true,
+            "log_tb": true,
+            "log_wandb": false,
+            "wandb_proj_name": "debug"
+        },
+        "save": {
+            "enabled": true,
+            "every_n_seconds": null,
+            "every_n_epochs": 50,
+            "epochs": [],
+            "on_best_validation": true,
+            "on_best_rollout_return": false,
+            "on_best_rollout_success_rate": false
+        },
+        "epoch_every_n_steps": 100,
+        "validation_epoch_every_n_steps": 10,
+        "env": null,
+        "additional_envs": null,
+        "render": false,
+        "render_video": true,
+        "keep_all_videos": false,
+        "video_skip": 5,
+        "rollout": {
+            "enabled": false,
+            "n": 50,
+            "horizon": 400,
+            "rate": 50,
+            "warmstart": 0,
+            "terminate_on_success": true
+        },
+        "env_meta_update_dict": {},
+        "ckpt_path": null
+    },
+    "train": {
+        "data": [
+            {
+                "path": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/bc_rnn_data_reach.hdf5"
+            }
+        ],
+        "output_dir": "../bc_rnn_trained_models",
+        "normalize_weights_by_ds_size": false,
+        "num_data_workers": 8,
+        "hdf5_cache_mode": "all",
+        "hdf5_use_swmr": true,
+        "hdf5_load_next_obs": false,
+        "hdf5_normalize_obs": true,
+        "hdf5_filter_key": "train",
+        "hdf5_validation_filter_key": "valid",
+        "seq_length": 16,
+        "pad_seq_length": true,
+        "frame_stack": 1,
+        "pad_frame_stack": true,
+        "dataset_keys": [
+            "actions"
+        ],
+        "action_keys": [
+            "actions"
+        ],
+        "action_config": {
+            "actions": {
+                "normalization": "min_max"
+            }
+        },
+        "goal_mode": null,
+        "cuda": true,
+        "batch_size": 128,
+        "num_epochs": 200,
+        "seed": 1,
+        "max_grad_norm": null
+    },
+    "algo": {
+        "optim_params": {
+            "policy": {
+                "optimizer_type": "adam",
+                "learning_rate": {
+                    "initial": 0.0001,
+                    "decay_factor": 0.1,
+                    "epoch_schedule": [
+                        120,
+                        160
+                    ],
+                    "scheduler_type": "multistep"
+                },
+                "regularization": {
+                    "L2": 0.001
+                },
+                "num_train_batches": 100,
+                "num_epochs": 200
+            }
+        },
+        "loss": {
+            "l2_weight": 1.0,
+            "l1_weight": 0.0,
+            "cos_weight": 0.1
+        },
+        "actor_layer_dims": [
+            128
+        ],
+        "gaussian": {
+            "enabled": false,
+            "fixed_std": false,
+            "init_std": 0.1,
+            "min_std": 0.01,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "gmm": {
+            "enabled": false,
+            "num_modes": 5,
+            "min_std": 0.0001,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "vae": {
+            "enabled": false,
+            "latent_dim": 14,
+            "latent_clip": null,
+            "kl_weight": 1.0,
+            "decoder": {
+                "is_conditioned": true,
+                "reconstruction_sum_across_elements": false
+            },
+            "prior": {
+                "learn": false,
+                "is_conditioned": false,
+                "use_gmm": false,
+                "gmm_num_modes": 10,
+                "gmm_learn_weights": false,
+                "use_categorical": false,
+                "categorical_dim": 10,
+                "categorical_gumbel_softmax_hard": false,
+                "categorical_init_temp": 1.0,
+                "categorical_temp_anneal_step": 0.001,
+                "categorical_min_temp": 0.3
+            },
+            "encoder_layer_dims": [
+                300,
+                400
+            ],
+            "decoder_layer_dims": [
+                300,
+                400
+            ],
+            "prior_layer_dims": [
+                300,
+                400
+            ]
+        },
+        "rnn": {
+            "enabled": true,
+            "horizon": 15,
+            "hidden_dim": 128,
+            "rnn_type": "LSTM",
+            "num_layers": 1,
+            "open_loop": false,
+            "kwargs": {
+                "bidirectional": false
+            }
+        },
+        "transformer": {
+            "enabled": false,
+            "context_length": 10,
+            "embed_dim": 512,
+            "num_layers": 6,
+            "num_heads": 8,
+            "emb_dropout": 0.1,
+            "attn_dropout": 0.1,
+            "block_output_dropout": 0.1,
+            "sinusoidal_embedding": false,
+            "activation": "gelu",
+            "supervise_all_steps": false,
+            "nn_parameter_for_timesteps": true,
+            "pred_future_acs": false
+        }
+    },
+    "observation": {
+        "modalities": {
+            "obs": {
+                "low_dim": [
+                    "policy"
+                ],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            },
+            "goal": {
+                "low_dim": [],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            }
+        },
+        "encoder": {
+            "low_dim": {
+                "core_class": null,
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "rgb": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "depth": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "scan": {
+                "core_class": "ScanCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            }
+        }
+    },
+    "meta": {
+        "hp_base_config_file": null,
+        "hp_keys": [],
+        "hp_values": []
+    }
+}
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['policy']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+============= Loaded Policy =============
+ObservationKeyToModalityDict: action not found, adding action to mapping with assumed low_dim modality!
+BC_RNN (
+  ModuleDict(
+    (policy): RNNActorNetwork(
+        action_dim=13
+  
+        encoder=ObservationGroupEncoder(
+            group=obs
+            ObservationEncoder(
+                Key(
+                    name=policy
+                    shape=[28]
+                    modality=low_dim
+                    randomizer=ModuleList(
+                      (0): None
+                    )
+                    net=None
+                    sharing_from=None
+                )
+                output_shape=[28]
+            )
+        )
+  
+        rnn=RNN_Base(
+          (per_step_net): Sequential(
+            (0): MLP(
+                input_dim=128
+                output_dim=128
+                layer_dims=[]
+                layer_func=Linear
+                dropout=None
+                act=ReLU
+                output_act=ReLU
+            )
+            (1): ObservationDecoder(
+                Key(
+                    name=action
+                    shape=(13,)
+                    modality=low_dim
+                    net=(Linear(in_features=128, out_features=13, bias=True))
+                )
+            )
+          )
+          (nets): LSTM(28, 128, batch_first=True)
+        )
+    )
+  )
+)
+[Policy] Loading: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/lib/python3.11/site-packages/bc_rnn_trained_models/bc_rnn_pull_phase/20260408173940/models/model_epoch_135_best_validation_0.03388475254178047.pth
+============= Loaded Config =============
+{
+    "algo_name": "bc",
+    "experiment": {
+        "name": "bc_rnn_pull_phase",
+        "validate": true,
+        "logging": {
+            "terminal_output_to_txt": true,
+            "log_tb": true,
+            "log_wandb": false,
+            "wandb_proj_name": "debug"
+        },
+        "save": {
+            "enabled": true,
+            "every_n_seconds": null,
+            "every_n_epochs": 50,
+            "epochs": [],
+            "on_best_validation": true,
+            "on_best_rollout_return": false,
+            "on_best_rollout_success_rate": false
+        },
+        "epoch_every_n_steps": 100,
+        "validation_epoch_every_n_steps": 1,
+        "env": null,
+        "additional_envs": null,
+        "render": false,
+        "render_video": true,
+        "keep_all_videos": false,
+        "video_skip": 5,
+        "rollout": {
+            "enabled": false,
+            "n": 50,
+            "horizon": 400,
+            "rate": 50,
+            "warmstart": 0,
+            "terminate_on_success": true
+        },
+        "env_meta_update_dict": {},
+        "ckpt_path": null
+    },
+    "train": {
+        "data": [
+            {
+                "path": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/bc_rnn_data_pull.hdf5"
+            }
+        ],
+        "output_dir": "../bc_rnn_trained_models",
+        "normalize_weights_by_ds_size": false,
+        "num_data_workers": 8,
+        "hdf5_cache_mode": "all",
+        "hdf5_use_swmr": true,
+        "hdf5_load_next_obs": false,
+        "hdf5_normalize_obs": true,
+        "hdf5_filter_key": "train",
+        "hdf5_validation_filter_key": "valid",
+        "seq_length": 16,
+        "pad_seq_length": true,
+        "frame_stack": 1,
+        "pad_frame_stack": true,
+        "dataset_keys": [
+            "actions"
+        ],
+        "action_keys": [
+            "actions"
+        ],
+        "action_config": {
+            "actions": {
+                "normalization": "min_max"
+            }
+        },
+        "goal_mode": null,
+        "cuda": true,
+        "batch_size": 64,
+        "num_epochs": 200,
+        "seed": 1,
+        "max_grad_norm": null
+    },
+    "algo": {
+        "optim_params": {
+            "policy": {
+                "optimizer_type": "adam",
+                "learning_rate": {
+                    "initial": 0.0001,
+                    "decay_factor": 0.1,
+                    "epoch_schedule": [
+                        120,
+                        160
+                    ],
+                    "scheduler_type": "multistep"
+                },
+                "regularization": {
+                    "L2": 0.001
+                },
+                "num_train_batches": 100,
+                "num_epochs": 200
+            }
+        },
+        "loss": {
+            "l2_weight": 1.0,
+            "l1_weight": 0.0,
+            "cos_weight": 0.1
+        },
+        "actor_layer_dims": [
+            128
+        ],
+        "gaussian": {
+            "enabled": false,
+            "fixed_std": false,
+            "init_std": 0.1,
+            "min_std": 0.01,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "gmm": {
+            "enabled": false,
+            "num_modes": 5,
+            "min_std": 0.0001,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "vae": {
+            "enabled": false,
+            "latent_dim": 14,
+            "latent_clip": null,
+            "kl_weight": 1.0,
+            "decoder": {
+                "is_conditioned": true,
+                "reconstruction_sum_across_elements": false
+            },
+            "prior": {
+                "learn": false,
+                "is_conditioned": false,
+                "use_gmm": false,
+                "gmm_num_modes": 10,
+                "gmm_learn_weights": false,
+                "use_categorical": false,
+                "categorical_dim": 10,
+                "categorical_gumbel_softmax_hard": false,
+                "categorical_init_temp": 1.0,
+                "categorical_temp_anneal_step": 0.001,
+                "categorical_min_temp": 0.3
+            },
+            "encoder_layer_dims": [
+                300,
+                400
+            ],
+            "decoder_layer_dims": [
+                300,
+                400
+            ],
+            "prior_layer_dims": [
+                300,
+                400
+            ]
+        },
+        "rnn": {
+            "enabled": true,
+            "horizon": 15,
+            "hidden_dim": 128,
+            "rnn_type": "LSTM",
+            "num_layers": 1,
+            "open_loop": false,
+            "kwargs": {
+                "bidirectional": false
+            }
+        },
+        "transformer": {
+            "enabled": false,
+            "context_length": 10,
+            "embed_dim": 512,
+            "num_layers": 6,
+            "num_heads": 8,
+            "emb_dropout": 0.1,
+            "attn_dropout": 0.1,
+            "block_output_dropout": 0.1,
+            "sinusoidal_embedding": false,
+            "activation": "gelu",
+            "supervise_all_steps": false,
+            "nn_parameter_for_timesteps": true,
+            "pred_future_acs": false
+        }
+    },
+    "observation": {
+        "modalities": {
+            "obs": {
+                "low_dim": [
+                    "policy"
+                ],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            },
+            "goal": {
+                "low_dim": [],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            }
+        },
+        "encoder": {
+            "low_dim": {
+                "core_class": null,
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "rgb": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "depth": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "scan": {
+                "core_class": "ScanCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            }
+        }
+    },
+    "meta": {
+        "hp_base_config_file": null,
+        "hp_keys": [],
+        "hp_values": []
+    }
+}
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['policy']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+============= Loaded Policy =============
+ObservationKeyToModalityDict: action not found, adding action to mapping with assumed low_dim modality!
+BC_RNN (
+  ModuleDict(
+    (policy): RNNActorNetwork(
+        action_dim=13
+  
+        encoder=ObservationGroupEncoder(
+            group=obs
+            ObservationEncoder(
+                Key(
+                    name=policy
+                    shape=[28]
+                    modality=low_dim
+                    randomizer=ModuleList(
+                      (0): None
+                    )
+                    net=None
+                    sharing_from=None
+                )
+                output_shape=[28]
+            )
+        )
+  
+        rnn=RNN_Base(
+          (per_step_net): Sequential(
+            (0): MLP(
+                input_dim=128
+                output_dim=128
+                layer_dims=[]
+                layer_func=Linear
+                dropout=None
+                act=ReLU
+                output_act=ReLU
+            )
+            (1): ObservationDecoder(
+                Key(
+                    name=action
+                    shape=(13,)
+                    modality=low_dim
+                    net=(Linear(in_features=128, out_features=13, bias=True))
+                )
+            )
+          )
+          (nets): LSTM(28, 128, batch_first=True)
+        )
+    )
+  )
+)
+[IsaacLab] Creating environment
+[INFO] IsaacLab logging to file: /tmp/isaaclab_2026-04-08_22-16-25.log
+[33m22:16:25 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+2026-04-09T04:16:21Z [10,225ms] [Warning] [omni.fabric.plugin] Warning: attribute viewportHandle not found for bucket id 7
+
+2026-04-09T04:16:25Z [14,276ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+2026-04-09T04:16:37Z [26,009ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_finger_left/collisions/link_gripper_finger_left_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:16:37Z [26,009ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_fingertip_left/collisions/link_gripper_fingertip_left_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:16:37Z [26,009ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_finger_right/collisions/link_gripper_finger_right_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:16:37Z [26,009ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_fingertip_right/collisions/link_gripper_fingertip_right_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T04:16:37Z [26,022ms] [Error] [omni.physx.plugin] PhysX error: PxRigidBody::setMassSpaceInertiaTensor(): components must be > 0 for articulations, FILE /builds/omniverse/physics/physx/source/physx/src/NpRigidBodyTemplate.h, LINE 460
+2026-04-09T04:16:37Z [26,023ms] [Error] [omni.physx.plugin] PhysX error: PxRigidBody::setMassSpaceInertiaTensor(): components must be > 0 for articulations, FILE /builds/omniverse/physics/physx/source/physx/src/NpRigidBodyTemplate.h, LINE 460
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.008333333333333333
+	Rendering step-size   : 0.016666666666666666
+	Environment step-size : 0.016666666666666666
+[INFO]: Time taken for scene creation : 11.313740 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 1
+	Environment spacing   : 4.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[33m22:16:37 [actuator_pd.py] WARNING: The <ImplicitActuatorCfg> object has a value for 'effort_limit'. This parameter will be removed in the future. To set the effort limit, please use 'effort_limit_sim' instead.[0m
+[33m22:16:37 [actuator_pd.py] WARNING: The <ImplicitActuatorCfg> object has a value for 'velocity_limit'. Previously, although this value was specified, it was not getting used by implicit actuators. Since this parameter affects the simulation behavior, we continue to not use it. This parameter will be removed in the future. To set the velocity limit, please use 'velocity_limit_sim' instead.[0m
+/mnt/shared_ssd/JohnChen/stretch/scripts/bc_rnn/student_policy_record.py:290: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  handle_pos = torch.tensor(pos[0], device=env.device, dtype=torch.float32)
+[INFO]: Time taken for simulation start : 2.121978 seconds
+[INFO] Command Manager:  <CommandManager> contains 0 active terms.
++------------------------+
+|  Active Command Terms  |
++--------+-------+-------+
+| Index  | Name  |  Type |
++--------+-------+-------+
++--------+-------+-------+
+
+[INFO] Event Manager:  <EventManager> contains 1 active terms.
++---------------------------------+
+| Active Event Terms in Mode: 'reset' |
++------------+--------------------+
+|   Index    | Name               |
++------------+--------------------+
+|     0      | reset_all          |
++------------+--------------------+
+
+[INFO] Recorder Manager:  <RecorderManager> contains 0 active terms.
++---------------------+
+| Active Recorder Terms |
++-----------+---------+
+|   Index   | Name    |
++-----------+---------+
++-----------+---------+
+
+[INFO] Action Manager:  <ActionManager> contains 3 active terms.
++------------------------------------+
+|  Active Action Terms (shape: 13)   |
++-------+----------------+-----------+
+| Index | Name           | Dimension |
++-------+----------------+-----------+
+|   0   | arm_action     |         8 |
+|   1   | base_action    |         3 |
+|   2   | gripper_action |         2 |
++-------+----------------+-----------+
+
+[INFO] Observation Manager: <ObservationManager> contains 1 groups.
++------------------------------------------------------+
+| Active Observation Terms in Group: 'policy' (shape: (28,)) |
++------------+----------------------------+------------+
+|   Index    | Name                       |   Shape    |
++------------+----------------------------+------------+
+|     0      | arm_joint_pos              |    (8,)    |
+|     1      | base_pos                   |    (3,)    |
+|     2      | arm_joint_vel              |   (11,)    |
+|     3      | handle_rel                 |    (3,)    |
+|     4      | gripper_state              |    (2,)    |
+|     5      | drawer_pos                 |    (1,)    |
++------------+----------------------------+------------+
+
+[INFO] Termination Manager:  <TerminationManager> contains 1 active terms.
++-----------------------------+
+|   Active Termination Terms  |
++-------+----------+----------+
+| Index | Name     | Time Out |
++-------+----------+----------+
+|   0   | time_out |   True   |
++-------+----------+----------+
+
+[INFO] Reward Manager:  <RewardManager> contains 1 active terms.
++-------------------------------+
+|      Active Reward Terms      |
++-------+--------------+--------+
+| Index | Name         | Weight |
++-------+--------------+--------+
+|   0   | door_opening |   50.0 |
++-------+--------------+--------+
+
+[INFO] Curriculum Manager:  <CurriculumManager> contains 0 active terms.
++----------------------+
+| Active Curriculum Terms |
++-----------+----------+
+|   Index   | Name     |
++-----------+----------+
++-----------+----------+
+
+[INFO]: Completed setting up the environment...
+[Split] 10 demos: 9 train, 1 valid
+[Collector] Initialized: /home/johnchen/SharedSSD/JohnChen/stretch/datasets/distillation_reach.hdf5
+[Collector] Initialized: /home/johnchen/SharedSSD/JohnChen/stretch/datasets/distillation_pull.hdf5
+
+============================================================
+  EPISODE 1  (collected: 0/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9135m
+  [Reach  30] EE→Handle: 0.8778m
+  [Reach  40] EE→Handle: 0.8388m
+  [Reach  50] EE→Handle: 0.7982m
+  [Reach  60] EE→Handle: 0.7574m
+  [Reach  70] EE→Handle: 0.7175m
+  [Reach  80] EE→Handle: 0.6778m
+  [Reach  90] EE→Handle: 0.6380m
+  [Reach 100] EE→Handle: 0.5987m
+  [Reach 110] EE→Handle: 0.5594m
+  [Reach 120] EE→Handle: 0.5200m
+  [Reach 130] EE→Handle: 0.4810m
+  [Reach 140] EE→Handle: 0.4424m
+  [Reach 150] EE→Handle: 0.4043m
+  [Reach 160] EE→Handle: 0.3672m
+  [Reach 170] EE→Handle: 0.3307m
+  [Reach 180] EE→Handle: 0.2947m
+  [Reach 190] EE→Handle: 0.2599m
+  [Reach 200] EE→Handle: 0.2260m
+  [Reach 210] EE→Handle: 0.1932m
+  [Reach 220] EE→Handle: 0.1632m
+  [Reach 230] EE→Handle: 0.1340m
+  [Reach 240] EE→Handle: 0.1024m
+  [Reach 250] EE→Handle: 0.0684m
+  [Reach 260] EE→Handle: 0.0363m
+  Reach done (proximity, dist=0.028m, steps=263).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0069m
+  [Pull   20] Drawer: 0.0281m
+  [Pull   30] Drawer: 0.0648m
+  [Pull   40] Drawer: 0.1132m
+  [Pull   50] Drawer: 0.1697m
+  [Pull   60] Drawer: 0.2203m
+  [Pull   70] Drawer: 0.2578m
+  [Pull   80] Drawer: 0.2830m
+  [Pull   90] Drawer: 0.2993m
+  [Pull  100] Drawer: 0.3101m
+  [Pull  110] Drawer: 0.3171m
+  [Pull  120] Drawer: 0.3221m
+  [Pull  130] Drawer: 0.3251m
+  [Pull  140] Drawer: 0.3265m
+  [Pull  150] Drawer: 0.3270m
+  [Pull  160] Drawer: 0.3273m
+  [Pull  170] Drawer: 0.3271m
+  [Pull  180] Drawer: 0.3267m
+  [Pull  190] Drawer: 0.3265m
+  [Pull  200] Drawer: 0.3261m
+  [Pull  210] Drawer: 0.3257m
+  [Pull  220] Drawer: 0.3254m
+  [Pull  230] Drawer: 0.3251m
+  [Pull  240] Drawer: 0.3249m
+  [Pull  250] Drawer: 0.3250m
+  [Pull  260] Drawer: 0.3251m
+  [Pull  270] Drawer: 0.3252m
+  [Pull  280] Drawer: 0.3255m
+  [Pull  290] Drawer: 0.3257m
+  [Pull  300] Drawer: 0.3258m
+  [Pull  310] Drawer: 0.3261m
+  [Pull  320] Drawer: 0.3263m
+  [Pull  330] Drawer: 0.3264m
+  [Pull  340] Drawer: 0.3268m
+  [Pull  350] Drawer: 0.3271m
+  [Pull  360] Drawer: 0.3273m
+  [Pull  370] Drawer: 0.3277m
+  [Pull  380] Drawer: 0.3280m
+  [Pull  390] Drawer: 0.3283m
+  [Pull  400] Drawer: 0.3290m
+[Collector] Saved demo_0 -> TRAIN (263 steps)
+[Collector] Saved demo_0 -> TRAIN (430 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.329m
+  Displacement: 0.329m
+  Steps:        794 total (reach=263, pull=400)
+  [1/10 collected | 0 failed | 21s]
+
+============================================================
+  EPISODE 2  (collected: 1/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9411m
+  [Reach  20] EE→Handle: 0.9127m
+  [Reach  30] EE→Handle: 0.8769m
+  [Reach  40] EE→Handle: 0.8374m
+  [Reach  50] EE→Handle: 0.7966m
+  [Reach  60] EE→Handle: 0.7557m
+  [Reach  70] EE→Handle: 0.7155m
+  [Reach  80] EE→Handle: 0.6756m
+  [Reach  90] EE→Handle: 0.6355m
+  [Reach 100] EE→Handle: 0.5958m
+  [Reach 110] EE→Handle: 0.5562m
+  [Reach 120] EE→Handle: 0.5166m
+  [Reach 130] EE→Handle: 0.4777m
+  [Reach 140] EE→Handle: 0.4394m
+  [Reach 150] EE→Handle: 0.4015m
+  [Reach 160] EE→Handle: 0.3646m
+  [Reach 170] EE→Handle: 0.3283m
+  [Reach 180] EE→Handle: 0.2926m
+  [Reach 190] EE→Handle: 0.2580m
+  [Reach 200] EE→Handle: 0.2243m
+  [Reach 210] EE→Handle: 0.1926m
+  [Reach 220] EE→Handle: 0.1647m
+  [Reach 230] EE→Handle: 0.1371m
+  [Reach 240] EE→Handle: 0.1059m
+  [Reach 250] EE→Handle: 0.0719m
+  [Reach 260] EE→Handle: 0.0387m
+  Reach done (proximity, dist=0.030m, steps=263).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0070m
+  [Pull   20] Drawer: 0.0264m
+  [Pull   30] Drawer: 0.0633m
+  [Pull   40] Drawer: 0.1168m
+  [Pull   50] Drawer: 0.1773m
+  [Pull   60] Drawer: 0.2331m
+  [Pull   70] Drawer: 0.2748m
+  [Pull   80] Drawer: 0.3033m
+  [Pull   90] Drawer: 0.3215m
+  [Pull  100] Drawer: 0.3330m
+  [Pull  110] Drawer: 0.3394m
+  [Pull  120] Drawer: 0.3428m
+  [Pull  130] Drawer: 0.3451m
+  [Pull  140] Drawer: 0.3467m
+  [Pull  150] Drawer: 0.3480m
+  [Pull  160] Drawer: 0.3494m
+  [Pull  170] Drawer: 0.3507m
+  [Pull  180] Drawer: 0.3517m
+  [Pull  190] Drawer: 0.3530m
+  [Pull  200] Drawer: 0.3540m
+  [Pull  210] Drawer: 0.3550m
+  [Pull  220] Drawer: 0.3563m
+  [Pull  230] Drawer: 0.3577m
+  [Pull  240] Drawer: 0.3592m
+  [Pull  250] Drawer: 0.3611m
+  [Pull  260] Drawer: 0.3627m
+  [Pull  270] Drawer: 0.3643m
+  [Pull  280] Drawer: 0.3662m
+  [Pull  290] Drawer: 0.3678m
+  [Pull  300] Drawer: 0.3687m
+  [Pull  310] Drawer: 0.3694m
+  [Pull  320] Drawer: 0.3698m
+  [Pull  330] Drawer: 0.3698m
+  [Pull  340] Drawer: 0.3700m
+  [Pull  350] Drawer: 0.3699m
+  [Pull  360] Drawer: 0.3696m
+  [Pull  370] Drawer: 0.3696m
+  [Pull  380] Drawer: 0.3696m
+  [Pull  390] Drawer: 0.3696m
+  [Pull  400] Drawer: 0.3698m
+[Collector] Saved demo_1 -> TRAIN (263 steps)
+[Collector] Saved demo_1 -> TRAIN (430 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.370m
+  Displacement: 0.370m
+  Steps:        794 total (reach=263, pull=400)
+  [2/10 collected | 0 failed | 41s]
+
+============================================================
+  EPISODE 3  (collected: 2/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_2 -> TRAIN (298 steps)
+[Collector] Saved demo_2 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [3/10 collected | 0 failed | 54s]
+
+============================================================
+  EPISODE 4  (collected: 3/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_3 -> TRAIN (298 steps)
+[Collector] Saved demo_3 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [4/10 collected | 0 failed | 67s]
+
+============================================================
+  EPISODE 5  (collected: 4/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_4 -> TRAIN (298 steps)
+[Collector] Saved demo_4 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [5/10 collected | 0 failed | 79s]
+
+============================================================
+  EPISODE 6  (collected: 5/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_5 -> TRAIN (298 steps)
+[Collector] Saved demo_5 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [6/10 collected | 0 failed | 91s]
+
+============================================================
+  EPISODE 7  (collected: 6/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_6 -> TRAIN (298 steps)
+[Collector] Saved demo_6 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [7/10 collected | 0 failed | 104s]
+
+============================================================
+  EPISODE 8  (collected: 7/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_7 -> TRAIN (298 steps)
+[Collector] Saved demo_7 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [8/10 collected | 0 failed | 117s]
+
+============================================================
+  EPISODE 9  (collected: 8/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_8 -> TRAIN (298 steps)
+[Collector] Saved demo_8 -> TRAIN (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [9/10 collected | 0 failed | 130s]
+
+============================================================
+  EPISODE 10  (collected: 9/10)
+============================================================
+[Phase 0] Aligning head camera...
+  Head aligned (101 steps).
+  --> RECORDING START | Camera capturing begins.
+[Phase 1] Gripper open | Reach policy: safe spot → handle...
+  [Reach  10] EE→Handle: 0.9413m
+  [Reach  20] EE→Handle: 0.9136m
+  [Reach  30] EE→Handle: 0.8779m
+  [Reach  40] EE→Handle: 0.8385m
+  [Reach  50] EE→Handle: 0.7977m
+  [Reach  60] EE→Handle: 0.7569m
+  [Reach  70] EE→Handle: 0.7171m
+  [Reach  80] EE→Handle: 0.6776m
+  [Reach  90] EE→Handle: 0.6381m
+  [Reach 100] EE→Handle: 0.5991m
+  [Reach 110] EE→Handle: 0.5603m
+  [Reach 120] EE→Handle: 0.5214m
+  [Reach 130] EE→Handle: 0.4828m
+  [Reach 140] EE→Handle: 0.4444m
+  [Reach 150] EE→Handle: 0.4064m
+  [Reach 160] EE→Handle: 0.3695m
+  [Reach 170] EE→Handle: 0.3330m
+  [Reach 180] EE→Handle: 0.2968m
+  [Reach 190] EE→Handle: 0.2615m
+  [Reach 200] EE→Handle: 0.2272m
+  [Reach 210] EE→Handle: 0.1937m
+  [Reach 220] EE→Handle: 0.1617m
+  [Reach 230] EE→Handle: 0.1301m
+  [Reach 240] EE→Handle: 0.0980m
+  [Reach 250] EE→Handle: 0.0663m
+  [Reach 260] EE→Handle: 0.0425m
+  [Reach 270] EE→Handle: 0.0341m
+  [Reach 280] EE→Handle: 0.0354m
+  [Reach 290] EE→Handle: 0.0345m
+  Reach done (proximity, dist=0.030m, steps=298).
+[Phase 2] Closing gripper (30 steps)...
+  Gripper locked.
+[Phase 3] Pull policy: robot pulls back...
+  [Pull   10] Drawer: 0.0063m
+  [Pull   20] Drawer: 0.0338m
+  [Pull   30] Drawer: 0.0938m
+  [Pull   40] Drawer: 0.1831m
+  [Pull   50] Drawer: 0.2721m
+  [Pull   60] Drawer: 0.3401m
+  Drawer open (0.383m) at pull step 69!
+[Collector] Saved demo_9 -> VALID (298 steps)
+[Collector] Saved demo_9 -> VALID (99 steps)
+
+  --> RECORDING END | Camera capturing stops.
+  Result:       SUCCESS
+  Drawer:       0.383m
+  Displacement: 0.383m
+  Steps:        498 total (reach=298, pull=69)
+  [10/10 collected | 0 failed | 143s]
+
+============================================================
+  DISTILLATION RECORDING COMPLETE
+============================================================
+  Demos collected: 10/10
+  Failed attempts: 0
+  Total time:      144s
+  HDF5 datasets:   /home/johnchen/SharedSSD/JohnChen/stretch/datasets/
+  Images:          /home/johnchen/SharedSSD/JohnChen/stretch/distillation_images/
+============================================================
+[Collector] Closed. Train: 9, Valid: 1
+[Collector] Closed. Train: 9, Valid: 1

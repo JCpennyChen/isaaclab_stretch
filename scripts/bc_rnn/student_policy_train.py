@@ -4,7 +4,7 @@ student_policy_train.py
 Train a student policy (CNN + MLP) on distillation data collected by
 student_policy_record.py.
 
-Input:  proprioception (24D, no head pan/tilt) + RGB image (480x640x3)
+Input:  proprioception (26D: arm(8)+base(3)+vel(11)+gripper(2)+head(2)) + RGB image (480x640x3)
 Output: actions (13D: arm(8) + base(3) + gripper(2), no head deltas)
 
 Usage:
@@ -47,7 +47,7 @@ class DistillationDataset(Dataset):
             mask = f["mask"]
             if split not in mask or len(mask[split]) == 0:
                 print(f"[Dataset] {hdf5_path} ({split}): 0 demos")
-                self.proprio = np.zeros((0, 24), dtype=np.float32)
+                self.proprio = np.zeros((0, 26), dtype=np.float32)
                 self.images = np.zeros((0,), dtype=np.uint8)
                 self.actions = np.zeros((0, 13), dtype=np.float32)
                 return
@@ -57,13 +57,14 @@ class DistillationDataset(Dataset):
             for demo_name in demo_names:
                 ep = f["data"][demo_name]
                 # Load proprio components and concatenate
-                arm = ep["obs/proprio/arm_joint_pos"][:]  # (T, 8)
-                base = ep["obs/proprio/base_pos"][:]  # (T, 3)
-                vel = ep["obs/proprio/joint_vel"][:]  # (T, 11)
-                grip = ep["obs/proprio/gripper_state"][:]  # (T, 2)
+                arm = ep["obs/proprio/arm_joint_pos"][:]   # (T, 8)
+                base = ep["obs/proprio/base_pos"][:]        # (T, 3)
+                vel = ep["obs/proprio/joint_vel"][:]        # (T, 11)
+                grip = ep["obs/proprio/gripper_state"][:]   # (T, 2)
+                head = ep["obs/proprio/head_pos"][:]        # (T, 2)
                 proprio = np.concatenate(
-                    [arm, base, vel, grip], axis=-1
-                )  # (T, 24)
+                    [arm, base, vel, grip, head], axis=-1
+                )  # (T, 26)
 
                 # Load images
                 images = ep["obs/image"][:]  # (T, H, W, 3) uint8
@@ -117,7 +118,7 @@ class DistillationDataset(Dataset):
 class StudentPolicy(nn.Module):
     """Simple CNN image encoder + MLP policy."""
 
-    def __init__(self, proprio_dim=24, action_dim=13, image_size=(120, 160)):
+    def __init__(self, proprio_dim=26, action_dim=13, image_size=(120, 160)):
         super().__init__()
 
         # CNN encoder for image
@@ -180,7 +181,7 @@ def train_one_phase(name, hdf5_path, args, device):
         pin_memory=True,
     )
 
-    model = StudentPolicy(proprio_dim=24, action_dim=13, image_size=image_size).to(
+    model = StudentPolicy(proprio_dim=26, action_dim=13, image_size=image_size).to(
         device
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)

@@ -1,0 +1,65 @@
+[Device] cuda
+
+============================================================
+  Training REACH policy
+============================================================
+[Dataset] datasets/distillation_reach.hdf5 (train): 9 demos
+  Total steps: 2612
+  Proprio shape: (2612, 26)
+  Image shape: (2612, 921600)
+  Action shape: (2612, 13)
+[Dataset] datasets/distillation_reach.hdf5 (valid): 1 demos
+  Total steps: 298
+  Proprio shape: (298, 26)
+  Image shape: (298, 921600)
+  Action shape: (298, 13)
+  Model parameters: 779,949
+  Epoch    1/50 | train 0.000992 | val 0.000076 | lr 9.99e-05 *
+  Epoch    5/50 | train 0.000047 | val 0.000045 | lr 9.76e-05 *
+  Epoch   10/50 | train 0.000037 | val 0.000036 | lr 9.05e-05 *
+  Epoch   15/50 | train 0.000032 | val 0.000031 | lr 7.94e-05 *
+  Epoch   20/50 | train 0.000028 | val 0.000026 | lr 6.55e-05 *
+  Epoch   25/50 | train 0.000024 | val 0.000022 | lr 5.00e-05 *
+  Epoch   30/50 | train 0.000021 | val 0.000020 | lr 3.45e-05 *
+  Epoch   35/50 | train 0.000019 | val 0.000018 | lr 2.06e-05 *
+  Epoch   40/50 | train 0.000018 | val 0.000017 | lr 9.55e-06
+  Epoch   45/50 | train 0.000017 | val 0.000017 | lr 2.45e-06 *
+  Epoch   50/50 | train 0.000017 | val 0.000017 | lr 0.00e+00 *
+
+  Best epoch:    50
+  Best val loss: 0.000017
+  Best ckpt:     /home/johnchen/SharedSSD/JohnChen/stretch/checkpoints/student/reach/best.pth
+  All ckpts:     /home/johnchen/SharedSSD/JohnChen/stretch/checkpoints/student/reach/
+
+============================================================
+  Training PULL policy
+============================================================
+[Dataset] datasets/distillation_pull.hdf5 (train): 9 demos
+  Total steps: 1553
+  Proprio shape: (1553, 26)
+  Image shape: (1553, 921600)
+  Action shape: (1553, 13)
+[Dataset] datasets/distillation_pull.hdf5 (valid): 1 demos
+  Total steps: 99
+  Proprio shape: (99, 26)
+  Image shape: (99, 921600)
+  Action shape: (99, 13)
+  Model parameters: 779,949
+  Epoch    1/50 | train 0.001711 | val 0.000453 | lr 9.99e-05 *
+  Epoch    5/50 | train 0.000187 | val 0.000329 | lr 9.76e-05 *
+  Epoch   10/50 | train 0.000134 | val 0.000212 | lr 9.05e-05 *
+  Epoch   15/50 | train 0.000106 | val 0.000158 | lr 7.94e-05 *
+  Epoch   20/50 | train 0.000094 | val 0.000138 | lr 6.55e-05 *
+  Epoch   25/50 | train 0.000088 | val 0.000128 | lr 5.00e-05 *
+  Epoch   30/50 | train 0.000078 | val 0.000119 | lr 3.45e-05 *
+  Epoch   35/50 | train 0.000074 | val 0.000119 | lr 2.06e-05
+  Epoch   40/50 | train 0.000072 | val 0.000110 | lr 9.55e-06 *
+  Epoch   45/50 | train 0.000071 | val 0.000109 | lr 2.45e-06 *
+  Epoch   50/50 | train 0.000070 | val 0.000110 | lr 0.00e+00
+
+  Best epoch:    45
+  Best val loss: 0.000109
+  Best ckpt:     /home/johnchen/SharedSSD/JohnChen/stretch/checkpoints/student/pull/best.pth
+  All ckpts:     /home/johnchen/SharedSSD/JohnChen/stretch/checkpoints/student/pull/
+
+Done.
