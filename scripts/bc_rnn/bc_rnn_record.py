@@ -26,10 +26,11 @@ parser.add_argument("--ratio", type=float, default=0.1, help="Validation split r
 parser.add_argument(
     "--noise_range",
     type=float,
-    default=0.2,
+    default=0.0,
     help="Cabinet position randomization range (meters)",
 )
 args_cli = parser.parse_args()
+args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
@@ -40,7 +41,14 @@ target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/st
 sys.path.append(target_config_dir)
 
 
-from bc_rnn_stretch_cfg import StretchEnvCfg
+from bc_rnn_stretch_cfg import (
+    StretchEnvCfg,
+    ARM_JOINT_NAMES,
+    BASE_JOINT_NAMES,
+    GRIPPER_JOINT_NAMES,
+    HEAD_JOINT_NAMES,
+    compute_head_look_at,
+)
 from isaaclab.envs import ManagerBasedRLEnv
 from isaacsim.core.prims import XFormPrim
 from isaaclab.utils.math import (
@@ -102,7 +110,7 @@ TRANSITION_WAIT_STEPS = 30
 GRIPPER_LOCK_STEPS = 30
 GRIPPER_OPEN_POS = 0.1
 GRIPPER_CLOSE_POS = -0.1
-DRAWER_OPEN_THRESHOLD = 0.35
+DRAWER_OPEN_THRESHOLD = 0.38
 MAX_PLAN_FAILURES = 5
 SUCCESS_HOLD_STEPS = 30
 HANDLE_DISPLACEMENT_THRESHOLD = 0.05
@@ -159,9 +167,12 @@ def reset_episode_state():
         "trajectory": None,
         "traj_idx": 0,
         "step_count": 0,
+        "head_tracking_done": False,
+        "head_settle_timer": 0,
         "phase_one_done": False,
         "phase_two_done": False,
         "phase_three_done": False,
+        "reach_recording_done": False,
         "transition_timer": 0,
         "gripper_timer": 0,
         "success_hold_timer": 0,
@@ -189,19 +200,28 @@ def main():
     # ==========================================
     log_dir = os.path.join(os.getcwd(), "datasets")
 
+    # Pre-compute deterministic validation indices (shared between reach and pull)
+    num_valid = int(args_cli.num_demos * args_cli.ratio)
+    # Use the last N demos as validation
+    val_indices = list(range(args_cli.num_demos - num_valid, args_cli.num_demos))
+    print(
+        f"[Split] {args_cli.num_demos} demos: {args_cli.num_demos - num_valid} train, {num_valid} valid"
+    )
+    print(f"[Split] Validation demo indices: {val_indices}")
+
     collector_reach = RobomimicDataCollector(
         env_name="Isaac-Stretch-Cabinet-v0",
         directory_path=log_dir,
         filename=args_cli.filename + "_reach",
         num_demos=args_cli.num_demos,
-        val_ratio=args_cli.ratio,
+        val_indices=val_indices,
     )
     collector_pull = RobomimicDataCollector(
         env_name="Isaac-Stretch-Cabinet-v0",
         directory_path=log_dir,
         filename=args_cli.filename + "_pull",
         num_demos=args_cli.num_demos,
-        val_ratio=args_cli.ratio,
+        val_indices=val_indices,
     )
 
     # ==========================================
@@ -252,28 +272,27 @@ def main():
     robot_entity = env.scene["robot"]
     cabinet_entity = env.scene["cabinet"]
 
-    arm_joint_names = [
-        "joint_lift",
-        "joint_arm_l0",
-        "joint_arm_l1",
-        "joint_arm_l2",
-        "joint_arm_l3",
-        "joint_wrist_yaw",
-        "joint_wrist_pitch",
-        "joint_wrist_roll",
-    ]
-    base_joint_names = ["joint_x", "joint_y", "joint_rot_z"]
-    gripper_joint_names = ["joint_gripper_finger_left", "joint_gripper_finger_right"]
-
-    arm_joint_ids_isaac = robot_entity.find_joints(arm_joint_names)[0]
-    base_joint_ids_isaac = robot_entity.find_joints(base_joint_names)[0]
-    gripper_joint_ids_isaac = robot_entity.find_joints(gripper_joint_names)[0]
+    arm_joint_ids_isaac = robot_entity.find_joints(ARM_JOINT_NAMES)[0]
+    base_joint_ids_isaac = robot_entity.find_joints(BASE_JOINT_NAMES)[0]
+    gripper_joint_ids_isaac = robot_entity.find_joints(GRIPPER_JOINT_NAMES)[0]
 
     curobo_names = motion_gen.kinematics.joint_names
-    arm_ids_curobo = [curobo_names.index(n) for n in arm_joint_names]
-    base_ids_curobo = [curobo_names.index(n) for n in base_joint_names]
+    arm_ids_curobo = [curobo_names.index(n) for n in ARM_JOINT_NAMES]
+    base_ids_curobo = [curobo_names.index(n) for n in BASE_JOINT_NAMES]
 
     handle_body_idx = cabinet_entity.data.body_names.index("drawer_handle_top")
+    head_body_idx = robot_entity.data.body_names.index("link_head")
+    head_joint_ids = robot_entity.find_joints(HEAD_JOINT_NAMES)[0]
+
+    def compute_head_command():
+        return compute_head_look_at(
+            robot_entity, cabinet_entity, head_body_idx, handle_body_idx, head_joint_ids
+        )
+
+    def command_head_joints(head_target):
+        robot_entity.set_joint_position_target(
+            head_target.unsqueeze(0), joint_ids=head_joint_ids
+        )
 
     # ==========================================
     # Cabinet Setup
@@ -316,6 +335,23 @@ def main():
             break
 
         # ==========================================
+        # PHASE 0: HEAD CAMERA ALIGNMENT
+        # ==========================================
+        if not ep["head_tracking_done"]:
+            head_target, _ = compute_head_command()
+            head_current = robot_entity.data.joint_pos[0, head_joint_ids]
+            head_error = torch.norm(head_target - head_current).item()
+            if head_error < 0.05:
+                ep["head_settle_timer"] += 1
+                if ep["head_settle_timer"] >= 10:
+                    print(
+                        "--> [Phase 0] Head camera aligned to handle. Starting arm motion..."
+                    )
+                    ep["head_tracking_done"] = True
+            else:
+                ep["head_settle_timer"] = 0
+
+        # ==========================================
         # PLANNER TRIGGER
         # ==========================================
         robot_velocity = torch.sum(torch.abs(robot_entity.data.joint_vel[0]))
@@ -329,6 +365,7 @@ def main():
             and ep["step_count"] > 5
             and ready_to_plan
             and not ep["phase_three_done"]
+            and ep["head_tracking_done"]
         ):
             if ep["phase_two_done"]:
                 current_phase = "3"
@@ -411,6 +448,11 @@ def main():
                         ep["transition_timer"] = 0
 
                 elif not ep["phase_two_done"]:
+                    if not ep["reach_recording_done"]:
+                        print(
+                            "--> Phase 2 trajectory done. Ending reach recording, starting pull recording."
+                        )
+                        ep["reach_recording_done"] = True
                     ep["gripper_timer"] += 1
                     if ep["gripper_timer"] > GRIPPER_LOCK_STEPS:
                         print("--> Gripper Locked! Switching to Phase 3...")
@@ -446,11 +488,19 @@ def main():
 
             # Build delta actions from trajectory or hold (zero delta)
             if ep["trajectory"] is not None:
-                arm_action = target_state.position[arm_ids_curobo].unsqueeze(0) - robot_entity.data.joint_pos[:, arm_joint_ids_isaac]
-                base_action = target_state.position[base_ids_curobo].unsqueeze(0) - robot_entity.data.joint_pos[:, base_joint_ids_isaac]
+                arm_action = (
+                    target_state.position[arm_ids_curobo].unsqueeze(0)
+                    - robot_entity.data.joint_pos[:, arm_joint_ids_isaac]
+                )
+                base_action = (
+                    target_state.position[base_ids_curobo].unsqueeze(0)
+                    - robot_entity.data.joint_pos[:, base_joint_ids_isaac]
+                )
             else:
                 arm_action = torch.zeros(1, len(arm_joint_ids_isaac), device=env.device)
-                base_action = torch.zeros(1, len(base_joint_ids_isaac), device=env.device)
+                base_action = torch.zeros(
+                    1, len(base_joint_ids_isaac), device=env.device
+                )
         else:
             arm_action = torch.zeros(1, len(arm_joint_ids_isaac), device=env.device)
             base_action = torch.zeros(1, len(base_joint_ids_isaac), device=env.device)
@@ -463,28 +513,38 @@ def main():
         )
         gripper_target = GRIPPER_CLOSE_POS if should_close else GRIPPER_OPEN_POS
         gripper_current = robot_entity.data.joint_pos[:, gripper_joint_ids_isaac]
-        gripper_action = torch.tensor([[gripper_target, gripper_target]], device=env.device) - gripper_current
+        gripper_action = (
+            torch.tensor([[gripper_target, gripper_target]], device=env.device)
+            - gripper_current
+        )
 
         env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
+
+        # Head tracking: compute + command head (not recorded — policy doesn't need it)
+        head_target, _ = compute_head_command()
+        command_head_joints(head_target)
 
         # ==========================================
         # STEP & RECORD
         # ==========================================
         next_obs, rew, terminated, truncated, _ = env.step(env_actions)
 
-        # Record to the appropriate collector based on current phase
-        if not ep["phase_two_done"]:
-            collector_reach.add("obs", obs)
-            collector_reach.add("actions", env_actions)
-            collector_reach.add("rewards", rew)
-            collector_reach.add("dones", terminated | truncated)
-            collector_reach.add("next_obs", next_obs)
-        else:
-            collector_pull.add("obs", obs)
-            collector_pull.add("actions", env_actions)
-            collector_pull.add("rewards", rew)
-            collector_pull.add("dones", terminated | truncated)
-            collector_pull.add("next_obs", next_obs)
+        # Record to the appropriate collector based on current phase.
+        # Only record after head alignment is done — head align steps are idle
+        # zero-action observations that shouldn't be in the training data.
+        if ep["head_tracking_done"]:
+            if not ep["reach_recording_done"]:
+                collector_reach.add("obs", obs)
+                collector_reach.add("actions", env_actions)
+                collector_reach.add("rewards", rew)
+                collector_reach.add("dones", terminated | truncated)
+                collector_reach.add("next_obs", next_obs)
+            else:
+                collector_pull.add("obs", obs)
+                collector_pull.add("actions", env_actions)
+                collector_pull.add("rewards", rew)
+                collector_pull.add("dones", terminated | truncated)
+                collector_pull.add("next_obs", next_obs)
 
         obs = next_obs
         ep["step_count"] += 1

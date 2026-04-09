@@ -3,6 +3,8 @@
   "experiment": {
     "name": "bc_rnn_pull_phase",
     "validate": true,
+    "epoch_every_n_steps": 100,
+    "validation_epoch_every_n_steps": 1,
     "logging": {
       "terminal_output_to_txt": true,
       "log_tb": true
@@ -37,7 +39,7 @@
     },
     "cuda": true,
     "batch_size": 64,
-    "num_epochs": 100,
+    "num_epochs": 200,
     "seed": 1
   },
   "algo": {
@@ -47,7 +49,7 @@
         "learning_rate": {
           "initial": 1e-4,
           "decay_factor": 0.1,
-          "epoch_schedule": [60, 80]
+          "epoch_schedule": [120, 160]
         },
         "regularization": {
           "L2": 1e-3

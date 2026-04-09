@@ -1,24 +1,8 @@
-"""
-play_imitation.py
-
-Deploy trained BC-RNN policies in the Stretch cabinet environment.
-Runs the reach policy, then switches to the pull policy.
-Optionally records video of each episode.
-
-Usage:
-    ../IsaacLab/isaaclab.sh -p scripts/play_imitation.py \
-        --reach_ckpt path/to/reach/best.pth \
-        --pull_ckpt path/to/pull/best.pth
-
-    # Record video
-    ../IsaacLab/isaaclab.sh -p scripts/play_imitation.py \
-        --reach_ckpt path/to/reach/best.pth \
-        --pull_ckpt path/to/pull/best.pth \
-        --record_video
-"""
-
 import os
+
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 import sys
+import glob
 import torch
 import argparse
 import time
@@ -28,71 +12,54 @@ import time
 # ==========================================
 from isaaclab.app import AppLauncher
 
-# Add ALL custom arguments BEFORE AppLauncher args
-parser = argparse.ArgumentParser(description="Play trained BC-RNN policies")
+parser = argparse.ArgumentParser(description="BC-RNN Policy Playback")
+AppLauncher.add_app_launcher_args(parser)
 parser.add_argument(
     "--reach_ckpt",
     type=str,
-    required=True,
-    help="Path to trained reach phase checkpoint (.pth)",
+    default=None,
+    help="Path to the reach phase checkpoint (.pth). Auto-detected if not provided.",
 )
 parser.add_argument(
     "--pull_ckpt",
     type=str,
     default=None,
-    help="Path to trained pull phase checkpoint (.pth). If omitted, only reach is run.",
+    help="Path to the pull phase checkpoint (.pth). Auto-detected if not provided.",
 )
 parser.add_argument(
-    "--num_episodes",
-    type=int,
-    default=1,
-    help="Number of episodes to run",
+    "--num_episodes", type=int, default=10, help="Number of episodes to evaluate"
 )
 parser.add_argument(
-    "--reach_steps",
-    type=int,
-    default=450,
-    help="Max steps for reach phase before switching to pull",
-)
-parser.add_argument(
-    "--pull_steps",
-    type=int,
-    default=150,
-    help="Max steps for pull phase",
-)
-parser.add_argument(
-    "--drawer_threshold",
+    "--noise_range",
     type=float,
-    default=0.30,
-    help="Drawer position threshold to consider success",
+    default=0.0,
+    help="Cabinet position randomization range (meters)",
+)
+parser.add_argument(
+    "--max_reach_steps",
+    type=int,
+    default=500,
+    help="Max steps for the reach phase before switching to pull",
+)
+parser.add_argument(
+    "--max_pull_steps",
+    type=int,
+    default=400,
+    help="Max steps for the pull phase before timing out",
 )
 parser.add_argument(
     "--record_video",
     action="store_true",
-    default=False,
-    help="Record video of each episode",
+    help="Record a video for each episode and save to --video_dir",
 )
 parser.add_argument(
     "--video_dir",
     type=str,
-    default="/home/johnchen/SharedSSD/JohnChen/stretch/videos",
-    help="Directory to save recorded videos",
+    default="video_demos",
+    help="Directory to save episode videos (default: video_demos)",
 )
-parser.add_argument(
-    "--video_fps",
-    type=int,
-    default=30,
-    help="Frames per second for recorded video",
-)
-
-# Add AppLauncher args AFTER custom args
-AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
-
-# Enable cameras if recording video
-if args_cli.record_video:
-    args_cli.enable_cameras = True
-
+args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
@@ -102,292 +69,468 @@ simulation_app = app_launcher.app
 target_config_dir = "/home/johnchen/SharedSSD/JohnChen/stretch/source/stretch/stretch/tasks/manager_based/stretch"
 sys.path.append(target_config_dir)
 
-from bc_rnn_stretch_cfg import StretchEnvCfg
+from bc_rnn_stretch_cfg import (
+    StretchEnvCfg,
+    ARM_JOINT_NAMES,
+    BASE_JOINT_NAMES,
+    GRIPPER_JOINT_NAMES,
+    HEAD_JOINT_NAMES,
+    compute_head_look_at,
+)
 from isaaclab.envs import ManagerBasedRLEnv
+from isaacsim.core.prims import XFormPrim
 
+# ==========================================
+# ROBOMIMIC POLICY IMPORTS
+# ==========================================
+import robomimic
 import robomimic.utils.file_utils as FileUtils
-import robomimic.utils.torch_utils as TorchUtils
 
-import numpy as np
-import imageio
+# ==========================================
+# GLOBAL CONFIGURATION
+# ==========================================
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
+sys.path.append(os.path.join(SCRIPT_DIR, "..", "tools"))
+from video_recorder import VideoRecorder
+
+TARGET_FRAME_PATH = "/World/envs/env_0/Cabinet/drawer_handle_top/drawer_handle_frame"
+
+GRIPPER_OPEN_POS = 0.1
+GRIPPER_CLOSE_POS = -0.1
+DRAWER_OPEN_THRESHOLD = 0.38
+HANDLE_DISPLACEMENT_THRESHOLD = 0.05
+GRIPPER_LOCK_STEPS = 30
+
+# Distance from gripper to handle (in world frame) that triggers the reach→pull switch
+REACH_DONE_THRESHOLD = 0.03
 
 
 # ==========================================
-# VIDEO RECORDER
+# CHECKPOINT AUTO-DETECTION
 # ==========================================
-class VideoRecorder:
-    """Video recorder using omni.replicator annotator for Isaac Sim."""
+def find_best_checkpoint(experiment_name):
+    """
+    Search for the best-validation checkpoint for a given experiment name
+    in the robomimic-default output location.
+    """
+    robomimic_root = os.path.join(robomimic.__path__[0], "..")
+    base_dir = os.path.join(robomimic_root, "bc_rnn_trained_models", experiment_name)
+    base_dir = os.path.normpath(base_dir)
 
-    def __init__(self, video_dir, fps=30):
-        self.video_dir = video_dir
-        self.fps = fps
-        self.frames = []
-        os.makedirs(video_dir, exist_ok=True)
+    pattern = os.path.join(base_dir, "*", "models", "*best_validation*.pth")
+    matches = glob.glob(pattern)
 
-        import omni.replicator.core as rep
-        from omni.kit.viewport.utility import get_active_viewport
+    if matches:
 
-        self.viewport = get_active_viewport()
-        self.render_product = rep.create.render_product(
-            self.viewport.get_active_camera(),
-            resolution=(1280, 720),
+        def extract_loss(path):
+            fname = os.path.basename(path)
+            loss_str = fname.split("best_validation_")[1].replace(".pth", "")
+            return float(loss_str)
+
+        return min(matches, key=extract_loss)
+
+    # Fall back to the last epoch checkpoint from the most recent run
+    fallback = os.path.join(base_dir, "*", "models", "model_epoch_*.pth")
+    fallback_matches = glob.glob(fallback)
+    if fallback_matches:
+        return max(fallback_matches, key=os.path.getmtime)
+
+    return None
+
+
+def resolve_checkpoint(user_path, experiment_name, label):
+    if user_path is not None:
+        if not os.path.exists(user_path):
+            raise FileNotFoundError(f"Checkpoint not found: {user_path}")
+        return user_path
+
+    ckpt = find_best_checkpoint(experiment_name)
+    if ckpt is None:
+        raise FileNotFoundError(
+            f"Could not auto-detect a checkpoint for '{experiment_name}'. "
+            f"Train the {label} phase first or pass --{label}_ckpt."
         )
-        self.rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
-        self.rgb_annotator.attach([self.render_product])
-
-    def capture_frame(self):
-        """Capture the current frame via replicator annotator."""
-        try:
-            data = self.rgb_annotator.get_data()
-            if data is not None and data.size > 0:
-                frame = np.array(data)
-                if frame.ndim == 3:
-                    # Drop alpha channel if present (RGBA -> RGB)
-                    if frame.shape[2] == 4:
-                        frame = frame[:, :, :3]
-                    self.frames.append(frame)
-        except Exception as e:
-            if len(self.frames) == 0:
-                print(f"[Video] Warning: frame capture failed: {e}")
-
-    def save(self, filename):
-        """Save captured frames to an mp4 file."""
-        if len(self.frames) == 0:
-            print("[Video] No frames captured, skipping save.")
-            return None
-
-        filepath = os.path.join(self.video_dir, filename)
-        print(f"[Video] Saving {len(self.frames)} frames to {filepath}")
-        imageio.mimwrite(filepath, self.frames, fps=self.fps)
-        self.frames = []
-        return filepath
-
-    def reset(self):
-        """Clear captured frames."""
-        self.frames = []
+    return ckpt
 
 
 # ==========================================
-# POLICY LOADING
+# OBS CONVERSION
 # ==========================================
-def load_policy(ckpt_path, device):
-    """Load a trained robomimic policy from a checkpoint."""
-    print(f"[Policy] Loading: {ckpt_path}")
+def env_obs_to_robomimic(obs):
+    """
+    Convert the IsaacLab obs dict (tensors, batch_dim=1) to a robomimic-compatible
+    dict of 1-D numpy arrays (no batch dim).
+    """
+    return {k: v[0].detach().cpu().numpy() for k, v in obs.items()}
 
-    if not os.path.exists(ckpt_path):
-        raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
 
-    policy, ckpt_dict = FileUtils.policy_from_checkpoint(
-        ckpt_path=ckpt_path,
-        device=device,
-        verbose=True,
+# ==========================================
+# CABINET HELPERS  (mirrors record script)
+# ==========================================
+def randomize_cabinet(
+    cabinet_view, cabinet_articulation, default_pos, default_rot, device, noise_range
+):
+    new_pos = default_pos.clone()
+    new_pos[0] += (torch.rand(1, device=device) * 2 - 1).item() * noise_range
+    new_pos[1] += (torch.rand(1, device=device) * 2 - 1).item() * noise_range
+    cabinet_view.set_world_poses(
+        positions=new_pos.unsqueeze(0), orientations=default_rot
     )
+    root_state = cabinet_articulation.data.default_root_state.clone()
+    root_state[:, :3] = new_pos
+    cabinet_articulation.write_root_pose_to_sim(root_state[:, :7])
+    cabinet_articulation.write_root_velocity_to_sim(root_state[:, 7:])
 
-    algo_name = ckpt_dict.get("algo_name", "unknown")
-    epoch = ckpt_dict.get("epoch", "unknown")
-    print(f"  Algorithm: {algo_name}")
-    print(f"  Epoch: {epoch}")
 
-    policy.start_episode()
-    return policy
+def reset_episode_state():
+    return {
+        "step_count": 0,
+        "head_tracking_done": False,
+        "head_settle_timer": 0,
+        "reach_done": False,
+        "gripper_timer": 0,
+        "pull_done": False,
+        "reach_steps": 0,
+        "pull_steps": 0,
+    }
 
 
 # ==========================================
-# MAIN EXECUTION
+# MAIN
 # ==========================================
 def main():
-    env_cfg = StretchEnvCfg()
-    device = TorchUtils.get_torch_device(try_to_use_cuda=True)
+    # --- Resolve checkpoints ---
+    reach_ckpt = resolve_checkpoint(args_cli.reach_ckpt, "bc_rnn_reach_phase", "reach")
+    pull_ckpt = resolve_checkpoint(args_cli.pull_ckpt, "bc_rnn_pull_phase", "pull")
+    print(f"[Policy] Loading reach: {reach_ckpt}")
+    print(f"[Policy] Loading pull:  {pull_ckpt}")
 
+    # --- Load policies (before sim so CUDA context is shared) ---
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    reach_policy, _ = FileUtils.policy_from_checkpoint(
+        ckpt_path=reach_ckpt, device=device, verbose=True
+    )
+    pull_policy, _ = FileUtils.policy_from_checkpoint(
+        ckpt_path=pull_ckpt, device=device, verbose=True
+    )
+
+    # --- Environment ---
+    env_cfg = StretchEnvCfg()
     print("[IsaacLab] Creating environment")
     env = ManagerBasedRLEnv(cfg=env_cfg)
+    obs, _ = env.reset()
 
-    # Load policies
-    reach_policy = load_policy(args_cli.reach_ckpt, device)
-
-    pull_policy = None
-    if args_cli.pull_ckpt is not None:
-        pull_policy = load_policy(args_cli.pull_ckpt, device)
-
-    # Scene references
-    cabinet_entity = env.scene["cabinet"]
+    # --- Scene references ---
     robot_entity = env.scene["robot"]
+    cabinet_entity = env.scene["cabinet"]
 
-    # Video recorder
-    recorder = None
+    arm_joint_ids_isaac = robot_entity.find_joints(ARM_JOINT_NAMES)[0]
+    base_joint_ids_isaac = robot_entity.find_joints(BASE_JOINT_NAMES)[0]
+    gripper_joint_ids_isaac = robot_entity.find_joints(GRIPPER_JOINT_NAMES)[0]
+
+    handle_body_idx = cabinet_entity.data.body_names.index("drawer_handle_top")
+    grasp_body_idx = robot_entity.data.body_names.index("link_grasp_center")
+    head_body_idx = robot_entity.data.body_names.index("link_head")
+    head_joint_ids = robot_entity.find_joints(HEAD_JOINT_NAMES)[0]
+
+    def compute_head_command():
+        return compute_head_look_at(
+            robot_entity, cabinet_entity, head_body_idx, handle_body_idx, head_joint_ids
+        )
+
+    # --- Cabinet scene prims ---
+    cabinet_view = XFormPrim("/World/envs/env_0/Cabinet", name="cabinet")
+    target_frame_view = XFormPrim(
+        TARGET_FRAME_PATH, name="target_frame"
+    )  # actual grasp point (matches record script)
+    default_cabinet_pos, default_cabinet_rot = cabinet_view.get_world_poses()
+    default_cabinet_pos = default_cabinet_pos[0].clone()
+
+    randomize_cabinet(
+        cabinet_view,
+        cabinet_entity,
+        default_cabinet_pos,
+        default_cabinet_rot,
+        env.device,
+        args_cli.noise_range,
+    )
+    initial_handle_pos = cabinet_entity.data.body_pos_w[0, handle_body_idx].clone()
+
+    # --- Video recorder ---
+    video_recorder = None
     if args_cli.record_video:
-        print(f"[Video] Recording enabled. Saving to: {args_cli.video_dir}")
-        recorder = VideoRecorder(args_cli.video_dir, fps=args_cli.video_fps)
+        video_dir = os.path.join(os.getcwd(), args_cli.video_dir)
+        video_recorder = VideoRecorder(video_dir=video_dir, fps=30)
+        print(f"[Video] Recording enabled. Saving to: {video_dir}")
 
-    # ==========================================
-    # Episode Loop
-    # ==========================================
+    # --- Episode tracking ---
+    ep = reset_episode_state()
+    episodes_done = 0
     successes = 0
-    total_episodes = args_cli.num_episodes
-    sim_start_time = time.time()
+    sim_start = time.time()
 
-    for ep_idx in range(total_episodes):
-        print(f"\n{'='*60}")
-        print(f"  EPISODE {ep_idx + 1}/{total_episodes}")
-        print(f"{'='*60}")
+    reach_policy.start_episode()
+    pull_policy.start_episode()
 
-        obs, _ = env.reset()
-        reach_policy.start_episode()
-        if pull_policy is not None:
-            pull_policy.start_episode()
-        if recorder is not None:
-            recorder.reset()
+    print(">>> Starting Playback Loop...")
+    while simulation_app.is_running():
+        if episodes_done >= args_cli.num_episodes:
+            break
 
-        step_count = 0
-        current_phase = "reach"
-        episode_success = False
+        # ==========================================
+        # PHASE 0: HEAD CAMERA ALIGNMENT
+        # ==========================================
+        head_target, _ = compute_head_command()
+        robot_entity.set_joint_position_target(
+            head_target.unsqueeze(0), joint_ids=head_joint_ids
+        )
 
-        # Print initial state
-        root_pos = robot_entity.data.root_state_w[0, :3]
-        root_quat = robot_entity.data.root_state_w[0, 3:7]
-        ee_pos = robot_entity.data.body_pos_w[
-            0, robot_entity.data.body_names.index("link_grasp_center")
-        ]
-        handle_pos = cabinet_entity.data.body_pos_w[
-            0, cabinet_entity.data.body_names.index("drawer_handle_top")
-        ]
-        dist = torch.norm(ee_pos - handle_pos).item()
-        print(f"  [INIT] Robot pos:  {root_pos.tolist()}")
-        print(f"  [INIT] Robot quat: {root_quat.tolist()}")
-        print(f"  [INIT] EE pos:     {ee_pos.tolist()}")
-        print(f"  [INIT] Handle pos: {handle_pos.tolist()}")
-        print(f"  [INIT] EE→Handle:  {dist:.4f}m")
+        if not ep["head_tracking_done"]:
+            head_current = robot_entity.data.joint_pos[0, head_joint_ids]
+            head_error = torch.norm(head_target - head_current).item()
+            if head_error < 0.05:
+                ep["head_settle_timer"] += 1
+                if ep["head_settle_timer"] >= 10:
+                    print("--> [Phase 0] Head aligned. Starting policy inference...")
+                    ep["head_tracking_done"] = True
+            else:
+                ep["head_settle_timer"] = 0
 
-        # ------------------------------------------
-        # REACH PHASE
-        # ------------------------------------------
-        print("[Phase] Running REACH policy...")
-        for step in range(args_cli.reach_steps):
-            obs_dict = {"policy": obs["policy"][0].cpu().numpy()}
+        # ==========================================
+        # POLICY INFERENCE
+        # ==========================================
+        if ep["head_tracking_done"]:
+            rob_obs = env_obs_to_robomimic(obs)
 
-            action = reach_policy(obs_dict)
-            action_tensor = torch.tensor(action, device=env.device).unsqueeze(0)
-
-            obs, _, _, _, _ = env.step(action_tensor)
-            step_count += 1
-
-            if recorder is not None:
-                recorder.capture_frame()
-
-            if step_count % 10 == 0:
-                root_pos = robot_entity.data.root_state_w[0, :3]
-                root_quat = robot_entity.data.root_state_w[0, 3:7]
-                joint_pos = robot_entity.data.joint_pos[0]
-                ee_pos = robot_entity.data.body_pos_w[
-                    0, robot_entity.data.body_names.index("link_grasp_center")
+            if not ep["reach_done"]:
+                # --- Phase 1: Reach ---
+                predicted_action = reach_policy(rob_obs)
+                arm_action = torch.tensor(
+                    predicted_action[: len(arm_joint_ids_isaac)],
+                    device=env.device,
+                    dtype=torch.float32,
+                ).unsqueeze(0)
+                base_action = torch.tensor(
+                    predicted_action[
+                        len(arm_joint_ids_isaac) : len(arm_joint_ids_isaac)
+                        + len(base_joint_ids_isaac)
+                    ],
+                    device=env.device,
+                    dtype=torch.float32,
+                ).unsqueeze(0)
+                # Gripper open during reach
+                gripper_current = robot_entity.data.joint_pos[
+                    :, gripper_joint_ids_isaac
                 ]
-                handle_pos = cabinet_entity.data.body_pos_w[
-                    0, cabinet_entity.data.body_names.index("drawer_handle_top")
-                ]
-                dist = torch.norm(ee_pos - handle_pos).item()
-                print(
-                    f"  [DEBUG] Step {step_count} | Phase: {current_phase}\n"
-                    f"    Action:     {action_tensor[0].tolist()}\n"
-                    f"    Robot pos:  {root_pos.tolist()}\n"
-                    f"    Robot quat: {root_quat.tolist()}\n"
-                    f"    Joint pos:  {joint_pos.tolist()}\n"
-                    f"    EE pos:     {ee_pos.tolist()}\n"
-                    f"    Handle pos: {handle_pos.tolist()}\n"
-                    f"    EE→Handle:  {dist:.4f}m"
+                gripper_action = (
+                    torch.tensor(
+                        [[GRIPPER_OPEN_POS, GRIPPER_OPEN_POS]], device=env.device
+                    )
+                    - gripper_current
                 )
 
-        print(f"  Reach phase completed ({args_cli.reach_steps} steps)")
+                ep["reach_steps"] += 1
 
-        # ------------------------------------------
-        # PULL PHASE
-        # ------------------------------------------
-        if pull_policy is not None:
-            current_phase = "pull"
-            print("[Phase] Running PULL policy...")
+                # Check reach completion: handle close enough OR timeout
+                # Use target_frame_view (drawer_handle_frame) to match the record script grasp point
+                handle_pos_w, _ = target_frame_view.get_world_poses()
+                handle_pos_w = torch.tensor(
+                    handle_pos_w[0], device=env.device, dtype=torch.float32
+                )
+                grasp_pos_w = robot_entity.data.body_pos_w[0, grasp_body_idx]
+                handle_dist = torch.norm(handle_pos_w - grasp_pos_w).item()
 
-            for step in range(args_cli.pull_steps):
-                obs_dict = {"policy": obs["policy"][0].cpu().numpy()}
-
-                action = pull_policy(obs_dict)
-                action_tensor = torch.tensor(action, device=env.device).unsqueeze(0)
-
-                obs, _, _, _, _ = env.step(action_tensor)
-                step_count += 1
-
-                if recorder is not None:
-                    recorder.capture_frame()
-
-                # Check drawer position
-                drawer_pos = cabinet_entity.data.joint_pos[0]
-                drawer_max = drawer_pos.max().item()
-
-                if step_count % 10 == 0:
-                    root_pos = robot_entity.data.root_state_w[0, :3]
-                    root_quat = robot_entity.data.root_state_w[0, 3:7]
-                    joint_pos = robot_entity.data.joint_pos[0]
-                    ee_pos = robot_entity.data.body_pos_w[
-                        0, robot_entity.data.body_names.index("link_grasp_center")
-                    ]
-                    handle_pos = cabinet_entity.data.body_pos_w[
-                        0, cabinet_entity.data.body_names.index("drawer_handle_top")
-                    ]
-                    dist = torch.norm(ee_pos - handle_pos).item()
-                    print(
-                        f"  [DEBUG] Step {step_count} | Phase: {current_phase}\n"
-                        f"    Action:     {action_tensor[0].tolist()}\n"
-                        f"    Robot pos:  {root_pos.tolist()}\n"
-                        f"    Robot quat: {root_quat.tolist()}\n"
-                        f"    Joint pos:  {joint_pos.tolist()}\n"
-                        f"    EE pos:     {ee_pos.tolist()}\n"
-                        f"    Handle pos: {handle_pos.tolist()}\n"
-                        f"    EE→Handle:  {dist:.4f}m\n"
-                        f"    Drawer:     {drawer_max:.4f}m"
+                if (
+                    handle_dist < REACH_DONE_THRESHOLD
+                    or ep["reach_steps"] >= args_cli.max_reach_steps
+                ):
+                    reason = (
+                        "proximity" if handle_dist < REACH_DONE_THRESHOLD else "timeout"
                     )
-
-                if drawer_max > args_cli.drawer_threshold:
                     print(
-                        f"  --> Drawer open ({drawer_max:.3f}m) at step {step_count}!"
+                        f"--> Reach done ({reason}, dist={handle_dist:.3f}m, "
+                        f"steps={ep['reach_steps']}). Closing gripper..."
                     )
-                    episode_success = True
-                    break
+                    ep["reach_done"] = True
+                    ep["gripper_timer"] = 0
+                    pull_policy.start_episode()
 
-            print(f"  Pull phase completed ({step + 1} steps)")
+            elif ep["gripper_timer"] < GRIPPER_LOCK_STEPS:
+                # --- Gripper close transition ---
+                arm_action = torch.zeros(1, len(arm_joint_ids_isaac), device=env.device)
+                base_action = torch.zeros(
+                    1, len(base_joint_ids_isaac), device=env.device
+                )
+                gripper_current = robot_entity.data.joint_pos[
+                    :, gripper_joint_ids_isaac
+                ]
+                gripper_action = (
+                    torch.tensor(
+                        [[GRIPPER_CLOSE_POS, GRIPPER_CLOSE_POS]], device=env.device
+                    )
+                    - gripper_current
+                )
+                ep["gripper_timer"] += 1
+                if ep["gripper_timer"] == GRIPPER_LOCK_STEPS:
+                    print("--> Gripper locked. Starting pull phase...")
 
-        # ------------------------------------------
-        # Episode Summary
-        # ------------------------------------------
-        final_drawer = cabinet_entity.data.joint_pos[0].max().item()
-        if final_drawer > args_cli.drawer_threshold:
-            episode_success = True
+            else:
+                # --- Phase 2: Pull ---
+                predicted_action = pull_policy(rob_obs)
+                arm_action = torch.tensor(
+                    predicted_action[: len(arm_joint_ids_isaac)],
+                    device=env.device,
+                    dtype=torch.float32,
+                ).unsqueeze(0)
+                base_action = torch.tensor(
+                    predicted_action[
+                        len(arm_joint_ids_isaac) : len(arm_joint_ids_isaac)
+                        + len(base_joint_ids_isaac)
+                    ],
+                    device=env.device,
+                    dtype=torch.float32,
+                ).unsqueeze(0)
+                # Keep gripper closed
+                gripper_current = robot_entity.data.joint_pos[
+                    :, gripper_joint_ids_isaac
+                ]
+                gripper_action = (
+                    torch.tensor(
+                        [[GRIPPER_CLOSE_POS, GRIPPER_CLOSE_POS]], device=env.device
+                    )
+                    - gripper_current
+                )
 
-        status = "SUCCESS" if episode_success else "FAIL"
-        if episode_success:
-            successes += 1
+                ep["pull_steps"] += 1
 
-        print(f"\n  Result: {status}")
-        print(f"  Final drawer position: {final_drawer:.3f}m")
-        print(f"  Total steps: {step_count}")
-        print(f"  [{successes}/{ep_idx + 1} successful]")
+                # Check pull completion
+                drawer_pos = cabinet_entity.data.joint_pos[0].max().item()
+                if drawer_pos > DRAWER_OPEN_THRESHOLD:
+                    print(f"--> Drawer open ({drawer_pos:.3f}m). Pull done!")
+                    ep["pull_done"] = True
 
-        # Save episode video
-        if recorder is not None:
-            video_name = f"episode_{ep_idx + 1}_{status.lower()}.mp4"
-            recorder.save(video_name)
+                if ep["pull_steps"] >= args_cli.max_pull_steps and not ep["pull_done"]:
+                    print(
+                        f"--> Pull phase timeout at {ep['pull_steps']} steps. "
+                        f"Drawer at {drawer_pos:.3f}m."
+                    )
+                    ep["pull_done"] = True
+
+        else:
+            # Still in head alignment — zero actions
+            arm_action = torch.zeros(1, len(arm_joint_ids_isaac), device=env.device)
+            base_action = torch.zeros(1, len(base_joint_ids_isaac), device=env.device)
+            gripper_current = robot_entity.data.joint_pos[:, gripper_joint_ids_isaac]
+            gripper_action = (
+                torch.tensor([[GRIPPER_OPEN_POS, GRIPPER_OPEN_POS]], device=env.device)
+                - gripper_current
+            )
+
+        env_actions = torch.cat([arm_action, base_action, gripper_action], dim=-1)
+
+        # ==========================================
+        # DEBUG PRINTS (every 10 steps)
+        # ==========================================
+        if ep["step_count"] % 10 == 0 and ep["head_tracking_done"]:
+            arm_pos = robot_entity.data.joint_pos[0, arm_joint_ids_isaac]
+            base_pos = robot_entity.data.joint_pos[0, base_joint_ids_isaac]
+            grip_pos = robot_entity.data.joint_pos[0, gripper_joint_ids_isaac]
+            handle_pos_dbg, _ = target_frame_view.get_world_poses()
+            handle_pos_dbg = torch.tensor(
+                handle_pos_dbg[0], device=env.device, dtype=torch.float32
+            )
+            grasp_pos_dbg = robot_entity.data.body_pos_w[0, grasp_body_idx]
+            ee_dist = torch.norm(handle_pos_dbg - grasp_pos_dbg).item()
+            phase = (
+                "reach"
+                if not ep["reach_done"]
+                else (
+                    "gripper_close"
+                    if ep["gripper_timer"] < GRIPPER_LOCK_STEPS
+                    else "pull"
+                )
+            )
+            print(
+                f"\n[Step {ep['step_count']} | phase={phase} | EE→handle dist={ee_dist:.4f}m] --- Debug ---"
+            )
+            print("  Actions:")
+            for name, val in zip(ARM_JOINT_NAMES, arm_action[0].tolist()):
+                print(f"    arm   {name}: {val:+.4f}")
+            for name, val in zip(BASE_JOINT_NAMES, base_action[0].tolist()):
+                print(f"    base  {name}: {val:+.4f}")
+            for name, val in zip(GRIPPER_JOINT_NAMES, gripper_action[0].tolist()):
+                print(f"    grip  {name}: {val:+.4f}")
+            print("  Joint Positions:")
+            for name, val in zip(ARM_JOINT_NAMES, arm_pos.tolist()):
+                print(f"    arm   {name}: {val:+.4f}")
+            for name, val in zip(BASE_JOINT_NAMES, base_pos.tolist()):
+                print(f"    base  {name}: {val:+.4f}")
+            for name, val in zip(GRIPPER_JOINT_NAMES, grip_pos.tolist()):
+                print(f"    grip  {name}: {val:+.4f}")
+
+        next_obs, _, terminated, truncated, _ = env.step(env_actions)
+        obs = next_obs
+        ep["step_count"] += 1
+
+        if video_recorder is not None and ep["head_tracking_done"]:
+            video_recorder.capture_frame()
+
+        # ==========================================
+        # EPISODE DONE CHECK
+        # ==========================================
+        if ep["pull_done"]:
+            final_pos = cabinet_entity.data.body_pos_w[0, handle_body_idx]
+            displacement = torch.norm(final_pos - initial_handle_pos).item()
+            success = displacement > HANDLE_DISPLACEMENT_THRESHOLD
+
+            episodes_done += 1
+            if success:
+                successes += 1
+
+            elapsed = time.time() - sim_start
+            print(
+                f"[Episode {episodes_done}/{args_cli.num_episodes}] "
+                f"{'SUCCESS' if success else 'FAIL'} | "
+                f"Displacement: {displacement:.3f}m | "
+                f"Reach: {ep['reach_steps']} steps | Pull: {ep['pull_steps']} steps | "
+                f"{elapsed:.0f}s elapsed"
+            )
+
+            if video_recorder is not None:
+                result_tag = "success" if success else "fail"
+                video_recorder.save(f"bc_rnn_ep{episodes_done:02d}_{result_tag}.mp4")
+
+            # --- Reset for next episode ---
+            obs, _ = env.reset()
+            randomize_cabinet(
+                cabinet_view,
+                cabinet_entity,
+                default_cabinet_pos,
+                default_cabinet_rot,
+                env.device,
+                args_cli.noise_range,
+            )
+            initial_handle_pos = cabinet_entity.data.body_pos_w[
+                0, handle_body_idx
+            ].clone()
+            ep = reset_episode_state()
+            reach_policy.start_episode()
+            pull_policy.start_episode()
 
     # ==========================================
-    # Final Summary
+    # SUMMARY
     # ==========================================
-    total_time = time.time() - sim_start_time
-    success_rate = successes / total_episodes * 100
-
-    print(f"\n{'='*60}")
-    print("  RESULTS SUMMARY")
-    print(f"{'='*60}")
-    print(f"  Episodes:     {total_episodes}")
-    print(f"  Successes:    {successes}")
-    print(f"  Success rate: {success_rate:.1f}%")
-    print(f"  Total time:   {total_time:.1f}s")
-    print(f"{'='*60}")
+    total_time = time.time() - sim_start
+    print(f"\n{'='*50}")
+    print("  EVALUATION SUMMARY")
+    print(f"{'='*50}")
+    print(f"  Episodes:  {episodes_done}")
+    print(f"  Successes: {successes}")
+    print(f"  Rate:      {successes / max(episodes_done, 1) * 100:.1f}%")
+    print(f"  Time:      {total_time:.0f}s")
+    print(f"{'='*50}")
 
     env.close()
 

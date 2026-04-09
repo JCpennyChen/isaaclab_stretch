@@ -7,6 +7,7 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.managers import EventTermCfg
 from isaaclab.managers import SceneEntityCfg
+from isaaclab.sensors import CameraCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
 from isaaclab.actuators import ImplicitActuatorCfg
@@ -15,6 +16,64 @@ import torch
 
 from isaaclab.envs import mdp as isaac_mdp
 from config.stretch_cfg import STRETCH_CFG
+
+# ==========================================
+# Shared joint name constants
+# ==========================================
+ARM_JOINT_NAMES = [
+    "joint_lift",
+    "joint_arm_l0",
+    "joint_arm_l1",
+    "joint_arm_l2",
+    "joint_arm_l3",
+    "joint_wrist_yaw",
+    "joint_wrist_pitch",
+    "joint_wrist_roll",
+]
+BASE_JOINT_NAMES = ["joint_x", "joint_y", "joint_rot_z"]
+GRIPPER_JOINT_NAMES = ["joint_gripper_finger_left", "joint_gripper_finger_right"]
+HEAD_JOINT_NAMES = ["joint_head_pan", "joint_head_tilt"]
+
+# Head joint limits from URDF
+HEAD_PAN_LIMITS = (-3.9, 1.5)
+HEAD_TILT_LIMITS = (-1.53, 0.79)
+
+
+def compute_head_look_at(robot_entity, cabinet_entity, head_body_idx, handle_body_idx, head_joint_ids):
+    """Compute head pan/tilt to look at the drawer handle.
+
+    Uses the robot base frame to decompose the direction into pan/tilt angles.
+
+    Args:
+        robot_entity: The robot articulation from the scene.
+        cabinet_entity: The cabinet articulation from the scene.
+        head_body_idx: Index of link_head in robot body list.
+        handle_body_idx: Index of drawer_handle_top in cabinet body list.
+        head_joint_ids: Joint indices for [head_pan, head_tilt].
+
+    Returns:
+        head_target: (2,) tensor of [pan, tilt] absolute joint positions.
+        head_delta: (1, 2) tensor of delta from current head position.
+    """
+    from isaaclab.utils.math import quat_apply, quat_inv
+
+    head_pos_w = robot_entity.data.body_pos_w[0, head_body_idx]
+    handle_pos_w = cabinet_entity.data.body_pos_w[0, handle_body_idx]
+    robot_quat_w = robot_entity.data.root_state_w[0, 3:7]
+
+    dir_w = handle_pos_w - head_pos_w
+    dir_base = quat_apply(
+        quat_inv(robot_quat_w.unsqueeze(0)), dir_w.unsqueeze(0)
+    )[0]
+
+    pan = torch.clamp(torch.atan2(dir_base[1], dir_base[0]), *HEAD_PAN_LIMITS)
+    horiz = torch.sqrt(dir_base[0] ** 2 + dir_base[1] ** 2)
+    tilt = torch.clamp(torch.atan2(dir_base[2], horiz), *HEAD_TILT_LIMITS)
+
+    head_target = torch.stack([pan, tilt])
+    current_head = robot_entity.data.joint_pos[0, head_joint_ids]
+    head_delta = (head_target - current_head).unsqueeze(0)
+    return head_target, head_delta
 
 
 def reward_cabinet_opening_proportional(
@@ -75,6 +134,26 @@ class StretchSceneCfg(InteractiveSceneCfg):
         prim_path="{ENV_REGEX_NS}/Robot",
     )
 
+    # D435 camera mounted on the Stretch's head (child of camera_link)
+    # Matches the real robot's head camera position and orientation.
+    # The camera_link prim comes from the URDF; we spawn the sensor as a child.
+    head_camera = CameraCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/camera_link/HeadCamera",
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=24.0,
+            horizontal_aperture=20.955,
+        ),
+        offset=CameraCfg.OffsetCfg(
+            pos=(0.0, 0.0, 0.0),
+            rot=(0.5, -0.5, 0.5, -0.5),  # align with D435 optical axis
+            convention="ros",
+        ),
+        width=640,
+        height=480,
+        data_types=["rgb"],
+        update_period=0,  # every sim step
+    )
+
 
 @configclass
 class ActionsCfg:
@@ -83,20 +162,14 @@ class ActionsCfg:
     # 8D. arm_action (delta)
     arm_action = isaac_mdp.RelativeJointPositionActionCfg(
         asset_name="robot",
-        joint_names=[
-            "joint_lift",
-            "joint_arm_l.*",
-            "joint_wrist_yaw",
-            "joint_wrist_pitch",
-            "joint_wrist_roll",
-        ],
+        joint_names=["joint_lift", "joint_arm_l.*", "joint_wrist_yaw", "joint_wrist_pitch", "joint_wrist_roll"],
         use_zero_offset=True,
     )
 
     # 3D. base_action (delta)
     base_action = isaac_mdp.RelativeJointPositionActionCfg(
         asset_name="robot",
-        joint_names=["joint_x", "joint_y", "joint_rot_z"],
+        joint_names=BASE_JOINT_NAMES,
         use_zero_offset=True,
     )
 
@@ -107,7 +180,7 @@ class ActionsCfg:
         use_zero_offset=True,
     )
 
-    # Total Action Dimention = 13
+    # Total Action Dimension = 13 (head controlled separately via set_joint_position_target)
 
 
 @configclass
@@ -119,19 +192,7 @@ class ObservationsCfg:
         arm_joint_pos = ObsTerm(
             func=isaac_mdp.joint_pos_rel,
             params={
-                "asset_cfg": SceneEntityCfg(
-                    "robot",
-                    joint_names=[
-                        "joint_lift",
-                        "joint_arm_l0",
-                        "joint_arm_l1",
-                        "joint_arm_l2",
-                        "joint_arm_l3",
-                        "joint_wrist_yaw",
-                        "joint_wrist_pitch",
-                        "joint_wrist_roll",
-                    ],
-                ),
+                "asset_cfg": SceneEntityCfg("robot", joint_names=ARM_JOINT_NAMES),
             },
         )
 
@@ -139,9 +200,7 @@ class ObservationsCfg:
         base_pos = ObsTerm(
             func=isaac_mdp.joint_pos_rel,
             params={
-                "asset_cfg": SceneEntityCfg(
-                    "robot", joint_names=["joint_x", "joint_y", "joint_rot_z"]
-                ),
+                "asset_cfg": SceneEntityCfg("robot", joint_names=BASE_JOINT_NAMES),
             },
         )
 
@@ -150,20 +209,7 @@ class ObservationsCfg:
             func=isaac_mdp.joint_vel_rel,
             params={
                 "asset_cfg": SceneEntityCfg(
-                    "robot",
-                    joint_names=[
-                        "joint_lift",
-                        "joint_arm_l0",
-                        "joint_arm_l1",
-                        "joint_arm_l2",
-                        "joint_arm_l3",
-                        "joint_wrist_yaw",
-                        "joint_wrist_pitch",
-                        "joint_wrist_roll",
-                        "joint_x",
-                        "joint_y",
-                        "joint_rot_z",
-                    ],
+                    "robot", joint_names=ARM_JOINT_NAMES + BASE_JOINT_NAMES,
                 ),
             },
         )

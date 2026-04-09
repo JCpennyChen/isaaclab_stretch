@@ -1,0 +1,1495 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H   [INFO] Using python from: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/bin/python
+Loading user config located at: '/mnt/shared_ssd/JohnChen/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/data/Kit/Isaac-Sim/5.1/user.config.json'
+[Info] [carb] Logging to file: /mnt/shared_ssd/JohnChen/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260408_212518.log
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 550.163.01    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA GeForce RTX 3090 Ti       | Yes: 0 |     | 24810   MB | 10de      | 0          |
+|     |                                  |        |     |            | 2203      | 4a5eb22e.. |
+|     |                                  |        |     |            | 1         |            |
+|=============================================================================================|
+| OS: 22.04.5 LTS (Jammy Jellyfish) ubuntu, Version: 22.04.5, Kernel: 6.8.0-106-generic
+| XServer Vendor: The X.Org Foundation, XServer Version: 12101004 (1.21.1.4)
+| Processor: Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32053 | Free Memory: 16267
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 9152
+|---------------------------------------------------------------------------------------------|
+2026-04-09T03:25:19Z [948ms] [Warning] [gpu.foundation.plugin] CPU performance profile is set to powersave. This profile sets the CPU to the lowest frequency reducing performance.
+2026-04-09T03:25:19Z [954ms] [Warning] [gpu.foundation.plugin] IOMMU is enabled.
+2026-04-09T03:25:21Z [2,957ms] [Warning] [omni.log] Source: omni.hydra was already registered.
+2026-04-09T03:25:22Z [3,445ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-04-09T03:25:22Z [3,469ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+2026-04-09T03:25:23Z [4,545ms] [Warning] [pxr.Semantics] pxr.Semantics is deprecated - please use Semantics instead
+2026-04-09T03:25:24Z [5,268ms] [Warning] [omni.graph.core.plugin] Found duplicate of category 'Replicator' - was 'Annotators', adding 'Fabric Reader'
+2026-04-09T03:25:24Z [5,268ms] [Warning] [omni.graph.core.plugin] Category 'Replicator' not accepted on node type 'omni.replicator.core.FabricReader' in extension 'omni.replicator.core'
+2026-04-09T03:25:24Z [5,269ms] [Warning] [omni.replicator.core.scripts.extension] No material configuration file, adding configuration to material settings directly.
+[WARN][AppLauncher]: There are no arguments attached to the ArgumentParser object. If you have your own arguments, please load your own arguments before calling the `AppLauncher.add_app_launcher_args` method. This allows the method to check the validity of the arguments and perform checks for argument names.
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /mnt/shared_ssd/JohnChen/IsaacLab/apps/isaaclab.python.headless.rendering.kit
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/johnchen/SharedSSD/JohnChen/env_isaaclab/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+[Policy] Loading reach: /home/johnchen/SharedSSD/JohnChen/env_isaaclab/lib/python3.11/site-packages/bc_rnn_trained_models/bc_rnn_reach_phase/20260408173631/models/model_epoch_188_best_validation_0.027132312394678594.pth
+[Policy] Loading pull:  /home/johnchen/SharedSSD/JohnChen/env_isaaclab/lib/python3.11/site-packages/bc_rnn_trained_models/bc_rnn_pull_phase/20260408173940/models/model_epoch_135_best_validation_0.03388475254178047.pth
+============= Loaded Config =============
+{
+    "algo_name": "bc",
+    "experiment": {
+        "name": "bc_rnn_reach_phase",
+        "validate": true,
+        "logging": {
+            "terminal_output_to_txt": true,
+            "log_tb": true,
+            "log_wandb": false,
+            "wandb_proj_name": "debug"
+        },
+        "save": {
+            "enabled": true,
+            "every_n_seconds": null,
+            "every_n_epochs": 50,
+            "epochs": [],
+            "on_best_validation": true,
+            "on_best_rollout_return": false,
+            "on_best_rollout_success_rate": false
+        },
+        "epoch_every_n_steps": 100,
+        "validation_epoch_every_n_steps": 10,
+        "env": null,
+        "additional_envs": null,
+        "render": false,
+        "render_video": true,
+        "keep_all_videos": false,
+        "video_skip": 5,
+        "rollout": {
+            "enabled": false,
+            "n": 50,
+            "horizon": 400,
+            "rate": 50,
+            "warmstart": 0,
+            "terminate_on_success": true
+        },
+        "env_meta_update_dict": {},
+        "ckpt_path": null
+    },
+    "train": {
+        "data": [
+            {
+                "path": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/bc_rnn_data_reach.hdf5"
+            }
+        ],
+        "output_dir": "../bc_rnn_trained_models",
+        "normalize_weights_by_ds_size": false,
+        "num_data_workers": 8,
+        "hdf5_cache_mode": "all",
+        "hdf5_use_swmr": true,
+        "hdf5_load_next_obs": false,
+        "hdf5_normalize_obs": true,
+        "hdf5_filter_key": "train",
+        "hdf5_validation_filter_key": "valid",
+        "seq_length": 16,
+        "pad_seq_length": true,
+        "frame_stack": 1,
+        "pad_frame_stack": true,
+        "dataset_keys": [
+            "actions"
+        ],
+        "action_keys": [
+            "actions"
+        ],
+        "action_config": {
+            "actions": {
+                "normalization": "min_max"
+            }
+        },
+        "goal_mode": null,
+        "cuda": true,
+        "batch_size": 128,
+        "num_epochs": 200,
+        "seed": 1,
+        "max_grad_norm": null
+    },
+    "algo": {
+        "optim_params": {
+            "policy": {
+                "optimizer_type": "adam",
+                "learning_rate": {
+                    "initial": 0.0001,
+                    "decay_factor": 0.1,
+                    "epoch_schedule": [
+                        120,
+                        160
+                    ],
+                    "scheduler_type": "multistep"
+                },
+                "regularization": {
+                    "L2": 0.001
+                },
+                "num_train_batches": 100,
+                "num_epochs": 200
+            }
+        },
+        "loss": {
+            "l2_weight": 1.0,
+            "l1_weight": 0.0,
+            "cos_weight": 0.1
+        },
+        "actor_layer_dims": [
+            128
+        ],
+        "gaussian": {
+            "enabled": false,
+            "fixed_std": false,
+            "init_std": 0.1,
+            "min_std": 0.01,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "gmm": {
+            "enabled": false,
+            "num_modes": 5,
+            "min_std": 0.0001,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "vae": {
+            "enabled": false,
+            "latent_dim": 14,
+            "latent_clip": null,
+            "kl_weight": 1.0,
+            "decoder": {
+                "is_conditioned": true,
+                "reconstruction_sum_across_elements": false
+            },
+            "prior": {
+                "learn": false,
+                "is_conditioned": false,
+                "use_gmm": false,
+                "gmm_num_modes": 10,
+                "gmm_learn_weights": false,
+                "use_categorical": false,
+                "categorical_dim": 10,
+                "categorical_gumbel_softmax_hard": false,
+                "categorical_init_temp": 1.0,
+                "categorical_temp_anneal_step": 0.001,
+                "categorical_min_temp": 0.3
+            },
+            "encoder_layer_dims": [
+                300,
+                400
+            ],
+            "decoder_layer_dims": [
+                300,
+                400
+            ],
+            "prior_layer_dims": [
+                300,
+                400
+            ]
+        },
+        "rnn": {
+            "enabled": true,
+            "horizon": 15,
+            "hidden_dim": 128,
+            "rnn_type": "LSTM",
+            "num_layers": 1,
+            "open_loop": false,
+            "kwargs": {
+                "bidirectional": false
+            }
+        },
+        "transformer": {
+            "enabled": false,
+            "context_length": 10,
+            "embed_dim": 512,
+            "num_layers": 6,
+            "num_heads": 8,
+            "emb_dropout": 0.1,
+            "attn_dropout": 0.1,
+            "block_output_dropout": 0.1,
+            "sinusoidal_embedding": false,
+            "activation": "gelu",
+            "supervise_all_steps": false,
+            "nn_parameter_for_timesteps": true,
+            "pred_future_acs": false
+        }
+    },
+    "observation": {
+        "modalities": {
+            "obs": {
+                "low_dim": [
+                    "policy"
+                ],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            },
+            "goal": {
+                "low_dim": [],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            }
+        },
+        "encoder": {
+            "low_dim": {
+                "core_class": null,
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "rgb": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "depth": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "scan": {
+                "core_class": "ScanCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            }
+        }
+    },
+    "meta": {
+        "hp_base_config_file": null,
+        "hp_keys": [],
+        "hp_values": []
+    }
+}
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['policy']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+============= Loaded Policy =============
+ObservationKeyToModalityDict: action not found, adding action to mapping with assumed low_dim modality!
+BC_RNN (
+  ModuleDict(
+    (policy): RNNActorNetwork(
+        action_dim=13
+  
+        encoder=ObservationGroupEncoder(
+            group=obs
+            ObservationEncoder(
+                Key(
+                    name=policy
+                    shape=[28]
+                    modality=low_dim
+                    randomizer=ModuleList(
+                      (0): None
+                    )
+                    net=None
+                    sharing_from=None
+                )
+                output_shape=[28]
+            )
+        )
+  
+        rnn=RNN_Base(
+          (per_step_net): Sequential(
+            (0): MLP(
+                input_dim=128
+                output_dim=128
+                layer_dims=[]
+                layer_func=Linear
+                dropout=None
+                act=ReLU
+                output_act=ReLU
+            )
+            (1): ObservationDecoder(
+                Key(
+                    name=action
+                    shape=(13,)
+                    modality=low_dim
+                    net=(Linear(in_features=128, out_features=13, bias=True))
+                )
+            )
+          )
+          (nets): LSTM(28, 128, batch_first=True)
+        )
+    )
+  )
+)
+============= Loaded Config =============
+{
+    "algo_name": "bc",
+    "experiment": {
+        "name": "bc_rnn_pull_phase",
+        "validate": true,
+        "logging": {
+            "terminal_output_to_txt": true,
+            "log_tb": true,
+            "log_wandb": false,
+            "wandb_proj_name": "debug"
+        },
+        "save": {
+            "enabled": true,
+            "every_n_seconds": null,
+            "every_n_epochs": 50,
+            "epochs": [],
+            "on_best_validation": true,
+            "on_best_rollout_return": false,
+            "on_best_rollout_success_rate": false
+        },
+        "epoch_every_n_steps": 100,
+        "validation_epoch_every_n_steps": 1,
+        "env": null,
+        "additional_envs": null,
+        "render": false,
+        "render_video": true,
+        "keep_all_videos": false,
+        "video_skip": 5,
+        "rollout": {
+            "enabled": false,
+            "n": 50,
+            "horizon": 400,
+            "rate": 50,
+            "warmstart": 0,
+            "terminate_on_success": true
+        },
+        "env_meta_update_dict": {},
+        "ckpt_path": null
+    },
+    "train": {
+        "data": [
+            {
+                "path": "/home/johnchen/SharedSSD/JohnChen/stretch/datasets/bc_rnn_data_pull.hdf5"
+            }
+        ],
+        "output_dir": "../bc_rnn_trained_models",
+        "normalize_weights_by_ds_size": false,
+        "num_data_workers": 8,
+        "hdf5_cache_mode": "all",
+        "hdf5_use_swmr": true,
+        "hdf5_load_next_obs": false,
+        "hdf5_normalize_obs": true,
+        "hdf5_filter_key": "train",
+        "hdf5_validation_filter_key": "valid",
+        "seq_length": 16,
+        "pad_seq_length": true,
+        "frame_stack": 1,
+        "pad_frame_stack": true,
+        "dataset_keys": [
+            "actions"
+        ],
+        "action_keys": [
+            "actions"
+        ],
+        "action_config": {
+            "actions": {
+                "normalization": "min_max"
+            }
+        },
+        "goal_mode": null,
+        "cuda": true,
+        "batch_size": 64,
+        "num_epochs": 200,
+        "seed": 1,
+        "max_grad_norm": null
+    },
+    "algo": {
+        "optim_params": {
+            "policy": {
+                "optimizer_type": "adam",
+                "learning_rate": {
+                    "initial": 0.0001,
+                    "decay_factor": 0.1,
+                    "epoch_schedule": [
+                        120,
+                        160
+                    ],
+                    "scheduler_type": "multistep"
+                },
+                "regularization": {
+                    "L2": 0.001
+                },
+                "num_train_batches": 100,
+                "num_epochs": 200
+            }
+        },
+        "loss": {
+            "l2_weight": 1.0,
+            "l1_weight": 0.0,
+            "cos_weight": 0.1
+        },
+        "actor_layer_dims": [
+            128
+        ],
+        "gaussian": {
+            "enabled": false,
+            "fixed_std": false,
+            "init_std": 0.1,
+            "min_std": 0.01,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "gmm": {
+            "enabled": false,
+            "num_modes": 5,
+            "min_std": 0.0001,
+            "std_activation": "softplus",
+            "low_noise_eval": true
+        },
+        "vae": {
+            "enabled": false,
+            "latent_dim": 14,
+            "latent_clip": null,
+            "kl_weight": 1.0,
+            "decoder": {
+                "is_conditioned": true,
+                "reconstruction_sum_across_elements": false
+            },
+            "prior": {
+                "learn": false,
+                "is_conditioned": false,
+                "use_gmm": false,
+                "gmm_num_modes": 10,
+                "gmm_learn_weights": false,
+                "use_categorical": false,
+                "categorical_dim": 10,
+                "categorical_gumbel_softmax_hard": false,
+                "categorical_init_temp": 1.0,
+                "categorical_temp_anneal_step": 0.001,
+                "categorical_min_temp": 0.3
+            },
+            "encoder_layer_dims": [
+                300,
+                400
+            ],
+            "decoder_layer_dims": [
+                300,
+                400
+            ],
+            "prior_layer_dims": [
+                300,
+                400
+            ]
+        },
+        "rnn": {
+            "enabled": true,
+            "horizon": 15,
+            "hidden_dim": 128,
+            "rnn_type": "LSTM",
+            "num_layers": 1,
+            "open_loop": false,
+            "kwargs": {
+                "bidirectional": false
+            }
+        },
+        "transformer": {
+            "enabled": false,
+            "context_length": 10,
+            "embed_dim": 512,
+            "num_layers": 6,
+            "num_heads": 8,
+            "emb_dropout": 0.1,
+            "attn_dropout": 0.1,
+            "block_output_dropout": 0.1,
+            "sinusoidal_embedding": false,
+            "activation": "gelu",
+            "supervise_all_steps": false,
+            "nn_parameter_for_timesteps": true,
+            "pred_future_acs": false
+        }
+    },
+    "observation": {
+        "modalities": {
+            "obs": {
+                "low_dim": [
+                    "policy"
+                ],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            },
+            "goal": {
+                "low_dim": [],
+                "rgb": [],
+                "depth": [],
+                "scan": []
+            }
+        },
+        "encoder": {
+            "low_dim": {
+                "core_class": null,
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "rgb": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "depth": {
+                "core_class": "VisualCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            },
+            "scan": {
+                "core_class": "ScanCore",
+                "core_kwargs": {},
+                "obs_randomizer_class": null,
+                "obs_randomizer_kwargs": {}
+            }
+        }
+    },
+    "meta": {
+        "hp_base_config_file": null,
+        "hp_keys": [],
+        "hp_values": []
+    }
+}
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['policy']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+============= Loaded Policy =============
+ObservationKeyToModalityDict: action not found, adding action to mapping with assumed low_dim modality!
+BC_RNN (
+  ModuleDict(
+    (policy): RNNActorNetwork(
+        action_dim=13
+  
+        encoder=ObservationGroupEncoder(
+            group=obs
+            ObservationEncoder(
+                Key(
+                    name=policy
+                    shape=[28]
+                    modality=low_dim
+                    randomizer=ModuleList(
+                      (0): None
+                    )
+                    net=None
+                    sharing_from=None
+                )
+                output_shape=[28]
+            )
+        )
+  
+        rnn=RNN_Base(
+          (per_step_net): Sequential(
+            (0): MLP(
+                input_dim=128
+                output_dim=128
+                layer_dims=[]
+                layer_func=Linear
+                dropout=None
+                act=ReLU
+                output_act=ReLU
+            )
+            (1): ObservationDecoder(
+                Key(
+                    name=action
+                    shape=(13,)
+                    modality=low_dim
+                    net=(Linear(in_features=128, out_features=13, bias=True))
+                )
+            )
+          )
+          (nets): LSTM(28, 128, batch_first=True)
+        )
+    )
+  )
+)
+[IsaacLab] Creating environment
+[INFO] IsaacLab logging to file: /tmp/isaaclab_2026-04-08_21-25-34.log
+[33m21:25:34 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+2026-04-09T03:25:31Z [12,131ms] [Warning] [omni.fabric.plugin] Warning: attribute viewportHandle not found for bucket id 7
+
+2026-04-09T03:25:34Z [15,970ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+2026-04-09T03:25:49Z [30,971ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_finger_left/collisions/link_gripper_finger_left_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T03:25:49Z [30,972ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_fingertip_left/collisions/link_gripper_fingertip_left_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T03:25:49Z [30,972ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_finger_right/collisions/link_gripper_finger_right_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T03:25:49Z [30,972ms] [Error] [omni.physx.plugin] PhysicsUSD: Parse collision - triangle mesh collision (approximation None/MeshSimplification) cannot be a part of a dynamic body, falling back to convexHull approximation: /World/envs/env_0/Robot/link_gripper_fingertip_right/collisions/link_gripper_fingertip_right_collision/mesh.For dynamic collision please use approximations : convex hull, convex decomposition, box, sphere or SDF approximation.
+2026-04-09T03:25:49Z [30,988ms] [Error] [omni.physx.plugin] PhysX error: PxRigidBody::setMassSpaceInertiaTensor(): components must be > 0 for articulations, FILE /builds/omniverse/physics/physx/source/physx/src/NpRigidBodyTemplate.h, LINE 460
+2026-04-09T03:25:49Z [30,988ms] [Error] [omni.physx.plugin] PhysX error: PxRigidBody::setMassSpaceInertiaTensor(): components must be > 0 for articulations, FILE /builds/omniverse/physics/physx/source/physx/src/NpRigidBodyTemplate.h, LINE 460
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.008333333333333333
+	Rendering step-size   : 0.016666666666666666
+	Environment step-size : 0.016666666666666666
+[INFO]: Time taken for scene creation : 14.545986 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 1
+	Environment spacing   : 4.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[33m21:25:51 [actuator_pd.py] WARNING: The <ImplicitActuatorCfg> object has a value for 'effort_limit'. This parameter will be removed in the future. To set the effort limit, please use 'effort_limit_sim' instead.[0m
+[33m21:25:51 [actuator_pd.py] WARNING: The <ImplicitActuatorCfg> object has a value for 'velocity_limit'. Previously, although this value was specified, it was not getting used by implicit actuators. Since this parameter affects the simulation behavior, we continue to not use it. This parameter will be removed in the future. To set the velocity limit, please use 'velocity_limit_sim' instead.[0m
+/mnt/shared_ssd/JohnChen/stretch/scripts/bc_rnn/bc_rnn_play.py:339: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  handle_pos_w = torch.tensor(
+/mnt/shared_ssd/JohnChen/stretch/scripts/bc_rnn/bc_rnn_play.py:441: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  handle_pos_dbg = torch.tensor(
+[INFO]: Time taken for simulation start : 3.186669 seconds
+[INFO] Command Manager:  <CommandManager> contains 0 active terms.
++------------------------+
+|  Active Command Terms  |
++--------+-------+-------+
+| Index  | Name  |  Type |
++--------+-------+-------+
++--------+-------+-------+
+
+[INFO] Event Manager:  <EventManager> contains 1 active terms.
++---------------------------------+
+| Active Event Terms in Mode: 'reset' |
++------------+--------------------+
+|   Index    | Name               |
++------------+--------------------+
+|     0      | reset_all          |
++------------+--------------------+
+
+[INFO] Recorder Manager:  <RecorderManager> contains 0 active terms.
++---------------------+
+| Active Recorder Terms |
++-----------+---------+
+|   Index   | Name    |
++-----------+---------+
++-----------+---------+
+
+[INFO] Action Manager:  <ActionManager> contains 3 active terms.
++------------------------------------+
+|  Active Action Terms (shape: 13)   |
++-------+----------------+-----------+
+| Index | Name           | Dimension |
++-------+----------------+-----------+
+|   0   | arm_action     |         8 |
+|   1   | base_action    |         3 |
+|   2   | gripper_action |         2 |
++-------+----------------+-----------+
+
+[INFO] Observation Manager: <ObservationManager> contains 1 groups.
++------------------------------------------------------+
+| Active Observation Terms in Group: 'policy' (shape: (28,)) |
++------------+----------------------------+------------+
+|   Index    | Name                       |   Shape    |
++------------+----------------------------+------------+
+|     0      | arm_joint_pos              |    (8,)    |
+|     1      | base_pos                   |    (3,)    |
+|     2      | arm_joint_vel              |   (11,)    |
+|     3      | handle_rel                 |    (3,)    |
+|     4      | gripper_state              |    (2,)    |
+|     5      | drawer_pos                 |    (1,)    |
++------------+----------------------------+------------+
+
+[INFO] Termination Manager:  <TerminationManager> contains 1 active terms.
++-----------------------------+
+|   Active Termination Terms  |
++-------+----------+----------+
+| Index | Name     | Time Out |
++-------+----------+----------+
+|   0   | time_out |   True   |
++-------+----------+----------+
+
+[INFO] Reward Manager:  <RewardManager> contains 1 active terms.
++-------------------------------+
+|      Active Reward Terms      |
++-------+--------------+--------+
+| Index | Name         | Weight |
++-------+--------------+--------+
+|   0   | door_opening |   50.0 |
++-------+--------------+--------+
+
+[INFO] Curriculum Manager:  <CurriculumManager> contains 0 active terms.
++----------------------+
+| Active Curriculum Terms |
++-----------+----------+
+|   Index   | Name     |
++-----------+----------+
++-----------+----------+
+
+[INFO]: Completed setting up the environment...
+[Video] Recording enabled. Saving to: /mnt/shared_ssd/JohnChen/stretch/video_demos
+>>> Starting Playback Loop...
+--> [Phase 0] Head aligned. Starting policy inference...
+
+[Step 100 | phase=reach | EE→handle dist=0.9499m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0054
+    arm   joint_arm_l0: +0.0022
+    arm   joint_arm_l1: +0.0022
+    arm   joint_arm_l2: +0.0019
+    arm   joint_arm_l3: +0.0002
+    arm   joint_wrist_yaw: +0.0011
+    arm   joint_wrist_pitch: +0.0023
+    arm   joint_wrist_roll: +0.0073
+    base  joint_x: +0.0001
+    base  joint_y: -0.0025
+    base  joint_rot_z: +0.0001
+    grip  joint_gripper_finger_left: -0.0007
+    grip  joint_gripper_finger_right: +0.0006
+  Joint Positions:
+    arm   joint_lift: +0.0000
+    arm   joint_arm_l0: +0.0016
+    arm   joint_arm_l1: +0.0000
+    arm   joint_arm_l2: +0.0000
+    arm   joint_arm_l3: +0.0007
+    arm   joint_wrist_yaw: -0.0095
+    arm   joint_wrist_pitch: -0.0062
+    arm   joint_wrist_roll: +0.0000
+    base  joint_x: -0.0007
+    base  joint_y: +0.0015
+    base  joint_rot_z: +0.0041
+    grip  joint_gripper_finger_left: +0.1007
+    grip  joint_gripper_finger_right: +0.0994
+
+[Step 110 | phase=reach | EE→handle dist=0.9368m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0093
+    arm   joint_arm_l0: +0.0037
+    arm   joint_arm_l1: +0.0045
+    arm   joint_arm_l2: +0.0046
+    arm   joint_arm_l3: +0.0027
+    arm   joint_wrist_yaw: +0.0016
+    arm   joint_wrist_pitch: +0.0007
+    arm   joint_wrist_roll: +0.0176
+    base  joint_x: +0.0002
+    base  joint_y: -0.0040
+    base  joint_rot_z: +0.0002
+    grip  joint_gripper_finger_left: -0.0004
+    grip  joint_gripper_finger_right: +0.0005
+  Joint Positions:
+    arm   joint_lift: +0.0076
+    arm   joint_arm_l0: +0.0027
+    arm   joint_arm_l1: +0.0012
+    arm   joint_arm_l2: +0.0009
+    arm   joint_arm_l3: +0.0027
+    arm   joint_wrist_yaw: -0.0103
+    arm   joint_wrist_pitch: -0.0046
+    arm   joint_wrist_roll: +0.0231
+    base  joint_x: -0.0004
+    base  joint_y: -0.0036
+    base  joint_rot_z: +0.0037
+    grip  joint_gripper_finger_left: +0.1004
+    grip  joint_gripper_finger_right: +0.0995
+
+[Step 120 | phase=reach | EE→handle dist=0.8935m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0165
+    arm   joint_arm_l0: +0.0054
+    arm   joint_arm_l1: +0.0063
+    arm   joint_arm_l2: +0.0065
+    arm   joint_arm_l3: +0.0037
+    arm   joint_wrist_yaw: +0.0012
+    arm   joint_wrist_pitch: +0.0009
+    arm   joint_wrist_roll: +0.0349
+    base  joint_x: +0.0003
+    base  joint_y: -0.0084
+    base  joint_rot_z: +0.0003
+    grip  joint_gripper_finger_left: -0.0005
+    grip  joint_gripper_finger_right: +0.0005
+  Joint Positions:
+    arm   joint_lift: +0.0342
+    arm   joint_arm_l0: +0.0070
+    arm   joint_arm_l1: +0.0060
+    arm   joint_arm_l2: +0.0056
+    arm   joint_arm_l3: +0.0071
+    arm   joint_wrist_yaw: -0.0101
+    arm   joint_wrist_pitch: -0.0029
+    arm   joint_wrist_roll: +0.0957
+    base  joint_x: +0.0003
+    base  joint_y: -0.0193
+    base  joint_rot_z: +0.0043
+    grip  joint_gripper_finger_left: +0.1005
+    grip  joint_gripper_finger_right: +0.0995
+
+[Step 130 | phase=reach | EE→handle dist=0.8254m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0192
+    arm   joint_arm_l0: +0.0043
+    arm   joint_arm_l1: +0.0048
+    arm   joint_arm_l2: +0.0048
+    arm   joint_arm_l3: +0.0032
+    arm   joint_wrist_yaw: -0.0012
+    arm   joint_wrist_pitch: +0.0033
+    arm   joint_wrist_roll: +0.0378
+    base  joint_x: +0.0004
+    base  joint_y: -0.0104
+    base  joint_rot_z: +0.0004
+    grip  joint_gripper_finger_left: -0.0004
+    grip  joint_gripper_finger_right: +0.0005
+  Joint Positions:
+    arm   joint_lift: +0.0769
+    arm   joint_arm_l0: +0.0137
+    arm   joint_arm_l1: +0.0130
+    arm   joint_arm_l2: +0.0128
+    arm   joint_arm_l3: +0.0126
+    arm   joint_wrist_yaw: -0.0085
+    arm   joint_wrist_pitch: -0.0022
+    arm   joint_wrist_roll: +0.2046
+    base  joint_x: +0.0013
+    base  joint_y: -0.0458
+    base  joint_rot_z: +0.0031
+    grip  joint_gripper_finger_left: +0.1004
+    grip  joint_gripper_finger_right: +0.0995
+
+[Step 140 | phase=reach | EE→handle dist=0.7519m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0211
+    arm   joint_arm_l0: +0.0033
+    arm   joint_arm_l1: +0.0038
+    arm   joint_arm_l2: +0.0039
+    arm   joint_arm_l3: +0.0041
+    arm   joint_wrist_yaw: -0.0016
+    arm   joint_wrist_pitch: +0.0017
+    arm   joint_wrist_roll: +0.0414
+    base  joint_x: +0.0005
+    base  joint_y: -0.0117
+    base  joint_rot_z: +0.0004
+    grip  joint_gripper_finger_left: -0.0004
+    grip  joint_gripper_finger_right: +0.0006
+  Joint Positions:
+    arm   joint_lift: +0.1248
+    arm   joint_arm_l0: +0.0199
+    arm   joint_arm_l1: +0.0195
+    arm   joint_arm_l2: +0.0194
+    arm   joint_arm_l3: +0.0181
+    arm   joint_wrist_yaw: -0.0084
+    arm   joint_wrist_pitch: -0.0012
+    arm   joint_wrist_roll: +0.3206
+    base  joint_x: +0.0026
+    base  joint_y: -0.0764
+    base  joint_rot_z: +0.0034
+    grip  joint_gripper_finger_left: +0.1004
+    grip  joint_gripper_finger_right: +0.0994
+
+[Step 150 | phase=reach | EE→handle dist=0.6792m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0215
+    arm   joint_arm_l0: +0.0029
+    arm   joint_arm_l1: +0.0034
+    arm   joint_arm_l2: +0.0035
+    arm   joint_arm_l3: +0.0041
+    arm   joint_wrist_yaw: -0.0028
+    arm   joint_wrist_pitch: +0.0025
+    arm   joint_wrist_roll: +0.0414
+    base  joint_x: +0.0005
+    base  joint_y: -0.0121
+    base  joint_rot_z: +0.0005
+    grip  joint_gripper_finger_left: -0.0004
+    grip  joint_gripper_finger_right: +0.0007
+  Joint Positions:
+    arm   joint_lift: +0.1739
+    arm   joint_arm_l0: +0.0253
+    arm   joint_arm_l1: +0.0250
+    arm   joint_arm_l2: +0.0252
+    arm   joint_arm_l3: +0.0235
+    arm   joint_wrist_yaw: -0.0076
+    arm   joint_wrist_pitch: -0.0018
+    arm   joint_wrist_roll: +0.4380
+    base  joint_x: +0.0040
+    base  joint_y: -0.1083
+    base  joint_rot_z: +0.0045
+    grip  joint_gripper_finger_left: +0.1004
+    grip  joint_gripper_finger_right: +0.0993
+
+[Step 160 | phase=reach | EE→handle dist=0.6065m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0204
+    arm   joint_arm_l0: +0.0033
+    arm   joint_arm_l1: +0.0037
+    arm   joint_arm_l2: +0.0037
+    arm   joint_arm_l3: +0.0031
+    arm   joint_wrist_yaw: -0.0028
+    arm   joint_wrist_pitch: +0.0054
+    arm   joint_wrist_roll: +0.0389
+    base  joint_x: +0.0005
+    base  joint_y: -0.0112
+    base  joint_rot_z: +0.0004
+    grip  joint_gripper_finger_left: -0.0001
+    grip  joint_gripper_finger_right: +0.0003
+  Joint Positions:
+    arm   joint_lift: +0.2243
+    arm   joint_arm_l0: +0.0298
+    arm   joint_arm_l1: +0.0296
+    arm   joint_arm_l2: +0.0299
+    arm   joint_arm_l3: +0.0291
+    arm   joint_wrist_yaw: -0.0071
+    arm   joint_wrist_pitch: -0.0048
+    arm   joint_wrist_roll: +0.5573
+    base  joint_x: +0.0054
+    base  joint_y: -0.1421
+    base  joint_rot_z: +0.0057
+    grip  joint_gripper_finger_left: +0.1001
+    grip  joint_gripper_finger_right: +0.0997
+
+[Step 170 | phase=reach | EE→handle dist=0.5352m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0220
+    arm   joint_arm_l0: +0.0026
+    arm   joint_arm_l1: +0.0029
+    arm   joint_arm_l2: +0.0029
+    arm   joint_arm_l3: +0.0039
+    arm   joint_wrist_yaw: -0.0041
+    arm   joint_wrist_pitch: +0.0052
+    arm   joint_wrist_roll: +0.0413
+    base  joint_x: +0.0005
+    base  joint_y: -0.0125
+    base  joint_rot_z: +0.0004
+    grip  joint_gripper_finger_left: -0.0000
+    grip  joint_gripper_finger_right: +0.0003
+  Joint Positions:
+    arm   joint_lift: +0.2737
+    arm   joint_arm_l0: +0.0344
+    arm   joint_arm_l1: +0.0341
+    arm   joint_arm_l2: +0.0346
+    arm   joint_arm_l3: +0.0343
+    arm   joint_wrist_yaw: -0.0059
+    arm   joint_wrist_pitch: -0.0079
+    arm   joint_wrist_roll: +0.6748
+    base  joint_x: +0.0068
+    base  joint_y: -0.1758
+    base  joint_rot_z: +0.0069
+    grip  joint_gripper_finger_left: +0.1000
+    grip  joint_gripper_finger_right: +0.0997
+
+[Step 180 | phase=reach | EE→handle dist=0.4649m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0219
+    arm   joint_arm_l0: +0.0026
+    arm   joint_arm_l1: +0.0028
+    arm   joint_arm_l2: +0.0029
+    arm   joint_arm_l3: +0.0036
+    arm   joint_wrist_yaw: -0.0043
+    arm   joint_wrist_pitch: +0.0069
+    arm   joint_wrist_roll: +0.0407
+    base  joint_x: +0.0005
+    base  joint_y: -0.0124
+    base  joint_rot_z: +0.0004
+    grip  joint_gripper_finger_left: +0.0004
+    grip  joint_gripper_finger_right: -0.0000
+  Joint Positions:
+    arm   joint_lift: +0.3228
+    arm   joint_arm_l0: +0.0389
+    arm   joint_arm_l1: +0.0383
+    arm   joint_arm_l2: +0.0389
+    arm   joint_arm_l3: +0.0392
+    arm   joint_wrist_yaw: -0.0046
+    arm   joint_wrist_pitch: -0.0116
+    arm   joint_wrist_roll: +0.7918
+    base  joint_x: +0.0083
+    base  joint_y: -0.2096
+    base  joint_rot_z: +0.0059
+    grip  joint_gripper_finger_left: +0.0996
+    grip  joint_gripper_finger_right: +0.1000
+
+[Step 190 | phase=reach | EE→handle dist=0.3955m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0204
+    arm   joint_arm_l0: +0.0032
+    arm   joint_arm_l1: +0.0035
+    arm   joint_arm_l2: +0.0034
+    arm   joint_arm_l3: +0.0030
+    arm   joint_wrist_yaw: -0.0035
+    arm   joint_wrist_pitch: +0.0095
+    arm   joint_wrist_roll: +0.0378
+    base  joint_x: +0.0004
+    base  joint_y: -0.0110
+    base  joint_rot_z: +0.0004
+    grip  joint_gripper_finger_left: +0.0005
+    grip  joint_gripper_finger_right: +0.0000
+  Joint Positions:
+    arm   joint_lift: +0.3711
+    arm   joint_arm_l0: +0.0432
+    arm   joint_arm_l1: +0.0423
+    arm   joint_arm_l2: +0.0429
+    arm   joint_arm_l3: +0.0440
+    arm   joint_wrist_yaw: -0.0036
+    arm   joint_wrist_pitch: -0.0153
+    arm   joint_wrist_roll: +0.9084
+    base  joint_x: +0.0097
+    base  joint_y: -0.2439
+    base  joint_rot_z: +0.0064
+    grip  joint_gripper_finger_left: +0.0995
+    grip  joint_gripper_finger_right: +0.1000
+
+[Step 200 | phase=reach | EE→handle dist=0.3281m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0216
+    arm   joint_arm_l0: +0.0026
+    arm   joint_arm_l1: +0.0028
+    arm   joint_arm_l2: +0.0029
+    arm   joint_arm_l3: +0.0039
+    arm   joint_wrist_yaw: -0.0042
+    arm   joint_wrist_pitch: +0.0126
+    arm   joint_wrist_roll: +0.0393
+    base  joint_x: +0.0005
+    base  joint_y: -0.0116
+    base  joint_rot_z: +0.0002
+    grip  joint_gripper_finger_left: +0.0009
+    grip  joint_gripper_finger_right: -0.0004
+  Joint Positions:
+    arm   joint_lift: +0.4171
+    arm   joint_arm_l0: +0.0477
+    arm   joint_arm_l1: +0.0465
+    arm   joint_arm_l2: +0.0472
+    arm   joint_arm_l3: +0.0485
+    arm   joint_wrist_yaw: -0.0027
+    arm   joint_wrist_pitch: -0.0167
+    arm   joint_wrist_roll: +1.0215
+    base  joint_x: +0.0111
+    base  joint_y: -0.2765
+    base  joint_rot_z: +0.0072
+    grip  joint_gripper_finger_left: +0.0991
+    grip  joint_gripper_finger_right: +0.1004
+
+[Step 210 | phase=reach | EE→handle dist=0.2619m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0216
+    arm   joint_arm_l0: +0.0024
+    arm   joint_arm_l1: +0.0028
+    arm   joint_arm_l2: +0.0029
+    arm   joint_arm_l3: +0.0042
+    arm   joint_wrist_yaw: -0.0037
+    arm   joint_wrist_pitch: +0.0137
+    arm   joint_wrist_roll: +0.0394
+    base  joint_x: +0.0005
+    base  joint_y: -0.0112
+    base  joint_rot_z: +0.0001
+    grip  joint_gripper_finger_left: +0.0009
+    grip  joint_gripper_finger_right: -0.0003
+  Joint Positions:
+    arm   joint_lift: +0.4615
+    arm   joint_arm_l0: +0.0522
+    arm   joint_arm_l1: +0.0508
+    arm   joint_arm_l2: +0.0515
+    arm   joint_arm_l3: +0.0535
+    arm   joint_wrist_yaw: -0.0022
+    arm   joint_wrist_pitch: -0.0154
+    arm   joint_wrist_roll: +1.1332
+    base  joint_x: +0.0124
+    base  joint_y: -0.3078
+    base  joint_rot_z: +0.0082
+    grip  joint_gripper_finger_left: +0.0991
+    grip  joint_gripper_finger_right: +0.1003
+
+[Step 220 | phase=reach | EE→handle dist=0.1970m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0202
+    arm   joint_arm_l0: +0.0028
+    arm   joint_arm_l1: +0.0033
+    arm   joint_arm_l2: +0.0033
+    arm   joint_arm_l3: +0.0034
+    arm   joint_wrist_yaw: -0.0031
+    arm   joint_wrist_pitch: +0.0129
+    arm   joint_wrist_roll: +0.0368
+    base  joint_x: +0.0004
+    base  joint_y: -0.0102
+    base  joint_rot_z: +0.0002
+    grip  joint_gripper_finger_left: +0.0009
+    grip  joint_gripper_finger_right: -0.0004
+  Joint Positions:
+    arm   joint_lift: +0.5059
+    arm   joint_arm_l0: +0.0563
+    arm   joint_arm_l1: +0.0549
+    arm   joint_arm_l2: +0.0557
+    arm   joint_arm_l3: +0.0590
+    arm   joint_wrist_yaw: -0.0026
+    arm   joint_wrist_pitch: -0.0140
+    arm   joint_wrist_roll: +1.2468
+    base  joint_x: +0.0136
+    base  joint_y: -0.3385
+    base  joint_rot_z: +0.0096
+    grip  joint_gripper_finger_left: +0.0991
+    grip  joint_gripper_finger_right: +0.1004
+
+[Step 230 | phase=reach | EE→handle dist=0.1359m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0210
+    arm   joint_arm_l0: +0.0025
+    arm   joint_arm_l1: +0.0030
+    arm   joint_arm_l2: +0.0030
+    arm   joint_arm_l3: +0.0039
+    arm   joint_wrist_yaw: -0.0026
+    arm   joint_wrist_pitch: +0.0140
+    arm   joint_wrist_roll: +0.0388
+    base  joint_x: +0.0004
+    base  joint_y: -0.0102
+    base  joint_rot_z: +0.0001
+    grip  joint_gripper_finger_left: +0.0009
+    grip  joint_gripper_finger_right: -0.0005
+  Joint Positions:
+    arm   joint_lift: +0.5481
+    arm   joint_arm_l0: +0.0604
+    arm   joint_arm_l1: +0.0592
+    arm   joint_arm_l2: +0.0601
+    arm   joint_arm_l3: +0.0640
+    arm   joint_wrist_yaw: -0.0044
+    arm   joint_wrist_pitch: -0.0149
+    arm   joint_wrist_roll: +1.3586
+    base  joint_x: +0.0149
+    base  joint_y: -0.3675
+    base  joint_rot_z: +0.0100
+    grip  joint_gripper_finger_left: +0.0991
+    grip  joint_gripper_finger_right: +0.1005
+
+[Step 240 | phase=reach | EE→handle dist=0.0808m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0176
+    arm   joint_arm_l0: +0.0027
+    arm   joint_arm_l1: +0.0029
+    arm   joint_arm_l2: +0.0027
+    arm   joint_arm_l3: +0.0030
+    arm   joint_wrist_yaw: -0.0011
+    arm   joint_wrist_pitch: +0.0145
+    arm   joint_wrist_roll: +0.0316
+    base  joint_x: +0.0003
+    base  joint_y: -0.0079
+    base  joint_rot_z: +0.0001
+    grip  joint_gripper_finger_left: +0.0013
+    grip  joint_gripper_finger_right: -0.0007
+  Joint Positions:
+    arm   joint_lift: +0.5857
+    arm   joint_arm_l0: +0.0654
+    arm   joint_arm_l1: +0.0640
+    arm   joint_arm_l2: +0.0649
+    arm   joint_arm_l3: +0.0683
+    arm   joint_wrist_yaw: -0.0070
+    arm   joint_wrist_pitch: -0.0178
+    arm   joint_wrist_roll: +1.4625
+    base  joint_x: +0.0160
+    base  joint_y: -0.3937
+    base  joint_rot_z: +0.0110
+    grip  joint_gripper_finger_left: +0.0987
+    grip  joint_gripper_finger_right: +0.1007
+
+[Step 250 | phase=reach | EE→handle dist=0.0422m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0114
+    arm   joint_arm_l0: +0.0032
+    arm   joint_arm_l1: +0.0037
+    arm   joint_arm_l2: +0.0036
+    arm   joint_arm_l3: +0.0032
+    arm   joint_wrist_yaw: -0.0003
+    arm   joint_wrist_pitch: +0.0169
+    arm   joint_wrist_roll: +0.0141
+    base  joint_x: +0.0001
+    base  joint_y: -0.0050
+    base  joint_rot_z: +0.0001
+    grip  joint_gripper_finger_left: +0.0022
+    grip  joint_gripper_finger_right: -0.0013
+  Joint Positions:
+    arm   joint_lift: +0.6102
+    arm   joint_arm_l0: +0.0709
+    arm   joint_arm_l1: +0.0691
+    arm   joint_arm_l2: +0.0699
+    arm   joint_arm_l3: +0.0721
+    arm   joint_wrist_yaw: -0.0078
+    arm   joint_wrist_pitch: -0.0187
+    arm   joint_wrist_roll: +1.5313
+    base  joint_x: +0.0165
+    base  joint_y: -0.4105
+    base  joint_rot_z: +0.0099
+    grip  joint_gripper_finger_left: +0.0978
+    grip  joint_gripper_finger_right: +0.1013
+--> Reach done (proximity, dist=0.029m, steps=156). Closing gripper...
+
+[Step 260 | phase=gripper_close | EE→handle dist=0.0228m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0000
+    arm   joint_arm_l0: +0.0000
+    arm   joint_arm_l1: +0.0000
+    arm   joint_arm_l2: +0.0000
+    arm   joint_arm_l3: +0.0000
+    arm   joint_wrist_yaw: +0.0000
+    arm   joint_wrist_pitch: +0.0000
+    arm   joint_wrist_roll: +0.0000
+    base  joint_x: +0.0000
+    base  joint_y: +0.0000
+    base  joint_rot_z: +0.0000
+    grip  joint_gripper_finger_left: -0.1095
+    grip  joint_gripper_finger_right: -0.1352
+  Joint Positions:
+    arm   joint_lift: +0.6159
+    arm   joint_arm_l0: +0.0756
+    arm   joint_arm_l1: +0.0736
+    arm   joint_arm_l2: +0.0746
+    arm   joint_arm_l3: +0.0749
+    arm   joint_wrist_yaw: -0.0081
+    arm   joint_wrist_pitch: -0.0111
+    arm   joint_wrist_roll: +1.5485
+    base  joint_x: +0.0166
+    base  joint_y: -0.4157
+    base  joint_rot_z: +0.0089
+    grip  joint_gripper_finger_left: +0.0095
+    grip  joint_gripper_finger_right: +0.0352
+
+[Step 270 | phase=gripper_close | EE→handle dist=0.0187m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0000
+    arm   joint_arm_l0: +0.0000
+    arm   joint_arm_l1: +0.0000
+    arm   joint_arm_l2: +0.0000
+    arm   joint_arm_l3: +0.0000
+    arm   joint_wrist_yaw: +0.0000
+    arm   joint_wrist_pitch: +0.0000
+    arm   joint_wrist_roll: +0.0000
+    base  joint_x: +0.0000
+    base  joint_y: +0.0000
+    base  joint_rot_z: +0.0000
+    grip  joint_gripper_finger_left: -0.0420
+    grip  joint_gripper_finger_right: -0.0455
+  Joint Positions:
+    arm   joint_lift: +0.6115
+    arm   joint_arm_l0: +0.0767
+    arm   joint_arm_l1: +0.0742
+    arm   joint_arm_l2: +0.0752
+    arm   joint_arm_l3: +0.0746
+    arm   joint_wrist_yaw: -0.0092
+    arm   joint_wrist_pitch: -0.0362
+    arm   joint_wrist_roll: +1.5487
+    base  joint_x: +0.0166
+    base  joint_y: -0.4156
+    base  joint_rot_z: +0.0090
+    grip  joint_gripper_finger_left: -0.0580
+    grip  joint_gripper_finger_right: -0.0545
+
+[Step 280 | phase=gripper_close | EE→handle dist=0.0192m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0000
+    arm   joint_arm_l0: +0.0000
+    arm   joint_arm_l1: +0.0000
+    arm   joint_arm_l2: +0.0000
+    arm   joint_arm_l3: +0.0000
+    arm   joint_wrist_yaw: +0.0000
+    arm   joint_wrist_pitch: +0.0000
+    arm   joint_wrist_roll: +0.0000
+    base  joint_x: +0.0000
+    base  joint_y: +0.0000
+    base  joint_rot_z: +0.0000
+    grip  joint_gripper_finger_left: -0.0431
+    grip  joint_gripper_finger_right: -0.0437
+  Joint Positions:
+    arm   joint_lift: +0.6090
+    arm   joint_arm_l0: +0.0770
+    arm   joint_arm_l1: +0.0739
+    arm   joint_arm_l2: +0.0750
+    arm   joint_arm_l3: +0.0742
+    arm   joint_wrist_yaw: -0.0096
+    arm   joint_wrist_pitch: -0.0283
+    arm   joint_wrist_roll: +1.5489
+    base  joint_x: +0.0166
+    base  joint_y: -0.4155
+    base  joint_rot_z: +0.0091
+    grip  joint_gripper_finger_left: -0.0569
+    grip  joint_gripper_finger_right: -0.0563
+--> Gripper locked. Starting pull phase...
+
+[Step 290 | phase=pull | EE→handle dist=0.0198m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0038
+    arm   joint_arm_l0: +0.0032
+    arm   joint_arm_l1: +0.0033
+    arm   joint_arm_l2: +0.0043
+    arm   joint_arm_l3: -0.0018
+    arm   joint_wrist_yaw: +0.0008
+    arm   joint_wrist_pitch: +0.0522
+    arm   joint_wrist_roll: +0.0000
+    base  joint_x: +0.0002
+    base  joint_y: +0.0044
+    base  joint_rot_z: +0.0001
+    grip  joint_gripper_finger_left: -0.0309
+    grip  joint_gripper_finger_right: -0.0545
+  Joint Positions:
+    arm   joint_lift: +0.6076
+    arm   joint_arm_l0: +0.0790
+    arm   joint_arm_l1: +0.0752
+    arm   joint_arm_l2: +0.0768
+    arm   joint_arm_l3: +0.0725
+    arm   joint_wrist_yaw: -0.0103
+    arm   joint_wrist_pitch: -0.0148
+    arm   joint_wrist_roll: +1.5490
+    base  joint_x: +0.0167
+    base  joint_y: -0.4112
+    base  joint_rot_z: +0.0093
+    grip  joint_gripper_finger_left: -0.0691
+    grip  joint_gripper_finger_right: -0.0455
+
+[Step 300 | phase=pull | EE→handle dist=0.0200m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0041
+    arm   joint_arm_l0: +0.0048
+    arm   joint_arm_l1: +0.0051
+    arm   joint_arm_l2: +0.0062
+    arm   joint_arm_l3: -0.0008
+    arm   joint_wrist_yaw: +0.0008
+    arm   joint_wrist_pitch: +0.0555
+    arm   joint_wrist_roll: +0.0000
+    base  joint_x: +0.0002
+    base  joint_y: +0.0035
+    base  joint_rot_z: +0.0002
+    grip  joint_gripper_finger_left: -0.0181
+    grip  joint_gripper_finger_right: -0.0666
+  Joint Positions:
+    arm   joint_lift: +0.6097
+    arm   joint_arm_l0: +0.0835
+    arm   joint_arm_l1: +0.0791
+    arm   joint_arm_l2: +0.0820
+    arm   joint_arm_l3: +0.0700
+    arm   joint_wrist_yaw: -0.0109
+    arm   joint_wrist_pitch: -0.0135
+    arm   joint_wrist_roll: +1.5494
+    base  joint_x: +0.0170
+    base  joint_y: -0.4003
+    base  joint_rot_z: +0.0091
+    grip  joint_gripper_finger_left: -0.0819
+    grip  joint_gripper_finger_right: -0.0334
+
+[Step 310 | phase=pull | EE→handle dist=0.0225m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0039
+    arm   joint_arm_l0: +0.0014
+    arm   joint_arm_l1: +0.0011
+    arm   joint_arm_l2: +0.0019
+    arm   joint_arm_l3: -0.0031
+    arm   joint_wrist_yaw: +0.0009
+    arm   joint_wrist_pitch: +0.0546
+    arm   joint_wrist_roll: +0.0001
+    base  joint_x: +0.0003
+    base  joint_y: +0.0053
+    base  joint_rot_z: +0.0003
+    grip  joint_gripper_finger_left: -0.0156
+    grip  joint_gripper_finger_right: -0.0687
+  Joint Positions:
+    arm   joint_lift: +0.6122
+    arm   joint_arm_l0: +0.0886
+    arm   joint_arm_l1: +0.0835
+    arm   joint_arm_l2: +0.0877
+    arm   joint_arm_l3: +0.0658
+    arm   joint_wrist_yaw: -0.0112
+    arm   joint_wrist_pitch: -0.0205
+    arm   joint_wrist_roll: +1.5497
+    base  joint_x: +0.0175
+    base  joint_y: -0.3869
+    base  joint_rot_z: +0.0085
+    grip  joint_gripper_finger_left: -0.0844
+    grip  joint_gripper_finger_right: -0.0313
+
+[Step 320 | phase=pull | EE→handle dist=0.0375m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0029
+    arm   joint_arm_l0: -0.0364
+    arm   joint_arm_l1: -0.0409
+    arm   joint_arm_l2: -0.0454
+    arm   joint_arm_l3: -0.0240
+    arm   joint_wrist_yaw: +0.0016
+    arm   joint_wrist_pitch: +0.0423
+    arm   joint_wrist_roll: +0.0002
+    base  joint_x: +0.0007
+    base  joint_y: +0.0216
+    base  joint_rot_z: +0.0011
+    grip  joint_gripper_finger_left: -0.0178
+    grip  joint_gripper_finger_right: -0.0659
+  Joint Positions:
+    arm   joint_lift: +0.6145
+    arm   joint_arm_l0: +0.0940
+    arm   joint_arm_l1: +0.0886
+    arm   joint_arm_l2: +0.0952
+    arm   joint_arm_l3: +0.0564
+    arm   joint_wrist_yaw: -0.0118
+    arm   joint_wrist_pitch: -0.0303
+    arm   joint_wrist_roll: +1.5502
+    base  joint_x: +0.0182
+    base  joint_y: -0.3635
+    base  joint_rot_z: +0.0078
+    grip  joint_gripper_finger_left: -0.0822
+    grip  joint_gripper_finger_right: -0.0341
+
+[Step 330 | phase=pull | EE→handle dist=0.1598m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0036
+    arm   joint_arm_l0: -0.0602
+    arm   joint_arm_l1: -0.0699
+    arm   joint_arm_l2: -0.0797
+    arm   joint_arm_l3: -0.0367
+    arm   joint_wrist_yaw: +0.0023
+    arm   joint_wrist_pitch: +0.0667
+    arm   joint_wrist_roll: +0.0003
+    base  joint_x: +0.0008
+    base  joint_y: +0.0223
+    base  joint_rot_z: +0.0027
+    grip  joint_gripper_finger_left: -0.0144
+    grip  joint_gripper_finger_right: -0.0689
+  Joint Positions:
+    arm   joint_lift: +0.6156
+    arm   joint_arm_l0: +0.0795
+    arm   joint_arm_l1: +0.0827
+    arm   joint_arm_l2: +0.0917
+    arm   joint_arm_l3: +0.0320
+    arm   joint_wrist_yaw: -0.0115
+    arm   joint_wrist_pitch: -0.0318
+    arm   joint_wrist_roll: +1.5510
+    base  joint_x: +0.0200
+    base  joint_y: -0.2893
+    base  joint_rot_z: +0.0056
+    grip  joint_gripper_finger_left: -0.0856
+    grip  joint_gripper_finger_right: -0.0311
+--> Drawer open (0.387m). Pull done!
+
+[Step 340 | phase=pull | EE→handle dist=0.4058m] --- Debug ---
+  Actions:
+    arm   joint_lift: +0.0038
+    arm   joint_arm_l0: -0.0312
+    arm   joint_arm_l1: -0.0439
+    arm   joint_arm_l2: -0.0497
+    arm   joint_arm_l3: -0.0170
+    arm   joint_wrist_yaw: +0.0021
+    arm   joint_wrist_pitch: +0.0681
+    arm   joint_wrist_roll: +0.0001
+    base  joint_x: +0.0003
+    base  joint_y: +0.0029
+    base  joint_rot_z: +0.0022
+    grip  joint_gripper_finger_left: -0.0121
+    grip  joint_gripper_finger_right: -0.0711
+  Joint Positions:
+    arm   joint_lift: +0.6160
+    arm   joint_arm_l0: +0.0185
+    arm   joint_arm_l1: +0.0285
+    arm   joint_arm_l2: +0.0293
+    arm   joint_arm_l3: +0.0000
+    arm   joint_wrist_yaw: -0.0114
+    arm   joint_wrist_pitch: -0.0316
+    arm   joint_wrist_roll: +1.5519
+    base  joint_x: +0.0212
+    base  joint_y: -0.2529
+    base  joint_rot_z: +0.0055
+    grip  joint_gripper_finger_left: -0.0879
+    grip  joint_gripper_finger_right: -0.0289
+[Episode 1/1] SUCCESS | Displacement: 0.400m | Reach: 156 steps | Pull: 55 steps | 17s elapsed
+[Video] Saving 241 frames to /mnt/shared_ssd/JohnChen/stretch/video_demos/bc_rnn_ep01_success.mp4
+
+==================================================
+  EVALUATION SUMMARY
+==================================================
+  Episodes:  1
+  Successes: 1
+  Rate:      100.0%
+  Time:      20s
+==================================================

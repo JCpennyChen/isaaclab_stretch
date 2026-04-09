@@ -37,7 +37,7 @@
     },
     "cuda": true,
     "batch_size": 128,
-    "num_epochs": 100,
+    "num_epochs": 200,
     "seed": 1
   },
   "algo": {
@@ -47,7 +47,7 @@
         "learning_rate": {
           "initial": 1e-4,
           "decay_factor": 0.1,
-          "epoch_schedule": [60, 80]
+          "epoch_schedule": [120, 160]
         },
         "regularization": {
           "L2": 1e-3

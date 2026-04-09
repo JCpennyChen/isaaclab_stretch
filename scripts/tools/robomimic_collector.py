@@ -14,9 +14,9 @@ class RobomimicDataCollector:
     - Train/valid split at write time
     """
 
-    def __init__(self, env_name, directory_path, filename, num_demos, val_ratio=0.1):
+    def __init__(self, env_name, directory_path, filename, num_demos, val_indices=None):
         self.num_demos = num_demos
-        self.val_ratio = val_ratio
+        self.val_indices = set(val_indices) if val_indices is not None else set()
 
         os.makedirs(directory_path, exist_ok=True)
         self.file_path = os.path.join(directory_path, f"{filename}.hdf5")
@@ -88,11 +88,8 @@ class RobomimicDataCollector:
 
         ep_grp.attrs["num_samples"] = len(self.buffer["actions"])
 
-        # Train/valid assignment
-        is_last = (demo_idx + 1) >= self.num_demos
-        if (np.random.rand() < self.val_ratio) or (
-            is_last and len(self.valid_demos) == 0
-        ):
+        # Train/valid assignment (deterministic based on pre-computed indices)
+        if demo_idx in self.val_indices:
             self.valid_demos.append(demo_name)
             split = "VALID"
         else:

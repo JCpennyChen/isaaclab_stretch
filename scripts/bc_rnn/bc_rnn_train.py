@@ -14,11 +14,13 @@ Usage:
 import os
 import sys
 import json
+import glob
 import argparse
 import time
 import datetime
 import torch
 
+import robomimic
 import robomimic.utils.torch_utils as TorchUtils
 from robomimic.config import config_factory
 from robomimic.scripts.train import train
@@ -30,8 +32,15 @@ from robomimic.scripts.train import train
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 CONFIG_DIR = os.path.join(
-    PROJECT_ROOT, "source", "stretch", "stretch", "tasks",
-    "manager_based", "stretch", "config", "robomimic",
+    PROJECT_ROOT,
+    "source",
+    "stretch",
+    "stretch",
+    "tasks",
+    "manager_based",
+    "stretch",
+    "config",
+    "robomimic",
 )
 
 DEFAULT_CONFIGS = {
@@ -40,7 +49,7 @@ DEFAULT_CONFIGS = {
 }
 
 
-def load_config(config_path):
+def load_config(config_path, data_path=None):
     """Load a robomimic config from a JSON file."""
     print(f"[Config] Loading: {config_path}")
 
@@ -50,6 +59,10 @@ def load_config(config_path):
     # Load the JSON and create a robomimic config object
     with open(config_path, "r") as f:
         ext_cfg = json.load(f)
+
+    # Override dataset path if provided via CLI
+    if data_path is not None:
+        ext_cfg["train"]["data"] = data_path
 
     config = config_factory(ext_cfg["algo_name"])
     config.update(ext_cfg)
@@ -66,13 +79,34 @@ def load_config(config_path):
     return config
 
 
-def train_phase(phase_name, config_path, device):
+def find_best_checkpoint(config):
+    """Find the best validation checkpoint in the most recent training run."""
+    base_output_dir = os.path.expanduser(config.train.output_dir)
+    if not os.path.isabs(base_output_dir):
+        base_output_dir = os.path.join(robomimic.__path__[0], base_output_dir)
+    base_output_dir = os.path.join(base_output_dir, config.experiment.name)
+
+    pattern = os.path.join(base_output_dir, "*", "models", "*best_validation*.pth")
+    matches = glob.glob(pattern)
+    if not matches:
+        return None
+    # Pick the checkpoint with the lowest validation loss (parsed from filename)
+
+    def extract_loss(path):
+        fname = os.path.basename(path)
+        # filename format: model_epoch_N_best_validation_LOSS.pth
+        loss_str = fname.split("best_validation_")[1].replace(".pth", "")
+        return float(loss_str)
+    return min(matches, key=extract_loss)
+
+
+def train_phase(phase_name, config_path, device, data_path=None):
     """Train a single phase (reach or pull)."""
     print(f"\n{'='*60}")
     print(f"  TRAINING: {phase_name.upper()} PHASE")
     print(f"{'='*60}")
 
-    config = load_config(config_path)
+    config = load_config(config_path, data_path=data_path)
 
     # Print training summary
     print(f"  Dataset:     {config.train.data}")
@@ -89,9 +123,14 @@ def train_phase(phase_name, config_path, device):
     train(config, device=device)
     elapsed = time.time() - start_time
 
+    best_ckpt = find_best_checkpoint(config)
+
     elapsed_str = str(datetime.timedelta(seconds=int(elapsed)))
     print(f"\n[DONE] {phase_name.upper()} training completed in {elapsed_str}")
-    return elapsed
+    if best_ckpt:
+        print(f"[BEST CHECKPOINT] {best_ckpt}")
+
+    return elapsed, best_ckpt
 
 
 def main():
@@ -107,6 +146,12 @@ def main():
         "--config",
         type=str,
         default=None,
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default=None,
+        help="Path to dataset .hdf5 file (overrides the path in the JSON config)",
     )
     parser.add_argument(
         "--device",
@@ -127,14 +172,14 @@ def main():
     # Custom config mode: train a single config and exit
     if args.config is not None:
         phase_name = os.path.splitext(os.path.basename(args.config))[0]
-        train_phase(phase_name, args.config, device)
+        _, _ = train_phase(phase_name, args.config, device, data_path=args.data)
         return
 
     # Standard mode: train reach, pull, or both
     phases_to_train = []
-    if args.phase in ("reach"):
+    if args.phase in (None, "reach"):
         phases_to_train.append(("reach", DEFAULT_CONFIGS["reach"]))
-    if args.phase in ("pull"):
+    if args.phase in (None, "pull"):
         phases_to_train.append(("pull", DEFAULT_CONFIGS["pull"]))
 
     # Validate all configs exist before starting
@@ -144,10 +189,12 @@ def main():
             sys.exit(1)
 
     # Train each phase
-    timings = {}
+    results = {}
     for phase_name, config_path in phases_to_train:
-        elapsed = train_phase(phase_name, config_path, device)
-        timings[phase_name] = elapsed
+        elapsed, best_ckpt = train_phase(
+            phase_name, config_path, device, data_path=args.data
+        )
+        results[phase_name] = (elapsed, best_ckpt)
 
     # Final summary
     total_elapsed = time.time() - total_start
@@ -156,9 +203,11 @@ def main():
     print(f"\n{'='*60}")
     print("  TRAINING SUMMARY")
     print(f"{'='*60}")
-    for phase_name, elapsed in timings.items():
+    for phase_name, (elapsed, best_ckpt) in results.items():
         phase_str = str(datetime.timedelta(seconds=int(elapsed)))
         print(f"  {phase_name:>6}: {phase_str}")
+        if best_ckpt:
+            print(f"          {best_ckpt}")
     print(f"  {'Total':>6}: {total_str}")
     print(f"{'='*60}")
 
